@@ -1,0 +1,440 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>covariance &mdash; beat 0.1 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="beat 0.1 documentation" href="../index.html"/>
+        <link rel="up" title="Module code" href="index.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> beat
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">The <code class="docutils literal"><span class="pre">heart</span></code> Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#the-config-module">The <code class="docutils literal"><span class="pre">config</span></code> Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#module-atmcmc">The <code class="docutils literal"><span class="pre">atmcmc</span></code> Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#module-backend">The <code class="docutils literal"><span class="pre">backend</span></code> Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#module-models">The <code class="docutils literal"><span class="pre">models</span></code> Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#module-psgrn">The <code class="docutils literal"><span class="pre">psgrn</span></code> Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#module-pscmp">The <code class="docutils literal"><span class="pre">pscmp</span></code> Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#module-covariance">The <code class="docutils literal"><span class="pre">covariance</span></code> Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#module-theanof">The <code class="docutils literal"><span class="pre">theanof</span></code> Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#module-utility">The <code class="docutils literal"><span class="pre">utility</span></code> Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#module-plotting">The <code class="docutils literal"><span class="pre">plotting</span></code> Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html#module-inputf">The <code class="docutils literal"><span class="pre">inputf</span></code> Module</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../index.html">beat</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="index.html">Module code</a> &raquo;</li>
+      
+    <li>covariance</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for covariance</h1><div class="highlight"><pre>
+<span class="kn">from</span> <span class="nn">pyrocko</span> <span class="kn">import</span> <span class="n">gf</span><span class="p">,</span> <span class="n">trace</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">num</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+
+<span class="kn">from</span> <span class="nn">beat</span> <span class="kn">import</span> <span class="n">heart</span>
+
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&#39;covariance&#39;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="sub_data_covariance"><a class="viewcode-back" href="../api.html#covariance.sub_data_covariance">[docs]</a><span class="k">def</span> <span class="nf">sub_data_covariance</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">tzero</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Calculate sub-covariance matrix without variance.</span>
+<span class="sd">    :param: n - length of trace/ samples of quadratic Covariance matrix</span>
+<span class="sd">    :param: dt - time step of samples</span>
+<span class="sd">    :param: tzero - shortest period of waves in trace</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">return</span> <span class="n">num</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span> <span class="n">num</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">num</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span><span class="p">)[:,</span> <span class="n">num</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span> <span class="o">-</span> \
+                              <span class="n">num</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span><span class="p">)[</span><span class="n">num</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:])</span> <span class="o">*</span> <span class="n">dt</span> <span class="o">/</span> <span class="n">tzero</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_seismic_data_covariances"><a class="viewcode-back" href="../api.html#covariance.get_seismic_data_covariances">[docs]</a><span class="k">def</span> <span class="nf">get_seismic_data_covariances</span><span class="p">(</span><span class="n">data_traces</span><span class="p">,</span> <span class="n">engine</span><span class="p">,</span> <span class="n">filterer</span><span class="p">,</span> <span class="n">sample_rate</span><span class="p">,</span>
+                                 <span class="n">arrival_taper</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">targets</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Calculate SubCovariance Matrix of trace object following</span>
+<span class="sd">    Duputel et al. 2012 GJI</span>
+<span class="sd">    &quot;Uncertainty estimations for seismic source inversions&quot; p. 5</span>
+
+<span class="sd">    Cd(i,j) = (Variance of trace)*exp(-abs(ti-tj)/</span>
+<span class="sd">                                     (shortest period T0 of waves))</span>
+
+<span class="sd">       i,j are samples of the seismic trace</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="n">tzero</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="n">filterer</span><span class="o">.</span><span class="n">upper_corner</span>
+    <span class="n">dt</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="n">sample_rate</span>
+    <span class="n">ataper</span> <span class="o">=</span> <span class="n">arrival_taper</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">num</span><span class="o">.</span><span class="n">ceil</span><span class="p">((</span><span class="n">ataper</span><span class="o">.</span><span class="n">a</span> <span class="o">+</span> <span class="n">ataper</span><span class="o">.</span><span class="n">d</span><span class="p">)</span> <span class="o">/</span> <span class="n">dt</span><span class="p">))</span>
+
+    <span class="n">csub</span> <span class="o">=</span> <span class="n">sub_data_covariance</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">tzero</span><span class="p">)</span>
+
+    <span class="n">cov_ds</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">tr</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">data_traces</span><span class="p">):</span>
+        <span class="c"># assure getting P-wave arrival time</span>
+        <span class="n">tmp_target</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">targets</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+
+        <span class="n">tmp_target</span><span class="o">.</span><span class="n">codes</span> <span class="o">=</span> <span class="p">(</span><span class="n">tmp_target</span><span class="o">.</span><span class="n">codes</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="s">&#39;Z&#39;</span><span class="p">,))</span>
+
+        <span class="n">arrival_time</span> <span class="o">=</span> <span class="n">heart</span><span class="o">.</span><span class="n">get_phase_arrival_time</span><span class="p">(</span>
+            <span class="n">engine</span><span class="o">=</span><span class="n">engine</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="n">event</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">tmp_target</span><span class="p">)</span>
+
+        <span class="n">ctrace</span> <span class="o">=</span> <span class="n">tr</span><span class="o">.</span><span class="n">chop</span><span class="p">(</span>
+            <span class="n">tmin</span><span class="o">=</span><span class="n">tr</span><span class="o">.</span><span class="n">tmin</span><span class="p">,</span>
+            <span class="n">tmax</span><span class="o">=</span><span class="n">arrival_time</span> <span class="o">-</span> <span class="n">ataper</span><span class="o">.</span><span class="n">b</span><span class="p">,</span>
+            <span class="n">inplace</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+        <span class="n">cov_ds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">num</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">ctrace</span><span class="o">.</span><span class="n">ydata</span><span class="p">,</span> <span class="n">ddof</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">csub</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">cov_ds</span></div>
+
+
+<div class="viewcode-block" id="get_model_prediction_sensitivity"><a class="viewcode-back" href="../api.html#covariance.get_model_prediction_sensitivity">[docs]</a><span class="k">def</span> <span class="nf">get_model_prediction_sensitivity</span><span class="p">(</span><span class="n">engine</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Calculate the model prediction Covariance Sensitivity Kernel.</span>
+<span class="sd">    (numerical derivation with respect to the input source parameter(s))</span>
+<span class="sd">    Following Duputel et al. 2014</span>
+
+<span class="sd">    :Input:</span>
+<span class="sd">    :py:class:&#39;engine&#39;</span>
+<span class="sd">    source_parms = list of parameters with respect to which the kernel</span>
+<span class="sd">                   is being calculated e.g. [&#39;strike&#39;, &#39;dip&#39;, &#39;depth&#39;]</span>
+<span class="sd">    !!!</span>
+<span class="sd">    NEEDS to have seismosizer source object parameter variable name convention</span>
+<span class="sd">    !!!</span>
+<span class="sd">    (see seismosizer.source.keys())</span>
+
+<span class="sd">    calculate_model_prediction_sensitivity(request, source_params, **kwargs)</span>
+<span class="sd">    calculate_model_prediction_sensitivity(sources,</span>
+<span class="sd">                                             targets, source_params, **kwargs)</span>
+
+<span class="sd">    Returns traces in a list[parameter][targets] for each station and channel</span>
+<span class="sd">    as specified in the targets. The location code of each trace is placed to</span>
+<span class="sd">    show the respective source parameter.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">gf</span><span class="o">.</span><span class="n">BadRequest</span><span class="p">(</span><span class="s">&#39;invalid arguments&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;request&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;source_params&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">gf</span><span class="o">.</span><span class="n">Request</span><span class="o">.</span><span class="n">args2kwargs</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">1</span><span class="p">]))</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;source_params&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+
+    <span class="n">request</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;request&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+    <span class="n">nprocs</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;nprocs&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">source_params</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;source_params&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+    <span class="n">h</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;h&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">request</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="n">gf</span><span class="o">.</span><span class="n">Request</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">h</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">h</span> <span class="o">=</span> <span class="n">num</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">source_params</span><span class="p">))</span> <span class="o">*</span> <span class="mf">1e-1</span>
+
+    <span class="c"># create results list</span>
+    <span class="n">sensitivity_param_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">sensitivity_param_trcs</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">source_params</span><span class="p">)):</span>
+        <span class="n">sensitivity_param_list</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">targets</span><span class="p">))</span>
+        <span class="n">sensitivity_param_trcs</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">targets</span><span class="p">))</span>
+
+    <span class="k">for</span> <span class="n">ref_source</span> <span class="ow">in</span> <span class="n">request</span><span class="o">.</span><span class="n">sources</span><span class="p">:</span>
+        <span class="n">par_count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">source_params</span><span class="p">:</span>
+            <span class="k">print</span> <span class="n">param</span><span class="p">,</span> <span class="s">&#39;with h = &#39;</span><span class="p">,</span> <span class="n">h</span><span class="p">[</span><span class="n">par_count</span><span class="p">]</span>
+            <span class="n">calc_source_p2h</span> <span class="o">=</span> <span class="n">ref_source</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
+            <span class="n">calc_source_ph</span> <span class="o">=</span> <span class="n">ref_source</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
+            <span class="n">calc_source_mh</span> <span class="o">=</span> <span class="n">ref_source</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
+            <span class="n">calc_source_m2h</span> <span class="o">=</span> <span class="n">ref_source</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
+
+            <span class="nb">setattr</span><span class="p">(</span><span class="n">calc_source_p2h</span><span class="p">,</span> <span class="n">param</span><span class="p">,</span>
+                    <span class="n">ref_source</span><span class="p">[</span><span class="n">param</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">h</span><span class="p">[</span><span class="n">par_count</span><span class="p">]))</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="n">calc_source_ph</span><span class="p">,</span> <span class="n">param</span><span class="p">,</span>
+                    <span class="n">ref_source</span><span class="p">[</span><span class="n">param</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">h</span><span class="p">[</span><span class="n">par_count</span><span class="p">]))</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="n">calc_source_mh</span><span class="p">,</span> <span class="n">param</span><span class="p">,</span>
+                    <span class="n">ref_source</span><span class="p">[</span><span class="n">param</span><span class="p">]</span> <span class="o">-</span> <span class="p">(</span><span class="n">h</span><span class="p">[</span><span class="n">par_count</span><span class="p">]))</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="n">calc_source_m2h</span><span class="p">,</span> <span class="n">param</span><span class="p">,</span>
+                    <span class="n">ref_source</span><span class="p">[</span><span class="n">param</span><span class="p">]</span> <span class="o">-</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">h</span><span class="p">[</span><span class="n">par_count</span><span class="p">]))</span>
+
+            <span class="n">calc_sources</span> <span class="o">=</span> <span class="p">[</span><span class="n">calc_source_p2h</span><span class="p">,</span> <span class="n">calc_source_ph</span><span class="p">,</span>
+                            <span class="n">calc_source_mh</span><span class="p">,</span> <span class="n">calc_source_m2h</span><span class="p">]</span>
+
+            <span class="n">response</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">sources</span><span class="o">=</span><span class="n">calc_sources</span><span class="p">,</span>
+                                      <span class="n">targets</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">targets</span><span class="p">,</span>
+                                      <span class="n">nprocs</span><span class="o">=</span><span class="n">nprocs</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">targets</span><span class="p">)):</span>
+                <span class="c"># zero padding if necessary</span>
+                <span class="n">trc_lengths</span> <span class="o">=</span> <span class="n">num</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                    <span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">results_list</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">trace</span><span class="o">.</span><span class="n">data</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> \
+                                        <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">results_list</span><span class="p">))])</span>
+                <span class="n">Id</span> <span class="o">=</span> <span class="n">num</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">trc_lengths</span> <span class="o">!=</span> <span class="n">trc_lengths</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+
+                <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">Id</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                    <span class="n">response</span><span class="o">.</span><span class="n">results_list</span><span class="p">[</span><span class="n">l</span><span class="p">][</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">trace</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">num</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
+                            <span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">results_list</span><span class="p">[</span><span class="n">l</span><span class="p">][</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">trace</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
+                             <span class="n">num</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">trc_lengths</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">-</span> <span class="n">trc_lengths</span><span class="p">[</span><span class="n">l</span><span class="p">])))</span>
+
+                <span class="c"># calculate numerical partial derivative for</span>
+                <span class="c"># each source and target</span>
+                <span class="n">sensitivity_param_list</span><span class="p">[</span><span class="n">par_count</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="n">sensitivity_param_list</span><span class="p">[</span><span class="n">par_count</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span>\
+                            <span class="o">-</span> <span class="n">response</span><span class="o">.</span><span class="n">results_list</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">trace</span><span class="o">.</span><span class="n">data</span> <span class="o">+</span> \
+                            <span class="mi">8</span> <span class="o">*</span> <span class="n">response</span><span class="o">.</span><span class="n">results_list</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">trace</span><span class="o">.</span><span class="n">data</span> <span class="o">-</span> \
+                            <span class="mi">8</span> <span class="o">*</span> <span class="n">response</span><span class="o">.</span><span class="n">results_list</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">trace</span><span class="o">.</span><span class="n">data</span> <span class="o">+</span> \
+                                <span class="n">response</span><span class="o">.</span><span class="n">results_list</span><span class="p">[</span><span class="mi">3</span><span class="p">][</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">trace</span><span class="o">.</span><span class="n">data</span><span class="p">)</span> <span class="o">/</span> \
+                            <span class="p">(</span><span class="mi">12</span> <span class="o">*</span> <span class="n">h</span><span class="p">[</span><span class="n">par_count</span><span class="p">])</span>
+                                                       <span class="p">)</span>
+
+            <span class="n">par_count</span> <span class="o">=</span> <span class="n">par_count</span> <span class="o">+</span> <span class="mi">1</span>
+
+    <span class="c"># form traces from sensitivities</span>
+    <span class="n">par_count</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">source_params</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">targets</span><span class="p">)):</span>
+            <span class="n">sensitivity_param_trcs</span><span class="p">[</span><span class="n">par_count</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">trace</span><span class="o">.</span><span class="n">Trace</span><span class="p">(</span>
+                        <span class="n">network</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">targets</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">codes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                        <span class="n">station</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">targets</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">codes</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                        <span class="n">ydata</span><span class="o">=</span><span class="n">sensitivity_param_list</span><span class="p">[</span><span class="n">par_count</span><span class="p">][</span><span class="n">k</span><span class="p">],</span>
+                        <span class="n">deltat</span><span class="o">=</span><span class="n">response</span><span class="o">.</span><span class="n">results_list</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">trace</span><span class="o">.</span><span class="n">deltat</span><span class="p">,</span>
+                        <span class="n">tmin</span><span class="o">=</span><span class="n">response</span><span class="o">.</span><span class="n">results_list</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">trace</span><span class="o">.</span><span class="n">tmin</span><span class="p">,</span>
+                        <span class="n">channel</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">targets</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">codes</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
+                        <span class="n">location</span><span class="o">=</span><span class="n">param</span><span class="p">)</span>
+
+        <span class="n">par_count</span> <span class="o">=</span> <span class="n">par_count</span> <span class="o">+</span> <span class="mi">1</span>
+
+    <span class="k">return</span> <span class="n">sensitivity_param_trcs</span></div>
+
+
+<div class="viewcode-block" id="get_seis_cov_velocity_models"><a class="viewcode-back" href="../api.html#covariance.get_seis_cov_velocity_models">[docs]</a><span class="k">def</span> <span class="nf">get_seis_cov_velocity_models</span><span class="p">(</span><span class="n">engine</span><span class="p">,</span> <span class="n">sources</span><span class="p">,</span> <span class="n">targets</span><span class="p">,</span>
+                              <span class="n">arrival_taper</span><span class="p">,</span> <span class="n">filterer</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Calculate model prediction uncertainty matrix with respect to uncertainties</span>
+<span class="sd">    in the velocity model for station and channel.</span>
+<span class="sd">    Input:</span>
+<span class="sd">    :py:class:`gf.Engine` - contains synthetics generation machine</span>
+<span class="sd">    :py:class:`gf.Targets` - targets to be processed</span>
+<span class="sd">    :py:class: `heart.ArrivalTaper` - Determines Tapering around Phase Arrival</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="n">ref_target</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">targets</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="n">reference_taperer</span> <span class="o">=</span> <span class="n">heart</span><span class="o">.</span><span class="n">get_phase_taperer</span><span class="p">(</span>
+        <span class="n">engine</span><span class="p">,</span>
+        <span class="n">sources</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+        <span class="n">ref_target</span><span class="p">,</span>
+        <span class="n">arrival_taper</span><span class="p">)</span>
+
+    <span class="n">synths</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">heart</span><span class="o">.</span><span class="n">seis_synthetics</span><span class="p">(</span>
+        <span class="n">engine</span><span class="p">,</span> <span class="n">sources</span><span class="p">,</span> <span class="n">targets</span><span class="p">,</span>
+        <span class="n">arrival_taper</span><span class="p">,</span>
+        <span class="n">filterer</span><span class="p">,</span> <span class="n">nprocs</span><span class="o">=</span><span class="n">n_jobs</span><span class="p">,</span>
+        <span class="n">reference_taperer</span><span class="o">=</span><span class="n">reference_taperer</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="n">plot</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">num</span><span class="o">.</span><span class="n">cov</span><span class="p">(</span><span class="n">synths</span><span class="p">,</span> <span class="n">rowvar</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_geo_cov_velocity_models"><a class="viewcode-back" href="../api.html#covariance.get_geo_cov_velocity_models">[docs]</a><span class="k">def</span> <span class="nf">get_geo_cov_velocity_models</span><span class="p">(</span><span class="n">store_superdir</span><span class="p">,</span> <span class="n">crust_inds</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">sources</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Calculate model prediction uncertainty matrix with respect to uncertainties</span>
+<span class="sd">    in the velocity model for geodetic dateset.</span>
+<span class="sd">    Input:</span>
+<span class="sd">    store_superdir - geodetic GF directory</span>
+<span class="sd">    crust_inds - List of indices for respective GF stores</span>
+<span class="sd">    dataset - :py:class:`IFG`/`DiffIFG`</span>
+<span class="sd">    sources - List of :py:class:`PsCmpRectangularSource`</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="n">synths</span> <span class="o">=</span> <span class="n">num</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">crust_inds</span><span class="p">),</span> <span class="n">dataset</span><span class="o">.</span><span class="n">lons</span><span class="o">.</span><span class="n">size</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">crust_ind</span> <span class="ow">in</span> <span class="n">crust_inds</span><span class="p">:</span>
+        <span class="n">disp</span> <span class="o">=</span> <span class="n">heart</span><span class="o">.</span><span class="n">geo_layer_synthetics</span><span class="p">(</span>
+            <span class="n">store_superdir</span><span class="p">,</span> <span class="n">crust_ind</span><span class="p">,</span>
+            <span class="n">lons</span><span class="o">=</span><span class="n">dataset</span><span class="o">.</span><span class="n">lons</span><span class="p">,</span>
+            <span class="n">lats</span><span class="o">=</span><span class="n">dataset</span><span class="o">.</span><span class="n">lats</span><span class="p">,</span>
+            <span class="n">sources</span><span class="o">=</span><span class="n">sources</span><span class="p">)</span>
+        <span class="n">synths</span><span class="p">[</span><span class="n">crust_ind</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">disp</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">dataset</span><span class="o">.</span><span class="n">los_vector</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> \
+            <span class="n">disp</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">dataset</span><span class="o">.</span><span class="n">los_vector</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> \
+            <span class="n">disp</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">dataset</span><span class="o">.</span><span class="n">los_vector</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">])</span> <span class="o">*</span> \
+                <span class="n">dataset</span><span class="o">.</span><span class="n">odw</span>
+
+    <span class="k">return</span> <span class="n">num</span><span class="o">.</span><span class="n">cov</span><span class="p">(</span><span class="n">synths</span><span class="p">,</span> <span class="n">rowvar</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Hannes Vasyura-Bathke.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0.1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
