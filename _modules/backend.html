@@ -30,6 +30,9 @@
   
 
   
+        <link rel="index" title="Index"
+              href="../genindex.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
     <link rel="top" title="beat 0.1 documentation" href="../index.html"/>
         <link rel="up" title="Module code" href="index.html"/> 
 
@@ -81,6 +84,8 @@
             
             
                 <ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html#prerequisites">Prerequisites</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html">The <code class="docutils literal"><span class="pre">heart</span></code> Module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html#the-config-module">The <code class="docutils literal"><span class="pre">config</span></code> Module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html#module-atmcmc">The <code class="docutils literal"><span class="pre">atmcmc</span></code> Module</a></li>
@@ -138,7 +143,7 @@
            <div itemprop="articleBody">
             
   <h1>Source code for backend</h1><div class="highlight"><pre>
-<span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Text file trace backend modified from pymc3 to work efficiently with</span>
 <span class="sd">ATMCMC</span>
 
@@ -157,21 +162,21 @@
 <span class="sd">represents two variables, x and y, where x is a scalar and y has a</span>
 <span class="sd">shape of (3, 2).</span>
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="kn">from</span> <span class="nn">glob</span> <span class="kn">import</span> <span class="n">glob</span>
+<span class="kn">from</span> <span class="nn">glob</span> <span class="k">import</span> <span class="n">glob</span>
 
 <span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 
 <span class="kn">import</span> <span class="nn">pymc3</span>
-<span class="kn">from</span> <span class="nn">pymc3.model</span> <span class="kn">import</span> <span class="n">modelcontext</span>
-<span class="kn">from</span> <span class="nn">pymc3.backends</span> <span class="kn">import</span> <span class="n">base</span><span class="p">,</span> <span class="n">ndarray</span>
-<span class="kn">from</span> <span class="nn">pymc3.backends</span> <span class="kn">import</span> <span class="n">tracetab</span> <span class="k">as</span> <span class="n">ttab</span>
-<span class="kn">from</span> <span class="nn">pymc3.blocking</span> <span class="kn">import</span> <span class="n">DictToArrayBijection</span><span class="p">,</span> <span class="n">ArrayOrdering</span>
+<span class="kn">from</span> <span class="nn">pymc3.model</span> <span class="k">import</span> <span class="n">modelcontext</span>
+<span class="kn">from</span> <span class="nn">pymc3.backends</span> <span class="k">import</span> <span class="n">base</span><span class="p">,</span> <span class="n">ndarray</span>
+<span class="kn">from</span> <span class="nn">pymc3.backends</span> <span class="k">import</span> <span class="n">tracetab</span> <span class="k">as</span> <span class="n">ttab</span>
+<span class="kn">from</span> <span class="nn">pymc3.blocking</span> <span class="k">import</span> <span class="n">DictToArrayBijection</span><span class="p">,</span> <span class="n">ArrayOrdering</span>
 
-<span class="kn">from</span> <span class="nn">beat</span> <span class="kn">import</span> <span class="n">utility</span>
+<span class="kn">from</span> <span class="nn">beat</span> <span class="k">import</span> <span class="n">utility</span>
 
-<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&#39;backend&#39;</span><span class="p">)</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;backend&#39;</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="ArrayStepSharedLLK"><a class="viewcode-back" href="../api.html#backend.ArrayStepSharedLLK">[docs]</a><span class="k">class</span> <span class="nc">ArrayStepSharedLLK</span><span class="p">(</span><span class="n">pymc3</span><span class="o">.</span><span class="n">arraystep</span><span class="o">.</span><span class="n">BlockedStep</span><span class="p">):</span>
@@ -193,10 +198,10 @@
 <span class="sd">        (default True)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">vars</span><span class="p">,</span> <span class="n">out_vars</span><span class="p">,</span> <span class="n">shared</span><span class="p">,</span> <span class="n">blocked</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">vars</span><span class="p">,</span> <span class="n">out_vars</span><span class="p">,</span> <span class="n">shared</span><span class="p">,</span> <span class="n">blocked</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">vars</span> <span class="o">=</span> <span class="nb">vars</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ordering</span> <span class="o">=</span> <span class="n">ArrayOrdering</span><span class="p">(</span><span class="nb">vars</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">lordering</span> <span class="o">=</span> <span class="n">utility</span><span class="o">.</span><span class="n">ListArrayOrdering</span><span class="p">(</span><span class="n">out_vars</span><span class="p">,</span> <span class="n">intype</span><span class="o">=</span><span class="s">&#39;tensor&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lordering</span> <span class="o">=</span> <span class="n">utility</span><span class="o">.</span><span class="n">ListArrayOrdering</span><span class="p">(</span><span class="n">out_vars</span><span class="p">,</span> <span class="n">intype</span><span class="o">=</span><span class="s1">&#39;tensor&#39;</span><span class="p">)</span>
         <span class="n">lpoint</span> <span class="o">=</span> <span class="p">[</span><span class="n">var</span><span class="o">.</span><span class="n">tag</span><span class="o">.</span><span class="n">test_value</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">out_vars</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">shared</span> <span class="o">=</span> <span class="p">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="n">shared</span> <span class="k">for</span> <span class="n">var</span><span class="p">,</span> <span class="n">shared</span> <span class="ow">in</span> <span class="n">shared</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">blocked</span> <span class="o">=</span> <span class="n">blocked</span>
@@ -233,19 +238,19 @@
 <span class="sd">        `model.unobserved_RVs` is used.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="nb">vars</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="nb">vars</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
         <span class="n">model</span> <span class="o">=</span> <span class="n">modelcontext</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
 
-        <span class="k">if</span> <span class="nb">vars</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">vars</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="nb">vars</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">unobserved_RVs</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">vars</span> <span class="o">=</span> <span class="nb">vars</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">varnames</span> <span class="o">=</span> <span class="p">[</span><span class="n">var</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="nb">vars</span><span class="p">]</span>
 
-        <span class="c">## Get variable shapes. Most backends will need this</span>
-        <span class="c">## information.</span>
+        <span class="c1">## Get variable shapes. Most backends will need this</span>
+        <span class="c1">## information.</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">var_shapes_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">var</span><span class="o">.</span><span class="n">tag</span><span class="o">.</span><span class="n">test_value</span><span class="o">.</span><span class="n">shape</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="nb">vars</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">var_dtypes_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">var</span><span class="o">.</span><span class="n">tag</span><span class="o">.</span><span class="n">test_value</span><span class="o">.</span><span class="n">dtype</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="nb">vars</span><span class="p">]</span>
@@ -255,7 +260,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">var_dtypes</span> <span class="o">=</span> <span class="p">{</span><span class="n">var</span><span class="p">:</span> <span class="n">dtype</span>
             <span class="k">for</span> <span class="n">var</span><span class="p">,</span> <span class="n">dtype</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">varnames</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dtypes_list</span><span class="p">)}</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">chain</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">chain</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="nb">slice</span><span class="p">):</span>
@@ -263,8 +268,8 @@
 
         <span class="k">try</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">point</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">idx</span><span class="p">))</span>
-        <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">):</span>  <span class="c"># Passed variable or variable name.</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;Can only index with slice or integer&#39;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">):</span>  <span class="c1"># Passed variable or variable name.</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Can only index with slice or integer&#39;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__getstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__dict__</span>
@@ -289,7 +294,7 @@
 <span class="sd">        `model.unobserved_RVs` is used.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="nb">vars</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="nb">vars</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
             <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">Text</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="nb">vars</span><span class="p">)</span>
@@ -297,11 +302,11 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">flat_names</span> <span class="o">=</span> <span class="p">{</span><span class="n">v</span><span class="p">:</span> <span class="n">ttab</span><span class="o">.</span><span class="n">create_flat_names</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">shape</span><span class="p">)</span>
                            <span class="k">for</span> <span class="n">v</span><span class="p">,</span> <span class="n">shape</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_shapes</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="bp">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="bp">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">corrupted_flag</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">corrupted_flag</span> <span class="o">=</span> <span class="kc">False</span>
 
-    <span class="c">## Sampling methods</span>
+    <span class="c1">## Sampling methods</span>
 
 <div class="viewcode-block" id="Text.setup"><a class="viewcode-back" href="../api.html#backend.Text.setup">[docs]</a>    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">draws</span><span class="p">,</span> <span class="n">chain</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -316,15 +321,15 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">chain</span> <span class="o">=</span> <span class="n">chain</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s">&#39;chain-{}.csv&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">chain</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;chain-</span><span class="si">{}</span><span class="s1">.csv&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">chain</span><span class="p">))</span>
 
         <span class="n">cnames</span> <span class="o">=</span> <span class="p">[</span><span class="n">fv</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">varnames</span> <span class="k">for</span> <span class="n">fv</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">flat_names</span><span class="p">[</span><span class="n">v</span><span class="p">]]</span>
 
         <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">):</span>
             <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
 
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
-            <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cnames</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span></div>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
+            <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cnames</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Text.record"><a class="viewcode-back" href="../api.html#backend.Text.record">[docs]</a>    <span class="k">def</span> <span class="nf">record</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lpoint</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -343,31 +348,31 @@
 
         <span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">varnames</span> <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">vals</span><span class="p">[</span><span class="n">var</span><span class="p">]]</span>
 
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span> <span class="s">&#39;a&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
-            <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">columns</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span></div>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
+            <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">columns</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">_load_df</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
             <span class="k">except</span> <span class="n">pd</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">EmptyDataError</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&#39;Trace </span><span class="si">%s</span><span class="s"> is empty and needs to be resampled!&#39;</span> <span class="o">%</span> \
+                <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Trace </span><span class="si">%s</span><span class="s1"> is empty and needs to be resampled!&#39;</span> <span class="o">%</span> \
                     <span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
                 <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">corrupted_flag</span> <span class="o">=</span> <span class="bp">True</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">corrupted_flag</span> <span class="o">=</span> <span class="kc">True</span>
             <span class="k">except</span> <span class="n">pd</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">common</span><span class="o">.</span><span class="n">CParserError</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&#39;Trace </span><span class="si">%s</span><span class="s"> has wrong size!&#39;</span> <span class="o">%</span> \
+                <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Trace </span><span class="si">%s</span><span class="s1"> has wrong size!&#39;</span> <span class="o">%</span> \
                     <span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">corrupted_flag</span> <span class="o">=</span> <span class="bp">True</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">corrupted_flag</span> <span class="o">=</span> <span class="kc">True</span>
                 <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="mi">0</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_load_df</span><span class="p">()</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="mi">0</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -399,8 +404,8 @@
         <span class="k">return</span> <span class="n">vals</span><span class="p">[</span><span class="n">burn</span><span class="p">::</span><span class="n">thin</span><span class="p">]</span></div>
 
     <span class="k">def</span> <span class="nf">_slice</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">idx</span><span class="o">.</span><span class="n">stop</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;Stop value in slice not supported.&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">idx</span><span class="o">.</span><span class="n">stop</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Stop value in slice not supported.&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">ndarray</span><span class="o">.</span><span class="n">_slice_as_ndarray</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Text.point"><a class="viewcode-back" href="../api.html#backend.Text.point">[docs]</a>    <span class="k">def</span> <span class="nf">point</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
@@ -449,8 +454,8 @@
     <span class="k">for</span> <span class="n">chain</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_chains</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">chain</span> <span class="ow">in</span> <span class="n">mtrace</span><span class="o">.</span><span class="n">chains</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">mtrace</span><span class="o">.</span><span class="n">_straces</span><span class="p">[</span><span class="n">chain</span><span class="p">])</span> <span class="o">!=</span> <span class="n">draws</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&#39;Trace number </span><span class="si">%i</span><span class="s"> incomplete&#39;</span> <span class="o">%</span> <span class="n">chain</span><span class="p">)</span>
-                <span class="n">mtrace</span><span class="o">.</span><span class="n">_straces</span><span class="p">[</span><span class="n">chain</span><span class="p">]</span><span class="o">.</span><span class="n">corrupted_flag</span> <span class="o">=</span> <span class="bp">True</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Trace number </span><span class="si">%i</span><span class="s1"> incomplete&#39;</span> <span class="o">%</span> <span class="n">chain</span><span class="p">)</span>
+                <span class="n">mtrace</span><span class="o">.</span><span class="n">_straces</span><span class="p">[</span><span class="n">chain</span><span class="p">]</span><span class="o">.</span><span class="n">corrupted_flag</span> <span class="o">=</span> <span class="kc">True</span>
 
         <span class="k">else</span><span class="p">:</span>
             <span class="n">not_sampled_idx</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">chain</span><span class="p">)</span>
@@ -463,7 +468,7 @@
     <span class="k">return</span> <span class="n">corrupted_idx</span> <span class="o">+</span> <span class="n">not_sampled_idx</span></div>
 
 
-<div class="viewcode-block" id="load"><a class="viewcode-back" href="../api.html#backend.load">[docs]</a><span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="load"><a class="viewcode-back" href="../api.html#backend.load">[docs]</a><span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Load Text database.</span>
 
@@ -479,11 +484,11 @@
 
 <span class="sd">    A :class:`pymc3.backend.base.MultiTrace` instance</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">files</span> <span class="o">=</span> <span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="s">&#39;chain-*.csv&#39;</span><span class="p">))</span>
+    <span class="n">files</span> <span class="o">=</span> <span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;chain-*.csv&#39;</span><span class="p">))</span>
 
     <span class="n">straces</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
-        <span class="n">chain</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">f</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s">&#39;-&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">chain</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">f</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">1</span><span class="p">])</span>
         <span class="n">strace</span> <span class="o">=</span> <span class="n">Text</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">)</span>
         <span class="n">strace</span><span class="o">.</span><span class="n">chain</span> <span class="o">=</span> <span class="n">chain</span>
         <span class="n">strace</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="n">f</span>
@@ -491,7 +496,7 @@
     <span class="k">return</span> <span class="n">base</span><span class="o">.</span><span class="n">MultiTrace</span><span class="p">(</span><span class="n">straces</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="dump"><a class="viewcode-back" href="../api.html#backend.dump">[docs]</a><span class="k">def</span> <span class="nf">dump</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">trace</span><span class="p">,</span> <span class="n">chains</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="dump"><a class="viewcode-back" href="../api.html#backend.dump">[docs]</a><span class="k">def</span> <span class="nf">dump</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">trace</span><span class="p">,</span> <span class="n">chains</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Store values from NDArray trace as CSV files.</span>
 
@@ -507,7 +512,7 @@
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
         <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">chains</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">chains</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">chains</span> <span class="o">=</span> <span class="n">trace</span><span class="o">.</span><span class="n">chains</span>
 
     <span class="n">var_shapes</span> <span class="o">=</span> <span class="n">trace</span><span class="o">.</span><span class="n">_straces</span><span class="p">[</span><span class="n">chains</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">var_shapes</span>
@@ -515,10 +520,10 @@
                   <span class="k">for</span> <span class="n">v</span><span class="p">,</span> <span class="n">shape</span> <span class="ow">in</span> <span class="n">var_shapes</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
 
     <span class="k">for</span> <span class="n">chain</span> <span class="ow">in</span> <span class="n">chains</span><span class="p">:</span>
-        <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="s">&#39;chain-{}.csv&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">chain</span><span class="p">))</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;chain-</span><span class="si">{}</span><span class="s1">.csv&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">chain</span><span class="p">))</span>
         <span class="n">df</span> <span class="o">=</span> <span class="n">ttab</span><span class="o">.</span><span class="n">trace_to_dataframe</span><span class="p">(</span>
             <span class="n">trace</span><span class="p">,</span> <span class="n">chains</span><span class="o">=</span><span class="n">chain</span><span class="p">,</span> <span class="n">flat_names</span><span class="o">=</span><span class="n">flat_names</span><span class="p">)</span>
-        <span class="n">df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span></div>
+        <span class="n">df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
 </pre></div>
 
            </div>

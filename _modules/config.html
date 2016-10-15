@@ -30,6 +30,9 @@
   
 
   
+        <link rel="index" title="Index"
+              href="../genindex.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
     <link rel="top" title="beat 0.1 documentation" href="../index.html"/>
         <link rel="up" title="Module code" href="index.html"/> 
 
@@ -81,6 +84,8 @@
             
             
                 <ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html#prerequisites">Prerequisites</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html">The <code class="docutils literal"><span class="pre">heart</span></code> Module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html#the-config-module">The <code class="docutils literal"><span class="pre">config</span></code> Module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html#module-atmcmc">The <code class="docutils literal"><span class="pre">atmcmc</span></code> Module</a></li>
@@ -138,7 +143,7 @@
            <div itemprop="articleBody">
             
   <h1>Source code for config</h1><div class="highlight"><pre>
-<span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">The config module contains the classes to build the configuration files that</span>
 <span class="sd">are being read by the beat executable.</span>
 
@@ -149,36 +154,36 @@
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">os</span>
 
-<span class="kn">from</span> <span class="nn">pyrocko.guts</span> <span class="kn">import</span> <span class="n">Object</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">String</span><span class="p">,</span> <span class="n">Float</span><span class="p">,</span> <span class="n">Int</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Bool</span>
-<span class="kn">from</span> <span class="nn">pyrocko.guts</span> <span class="kn">import</span> <span class="n">load</span><span class="p">,</span> <span class="n">dump</span>
-<span class="kn">from</span> <span class="nn">pyrocko.cake</span> <span class="kn">import</span> <span class="n">load_model</span>
+<span class="kn">from</span> <span class="nn">pyrocko.guts</span> <span class="k">import</span> <span class="n">Object</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">String</span><span class="p">,</span> <span class="n">Float</span><span class="p">,</span> <span class="n">Int</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Bool</span>
+<span class="kn">from</span> <span class="nn">pyrocko.guts</span> <span class="k">import</span> <span class="n">load</span><span class="p">,</span> <span class="n">dump</span>
+<span class="kn">from</span> <span class="nn">pyrocko.cake</span> <span class="k">import</span> <span class="n">load_model</span>
 
-<span class="kn">from</span> <span class="nn">pyrocko</span> <span class="kn">import</span> <span class="n">trace</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">util</span>
-<span class="kn">from</span> <span class="nn">pyrocko.gf</span> <span class="kn">import</span> <span class="n">Earthmodel1D</span>
-<span class="kn">from</span> <span class="nn">beat.heart</span> <span class="kn">import</span> <span class="n">Filter</span><span class="p">,</span> <span class="n">ArrivalTaper</span><span class="p">,</span> <span class="n">TeleseismicTarget</span><span class="p">,</span> <span class="n">Parameter</span>
+<span class="kn">from</span> <span class="nn">pyrocko</span> <span class="k">import</span> <span class="n">trace</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">util</span>
+<span class="kn">from</span> <span class="nn">pyrocko.gf</span> <span class="k">import</span> <span class="n">Earthmodel1D</span>
+<span class="kn">from</span> <span class="nn">beat.heart</span> <span class="k">import</span> <span class="n">Filter</span><span class="p">,</span> <span class="n">ArrivalTaper</span><span class="p">,</span> <span class="n">TeleseismicTarget</span><span class="p">,</span> <span class="n">Parameter</span>
 
-<span class="kn">from</span> <span class="nn">beat</span> <span class="kn">import</span> <span class="n">utility</span>
+<span class="kn">from</span> <span class="nn">beat</span> <span class="k">import</span> <span class="n">utility</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">num</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">num</span>
 
-<span class="n">guts_prefix</span> <span class="o">=</span> <span class="s">&#39;beat&#39;</span>
+<span class="n">guts_prefix</span> <span class="o">=</span> <span class="s1">&#39;beat&#39;</span>
 
-<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&#39;config&#39;</span><span class="p">)</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;config&#39;</span><span class="p">)</span>
 
-<span class="n">geo_vars_geometry</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;east_shift&#39;</span><span class="p">,</span> <span class="s">&#39;north_shift&#39;</span><span class="p">,</span> <span class="s">&#39;depth&#39;</span><span class="p">,</span> <span class="s">&#39;strike&#39;</span><span class="p">,</span> <span class="s">&#39;dip&#39;</span><span class="p">,</span>
-                         <span class="s">&#39;rake&#39;</span><span class="p">,</span> <span class="s">&#39;length&#39;</span><span class="p">,</span> <span class="s">&#39;width&#39;</span><span class="p">,</span> <span class="s">&#39;slip&#39;</span><span class="p">]</span>
-<span class="n">geo_vars_magma</span> <span class="o">=</span> <span class="n">geo_vars_geometry</span> <span class="o">+</span> <span class="p">[</span><span class="s">&#39;opening&#39;</span><span class="p">]</span>
+<span class="n">geo_vars_geometry</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;east_shift&#39;</span><span class="p">,</span> <span class="s1">&#39;north_shift&#39;</span><span class="p">,</span> <span class="s1">&#39;depth&#39;</span><span class="p">,</span> <span class="s1">&#39;strike&#39;</span><span class="p">,</span> <span class="s1">&#39;dip&#39;</span><span class="p">,</span>
+                         <span class="s1">&#39;rake&#39;</span><span class="p">,</span> <span class="s1">&#39;length&#39;</span><span class="p">,</span> <span class="s1">&#39;width&#39;</span><span class="p">,</span> <span class="s1">&#39;slip&#39;</span><span class="p">]</span>
+<span class="n">geo_vars_magma</span> <span class="o">=</span> <span class="n">geo_vars_geometry</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;opening&#39;</span><span class="p">]</span>
 
-<span class="n">seis_vars_geometry</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;time&#39;</span><span class="p">,</span> <span class="s">&#39;duration&#39;</span><span class="p">]</span>
+<span class="n">seis_vars_geometry</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">,</span> <span class="s1">&#39;duration&#39;</span><span class="p">]</span>
 
 <span class="n">joint_vars_geometry</span> <span class="o">=</span> <span class="n">geo_vars_geometry</span> <span class="o">+</span> <span class="n">seis_vars_geometry</span>
 
-<span class="n">static_dist_vars</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;Uparr&#39;</span><span class="p">,</span> <span class="s">&#39;Uperp&#39;</span><span class="p">]</span>
-<span class="n">partial_kinematic_vars</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;nuc_x&#39;</span><span class="p">,</span> <span class="s">&#39;nuc_y&#39;</span><span class="p">,</span> <span class="s">&#39;duration&#39;</span><span class="p">,</span> <span class="s">&#39;velocity&#39;</span><span class="p">]</span>
+<span class="n">static_dist_vars</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Uparr&#39;</span><span class="p">,</span> <span class="s1">&#39;Uperp&#39;</span><span class="p">]</span>
+<span class="n">partial_kinematic_vars</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;nuc_x&#39;</span><span class="p">,</span> <span class="s1">&#39;nuc_y&#39;</span><span class="p">,</span> <span class="s1">&#39;duration&#39;</span><span class="p">,</span> <span class="s1">&#39;velocity&#39;</span><span class="p">]</span>
 
 <span class="n">kinematic_dist_vars</span> <span class="o">=</span> <span class="n">static_dist_vars</span> <span class="o">+</span> <span class="n">partial_kinematic_vars</span>
 
-<span class="n">hyper_pars</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;alpha&#39;</span><span class="p">,</span> <span class="s">&#39;beta&#39;</span><span class="p">,</span> <span class="s">&#39;gamma&#39;</span><span class="p">]</span>
+<span class="n">hyper_pars</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;alpha&#39;</span><span class="p">,</span> <span class="s1">&#39;beta&#39;</span><span class="p">,</span> <span class="s1">&#39;gamma&#39;</span><span class="p">]</span>
 
 <span class="n">default_bounds</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
     <span class="n">east_shift</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mf">10.</span><span class="p">,</span> <span class="mf">10.</span><span class="p">),</span>
@@ -201,8 +206,8 @@
     <span class="n">beta</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mf">20.</span><span class="p">,</span> <span class="mf">20.</span><span class="p">),</span>
     <span class="n">gamma</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mf">20.</span><span class="p">,</span> <span class="mf">20.</span><span class="p">))</span>
 
-<span class="n">seismic_data_name</span> <span class="o">=</span> <span class="s">&#39;seismic_data.pkl&#39;</span>
-<span class="n">geodetic_data_name</span> <span class="o">=</span> <span class="s">&#39;geodetic_data.pkl&#39;</span>
+<span class="n">seismic_data_name</span> <span class="o">=</span> <span class="s1">&#39;seismic_data.pkl&#39;</span>
+<span class="n">geodetic_data_name</span> <span class="o">=</span> <span class="s1">&#39;geodetic_data.pkl&#39;</span>
 
 <span class="n">km</span> <span class="o">=</span> <span class="mf">1000.</span>
 
@@ -211,82 +216,86 @@
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Config for GreensFunction calculation parameters.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">store_superdir</span> <span class="o">=</span> <span class="n">String</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="s">&#39;./&#39;</span><span class="p">)</span>
-    <span class="n">earth_model</span> <span class="o">=</span> <span class="n">String</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="s">&#39;ak135-f-average.m&#39;</span><span class="p">,</span>
-                           <span class="n">help</span><span class="o">=</span><span class="s">&#39;Name of the reference earthmodel, see &#39;</span>
-                                <span class="s">&#39;pyrocko.cake.builtin_models() for &#39;</span>
-                                <span class="s">&#39;alternatives.&#39;</span><span class="p">)</span>
+    <span class="n">store_superdir</span> <span class="o">=</span> <span class="n">String</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="s1">&#39;./&#39;</span><span class="p">)</span>
+    <span class="n">earth_model</span> <span class="o">=</span> <span class="n">String</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="s1">&#39;ak135-f-average.m&#39;</span><span class="p">,</span>
+                           <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Name of the reference earthmodel, see &#39;</span>
+                                <span class="s1">&#39;pyrocko.cake.builtin_models() for &#39;</span>
+                                <span class="s1">&#39;alternatives.&#39;</span><span class="p">)</span>
     <span class="n">n_variations</span> <span class="o">=</span> <span class="n">Int</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-                         <span class="n">help</span><span class="o">=</span><span class="s">&#39;Times to vary input velocity model.&#39;</span><span class="p">)</span>
+                         <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Times to vary input velocity model.&#39;</span><span class="p">)</span>
     <span class="n">use_crust2</span> <span class="o">=</span> <span class="n">Bool</span><span class="o">.</span><span class="n">T</span><span class="p">(</span>
-        <span class="n">default</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s">&#39;Flag, for replacing the crust from the earthmodel&#39;</span>
-             <span class="s">&#39;with crust from the crust2 model.&#39;</span><span class="p">)</span>
-    <span class="n">replace_water</span> <span class="o">=</span> <span class="n">Bool</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-                        <span class="n">help</span><span class="o">=</span><span class="s">&#39;Flag, for replacing water layers in the crust2&#39;</span>
-                             <span class="s">&#39;model.&#39;</span><span class="p">)</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Flag, for replacing the crust from the earthmodel&#39;</span>
+             <span class="s1">&#39;with crust from the crust2 model.&#39;</span><span class="p">)</span>
+    <span class="n">replace_water</span> <span class="o">=</span> <span class="n">Bool</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Flag, for replacing water layers in the crust2&#39;</span>
+                             <span class="s1">&#39;model.&#39;</span><span class="p">)</span>
     <span class="n">custom_velocity_model</span> <span class="o">=</span> <span class="n">Earthmodel1D</span><span class="o">.</span><span class="n">T</span><span class="p">(</span>
-        <span class="n">default</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-        <span class="n">optional</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s">&#39;Custom Earthmodel, in case crust2 and standard model not&#39;</span>
-             <span class="s">&#39; wanted. Needs to be a :py::class:cake.LayeredModel&#39;</span><span class="p">)</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">optional</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Custom Earthmodel, in case crust2 and standard model not&#39;</span>
+             <span class="s1">&#39; wanted. Needs to be a :py::class:cake.LayeredModel&#39;</span><span class="p">)</span>
 
     <span class="n">source_depth_min</span> <span class="o">=</span> <span class="n">Float</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span>
-                               <span class="n">help</span><span class="o">=</span><span class="s">&#39;Minimum depth [km] for GF function grid.&#39;</span><span class="p">)</span>
+                               <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Minimum depth [km] for GF function grid.&#39;</span><span class="p">)</span>
     <span class="n">source_depth_max</span> <span class="o">=</span> <span class="n">Float</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mf">10.</span><span class="p">,</span>
-                               <span class="n">help</span><span class="o">=</span><span class="s">&#39;Maximum depth [km] for GF function grid.&#39;</span><span class="p">)</span>
+                               <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Maximum depth [km] for GF function grid.&#39;</span><span class="p">)</span>
     <span class="n">source_depth_spacing</span> <span class="o">=</span> <span class="n">Float</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span>
-                               <span class="n">help</span><span class="o">=</span><span class="s">&#39;Depth spacing [km] for GF function grid.&#39;</span><span class="p">)</span>
+                               <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Depth spacing [km] for GF function grid.&#39;</span><span class="p">)</span>
 
     <span class="n">nworkers</span> <span class="o">=</span> <span class="n">Int</span><span class="o">.</span><span class="n">T</span><span class="p">(</span>
         <span class="n">default</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s">&#39;Number of processors to use for calculating the GFs&#39;</span><span class="p">)</span></div>
+        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Number of processors to use for calculating the GFs&#39;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="SeismicGFConfig"><a class="viewcode-back" href="../api.html#config.SeismicGFConfig">[docs]</a><span class="k">class</span> <span class="nc">SeismicGFConfig</span><span class="p">(</span><span class="n">GFConfig</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Seismic GF parameters for Layered Halfspace.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">code</span> <span class="o">=</span> <span class="n">String</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="s">&#39;qssp&#39;</span><span class="p">,</span>
-                  <span class="n">help</span><span class="o">=</span><span class="s">&#39;Modeling code to use. (qssp, qseis, comming soon: &#39;</span>
-                       <span class="s">&#39;qseis2d)&#39;</span><span class="p">)</span>
+    <span class="n">code</span> <span class="o">=</span> <span class="n">String</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="s1">&#39;qssp&#39;</span><span class="p">,</span>
+                  <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Modeling code to use. (qssp, qseis, comming soon: &#39;</span>
+                       <span class="s1">&#39;qseis2d)&#39;</span><span class="p">)</span>
     <span class="n">sample_rate</span> <span class="o">=</span> <span class="n">Float</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mf">2.</span><span class="p">,</span>
-                          <span class="n">help</span><span class="o">=</span><span class="s">&#39;Sample rate for the Greens Functions.&#39;</span><span class="p">)</span>
+                          <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Sample rate for the Greens Functions.&#39;</span><span class="p">)</span>
+    <span class="n">calc_data_cov</span> <span class="o">=</span> <span class="n">Bool</span><span class="o">.</span><span class="n">T</span><span class="p">(</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Flag for calculating the data covariance matrix based on the&#39;</span>
+             <span class="s1">&#39; pre P arrival data trace noise.&#39;</span><span class="p">)</span>
     <span class="n">depth_limit_variation</span> <span class="o">=</span> <span class="n">Float</span><span class="o">.</span><span class="n">T</span><span class="p">(</span>
         <span class="n">default</span><span class="o">=</span><span class="mf">600.</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s">&#39;Depth limit [km] for varying the velocity model.&#39;</span><span class="p">)</span>
-    <span class="n">rm_gfs</span> <span class="o">=</span> <span class="n">Bool</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-                    <span class="n">help</span><span class="o">=</span><span class="s">&#39;Flag for removing modeling module GF files after&#39;</span>
-                         <span class="s">&#39; completion.&#39;</span><span class="p">)</span>
+        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Depth limit [km] for varying the velocity model.&#39;</span><span class="p">)</span>
+    <span class="n">rm_gfs</span> <span class="o">=</span> <span class="n">Bool</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                    <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Flag for removing modeling module GF files after&#39;</span>
+                         <span class="s1">&#39; completion.&#39;</span><span class="p">)</span>
     <span class="n">source_distance_radius</span> <span class="o">=</span> <span class="n">Float</span><span class="o">.</span><span class="n">T</span><span class="p">(</span>
         <span class="n">default</span><span class="o">=</span><span class="mf">20.</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s">&#39;Radius of distance grid [km] for GF function grid around &#39;</span>
-             <span class="s">&#39;reference event.&#39;</span><span class="p">)</span>
+        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Radius of distance grid [km] for GF function grid around &#39;</span>
+             <span class="s1">&#39;reference event.&#39;</span><span class="p">)</span>
     <span class="n">source_distance_spacing</span> <span class="o">=</span> <span class="n">Float</span><span class="o">.</span><span class="n">T</span><span class="p">(</span>
         <span class="n">default</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s">&#39;Distance spacing [km] for GF function grid.&#39;</span><span class="p">)</span></div>
+        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Distance spacing [km] for GF function grid.&#39;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="GeodeticGFConfig"><a class="viewcode-back" href="../api.html#config.GeodeticGFConfig">[docs]</a><span class="k">class</span> <span class="nc">GeodeticGFConfig</span><span class="p">(</span><span class="n">GFConfig</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Geodetic GF parameters for Layered Halfspace.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">code</span> <span class="o">=</span> <span class="n">String</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="s">&#39;psgrn&#39;</span><span class="p">,</span>
-                    <span class="n">help</span><span class="o">=</span><span class="s">&#39;Modeling code to use. (psgrn, ... others need to be&#39;</span>
-                         <span class="s">&#39;implemented!)&#39;</span><span class="p">)</span>
+    <span class="n">code</span> <span class="o">=</span> <span class="n">String</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="s1">&#39;psgrn&#39;</span><span class="p">,</span>
+                    <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Modeling code to use. (psgrn, ... others need to be&#39;</span>
+                         <span class="s1">&#39;implemented!)&#39;</span><span class="p">)</span>
     <span class="n">sampling_interval</span> <span class="o">=</span> <span class="n">Float</span><span class="o">.</span><span class="n">T</span><span class="p">(</span>\
         <span class="n">default</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s">&#39;Distance dependend sampling spacing coefficient.&#39;</span>
-             <span class="s">&#39;1. - equidistant&#39;</span><span class="p">)</span>
+        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Distance dependend sampling spacing coefficient.&#39;</span>
+             <span class="s1">&#39;1. - equidistant&#39;</span><span class="p">)</span>
     <span class="n">source_distance_min</span> <span class="o">=</span> <span class="n">Float</span><span class="o">.</span><span class="n">T</span><span class="p">(</span>
         <span class="n">default</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s">&#39;Minimum distance [km] for GF function grid.&#39;</span><span class="p">)</span>
+        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Minimum distance [km] for GF function grid.&#39;</span><span class="p">)</span>
     <span class="n">source_distance_max</span> <span class="o">=</span> <span class="n">Float</span><span class="o">.</span><span class="n">T</span><span class="p">(</span>
         <span class="n">default</span><span class="o">=</span><span class="mf">100.</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s">&#39;Maximum distance [km] for GF function grid.&#39;</span><span class="p">)</span>
+        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Maximum distance [km] for GF function grid.&#39;</span><span class="p">)</span>
     <span class="n">source_distance_spacing</span> <span class="o">=</span> <span class="n">Float</span><span class="o">.</span><span class="n">T</span><span class="p">(</span>
         <span class="n">default</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s">&#39;Distance spacing [km] for GF function grid.&#39;</span><span class="p">)</span></div>
+        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Distance spacing [km] for GF function grid.&#39;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="SeismicConfig"><a class="viewcode-back" href="../api.html#config.SeismicConfig">[docs]</a><span class="k">class</span> <span class="nc">SeismicConfig</span><span class="p">(</span><span class="n">Object</span><span class="p">):</span>
@@ -294,18 +303,18 @@
 <span class="sd">    Config for seismic data optimization related parameters.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">datadir</span> <span class="o">=</span> <span class="n">String</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="s">&#39;./&#39;</span><span class="p">)</span>
+    <span class="n">datadir</span> <span class="o">=</span> <span class="n">String</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="s1">&#39;./&#39;</span><span class="p">)</span>
     <span class="n">blacklist</span> <span class="o">=</span> <span class="n">List</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">String</span><span class="o">.</span><span class="n">T</span><span class="p">(),</span>
-                       <span class="n">default</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;placeholder&#39;</span><span class="p">],</span>
-                       <span class="n">help</span><span class="o">=</span><span class="s">&#39;Station name for station to be thrown out.&#39;</span><span class="p">)</span>
+                       <span class="n">default</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;placeholder&#39;</span><span class="p">],</span>
+                       <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Station name for station to be thrown out.&#39;</span><span class="p">)</span>
     <span class="n">distances</span> <span class="o">=</span> <span class="n">Tuple</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">Float</span><span class="o">.</span><span class="n">T</span><span class="p">(),</span> <span class="n">default</span><span class="o">=</span><span class="p">(</span><span class="mf">30.</span><span class="p">,</span> <span class="mf">90.</span><span class="p">))</span>
-    <span class="n">channels</span> <span class="o">=</span> <span class="n">List</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">String</span><span class="o">.</span><span class="n">T</span><span class="p">(),</span> <span class="n">default</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;Z&#39;</span><span class="p">,</span> <span class="s">&#39;T&#39;</span><span class="p">])</span>
+    <span class="n">channels</span> <span class="o">=</span> <span class="n">List</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">String</span><span class="o">.</span><span class="n">T</span><span class="p">(),</span> <span class="n">default</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Z&#39;</span><span class="p">,</span> <span class="s1">&#39;T&#39;</span><span class="p">])</span>
 
     <span class="n">arrival_taper</span> <span class="o">=</span> <span class="n">trace</span><span class="o">.</span><span class="n">Taper</span><span class="o">.</span><span class="n">T</span><span class="p">(</span>
                 <span class="n">default</span><span class="o">=</span><span class="n">ArrivalTaper</span><span class="o">.</span><span class="n">D</span><span class="p">(),</span>
-                <span class="n">help</span><span class="o">=</span><span class="s">&#39;Taper a,b/c,d time [s] before/after wave arrival&#39;</span><span class="p">)</span>
+                <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Taper a,b/c,d time [s] before/after wave arrival&#39;</span><span class="p">)</span>
     <span class="n">filterer</span> <span class="o">=</span> <span class="n">Filter</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="n">Filter</span><span class="o">.</span><span class="n">D</span><span class="p">())</span>
-    <span class="n">targets</span> <span class="o">=</span> <span class="n">List</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">TeleseismicTarget</span><span class="o">.</span><span class="n">T</span><span class="p">(),</span> <span class="n">optional</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">targets</span> <span class="o">=</span> <span class="n">List</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">TeleseismicTarget</span><span class="o">.</span><span class="n">T</span><span class="p">(),</span> <span class="n">optional</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">gf_config</span> <span class="o">=</span> <span class="n">SeismicGFConfig</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="n">SeismicGFConfig</span><span class="o">.</span><span class="n">D</span><span class="p">())</span></div>
 
 
@@ -314,9 +323,9 @@
 <span class="sd">    Config for geodetic data optimization related parameters.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">datadir</span> <span class="o">=</span> <span class="n">String</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="s">&#39;./&#39;</span><span class="p">)</span>
-    <span class="n">tracks</span> <span class="o">=</span> <span class="n">List</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">String</span><span class="o">.</span><span class="n">T</span><span class="p">(),</span> <span class="n">default</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;Data prefix filenames here ...&#39;</span><span class="p">])</span>
-    <span class="n">targets</span> <span class="o">=</span> <span class="n">List</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">optional</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">datadir</span> <span class="o">=</span> <span class="n">String</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="s1">&#39;./&#39;</span><span class="p">)</span>
+    <span class="n">tracks</span> <span class="o">=</span> <span class="n">List</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">String</span><span class="o">.</span><span class="n">T</span><span class="p">(),</span> <span class="n">default</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Data prefix filenames here ...&#39;</span><span class="p">])</span>
+    <span class="n">targets</span> <span class="o">=</span> <span class="n">List</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">optional</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">gf_config</span> <span class="o">=</span> <span class="n">GeodeticGFConfig</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="n">GeodeticGFConfig</span><span class="o">.</span><span class="n">D</span><span class="p">())</span></div>
 
 
@@ -324,34 +333,34 @@
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Config for inversion problem to setup.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">mode</span> <span class="o">=</span> <span class="n">String</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="s">&#39;geometry&#39;</span><span class="p">,</span>
-                    <span class="n">help</span><span class="o">=</span><span class="s">&#39;Problem to solve: &quot;Geometry&quot;, &quot;Static&quot;,&quot;Kinematic&quot;&#39;</span><span class="p">)</span>
+    <span class="n">mode</span> <span class="o">=</span> <span class="n">String</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="s1">&#39;geometry&#39;</span><span class="p">,</span>
+                    <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Problem to solve: &quot;Geometry&quot;, &quot;Static&quot;,&quot;Kinematic&quot;&#39;</span><span class="p">)</span>
     <span class="n">n_faults</span> <span class="o">=</span> <span class="n">Int</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                     <span class="n">help</span><span class="o">=</span><span class="s">&#39;Number of Sub-faults to solve for&#39;</span><span class="p">)</span>
-    <span class="n">datasets</span> <span class="o">=</span> <span class="n">List</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;geodetic&#39;</span><span class="p">])</span>
+                     <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Number of Sub-faults to solve for&#39;</span><span class="p">)</span>
+    <span class="n">datasets</span> <span class="o">=</span> <span class="n">List</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;geodetic&#39;</span><span class="p">])</span>
     <span class="n">hyperparameters</span> <span class="o">=</span> <span class="n">List</span><span class="o">.</span><span class="n">T</span><span class="p">(</span>
         <span class="n">Parameter</span><span class="o">.</span><span class="n">T</span><span class="p">(),</span>
-        <span class="n">help</span><span class="o">=</span><span class="s">&#39;Hyperparameters to weight different types of datasets.&#39;</span><span class="p">)</span>
+        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Hyperparameters to weight different types of datasets.&#39;</span><span class="p">)</span>
     <span class="n">priors</span> <span class="o">=</span> <span class="n">List</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">Parameter</span><span class="o">.</span><span class="n">T</span><span class="p">())</span>
 
     <span class="k">def</span> <span class="nf">init_vars</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s">&#39;geometry&#39;</span><span class="p">:</span>
-            <span class="k">if</span> <span class="s">&#39;geodetic&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">datasets</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;geometry&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s1">&#39;geodetic&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">datasets</span><span class="p">:</span>
                 <span class="n">variables</span> <span class="o">=</span> <span class="n">geo_vars_geometry</span>
-            <span class="k">if</span> <span class="s">&#39;seismic&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">datasets</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s1">&#39;seismic&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">datasets</span><span class="p">:</span>
                 <span class="n">variables</span> <span class="o">=</span> <span class="n">joint_vars_geometry</span>
 
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s">&#39;static_dist&#39;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;static_dist&#39;</span><span class="p">:</span>
             <span class="n">variables</span> <span class="o">=</span> <span class="n">static_dist_vars</span>
 
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s">&#39;kinematic_dist&#39;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;kinematic_dist&#39;</span><span class="p">:</span>
             <span class="n">variables</span> <span class="o">=</span> <span class="n">kinematic_dist_vars</span>
-            <span class="k">if</span> <span class="s">&#39;seismic&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">datasets</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&#39;A kinematic model cannot be resolved with&#39;</span>
-                             <span class="s">&#39;geodetic data only.&#39;</span><span class="p">)</span>
-                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;Kinematic model not resolvable with only&#39;</span>
-                                <span class="s">&#39;geodetic data!&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s1">&#39;seismic&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">datasets</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;A kinematic model cannot be resolved with&#39;</span>
+                             <span class="s1">&#39;geodetic data only.&#39;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Kinematic model not resolvable with only&#39;</span>
+                                <span class="s1">&#39;geodetic data!&#39;</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">variable</span> <span class="ow">in</span> <span class="n">variables</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">priors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
@@ -387,7 +396,7 @@
         <span class="k">for</span> <span class="n">hyperparam</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">hyperparameters</span><span class="p">:</span>
             <span class="n">hyperparam</span><span class="p">()</span>
 
-        <span class="k">print</span><span class="p">(</span><span class="s">&#39;All parameter-priors ok!&#39;</span><span class="p">)</span></div></div>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;All parameter-priors ok!&#39;</span><span class="p">)</span></div></div>
 
 
 <div class="viewcode-block" id="SamplerParameters"><a class="viewcode-back" href="../api.html#config.SamplerParameters">[docs]</a><span class="k">class</span> <span class="nc">SamplerParameters</span><span class="p">(</span><span class="n">Object</span><span class="p">):</span>
@@ -399,14 +408,14 @@
 <span class="sd">    Config for optimization parameters of the Adaptive Metropolis algorithm.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">n_steps</span> <span class="o">=</span> <span class="n">Int</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span>
-                    <span class="n">help</span><span class="o">=</span><span class="s">&#39;Number of steps for the MC chain.&#39;</span><span class="p">)</span>
+                    <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Number of steps for the MC chain.&#39;</span><span class="p">)</span>
     <span class="n">tune_interval</span> <span class="o">=</span> <span class="n">Int</span><span class="o">.</span><span class="n">T</span><span class="p">(</span>
         <span class="n">default</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s">&#39;Tune interval for adaptive tuning of Metropolis step size.&#39;</span><span class="p">)</span>
+        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Tune interval for adaptive tuning of Metropolis step size.&#39;</span><span class="p">)</span>
     <span class="n">proposal_dist</span> <span class="o">=</span> <span class="n">String</span><span class="o">.</span><span class="n">T</span><span class="p">(</span>
-        <span class="n">default</span><span class="o">=</span><span class="s">&#39;Normal&#39;</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s">&#39;Normal Proposal distribution, for Metropolis steps&#39;</span>
-             <span class="s">&#39;alternatives: Cauchy, Laplace, Poisson, MultivariateNormal&#39;</span><span class="p">)</span></div>
+        <span class="n">default</span><span class="o">=</span><span class="s1">&#39;Normal&#39;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Normal Proposal distribution, for Metropolis steps&#39;</span>
+             <span class="s1">&#39;alternatives: Cauchy, Laplace, Poisson, MultivariateNormal&#39;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="ATMCMCConfig"><a class="viewcode-back" href="../api.html#config.ATMCMCConfig">[docs]</a><span class="k">class</span> <span class="nc">ATMCMCConfig</span><span class="p">(</span><span class="n">SamplerParameters</span><span class="p">):</span>
@@ -414,40 +423,40 @@
 <span class="sd">    Config for optimization parameters of the ATMCMC algorithm.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">n_chains</span> <span class="o">=</span> <span class="n">Int</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
-                     <span class="n">help</span><span class="o">=</span><span class="s">&#39;Number of Metropolis chains for sampling.&#39;</span><span class="p">)</span>
+                     <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Number of Metropolis chains for sampling.&#39;</span><span class="p">)</span>
     <span class="n">n_steps</span> <span class="o">=</span> <span class="n">Int</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
-                    <span class="n">help</span><span class="o">=</span><span class="s">&#39;Number of steps for each chain per stage.&#39;</span><span class="p">)</span>
+                    <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Number of steps for each chain per stage.&#39;</span><span class="p">)</span>
     <span class="n">n_jobs</span> <span class="o">=</span> <span class="n">Int</span><span class="o">.</span><span class="n">T</span><span class="p">(</span>
         <span class="n">default</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s">&#39;Number of processors to use, i.e. chains to sample in parallel.&#39;</span><span class="p">)</span>
+        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Number of processors to use, i.e. chains to sample in parallel.&#39;</span><span class="p">)</span>
     <span class="n">tune_interval</span> <span class="o">=</span> <span class="n">Int</span><span class="o">.</span><span class="n">T</span><span class="p">(</span>
         <span class="n">default</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s">&#39;Tune interval for adaptive tuning of Metropolis step size.&#39;</span><span class="p">)</span>
+        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Tune interval for adaptive tuning of Metropolis step size.&#39;</span><span class="p">)</span>
     <span class="n">coef_variation</span> <span class="o">=</span> <span class="n">Float</span><span class="o">.</span><span class="n">T</span><span class="p">(</span>
         <span class="n">default</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s">&#39;Coefficient of variation, determines the similarity of the&#39;</span>
-             <span class="s">&#39;intermediate stage pdfs;&#39;</span>
-             <span class="s">&#39;low - small beta steps (slow cooling),&#39;</span>
-             <span class="s">&#39;high - wide beta steps (fast cooling)&#39;</span><span class="p">)</span>
+        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Coefficient of variation, determines the similarity of the&#39;</span>
+             <span class="s1">&#39;intermediate stage pdfs;&#39;</span>
+             <span class="s1">&#39;low - small beta steps (slow cooling),&#39;</span>
+             <span class="s1">&#39;high - wide beta steps (fast cooling)&#39;</span><span class="p">)</span>
     <span class="n">stage</span> <span class="o">=</span> <span class="n">Int</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-                  <span class="n">help</span><span class="o">=</span><span class="s">&#39;Stage where to start/continue the sampling.&#39;</span><span class="p">)</span>
+                  <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Stage where to start/continue the sampling.&#39;</span><span class="p">)</span>
     <span class="n">proposal_dist</span> <span class="o">=</span> <span class="n">String</span><span class="o">.</span><span class="n">T</span><span class="p">(</span>
-        <span class="n">default</span><span class="o">=</span><span class="s">&#39;MvNPd&#39;</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s">&#39;Multivariate Normal Proposal distribution, for Metropolis steps&#39;</span>
-             <span class="s">&#39;alternatives need to be implemented&#39;</span><span class="p">)</span>
+        <span class="n">default</span><span class="o">=</span><span class="s1">&#39;MvNPd&#39;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Multivariate Normal Proposal distribution, for Metropolis steps&#39;</span>
+             <span class="s1">&#39;alternatives need to be implemented&#39;</span><span class="p">)</span>
     <span class="n">check_bnd</span> <span class="o">=</span> <span class="n">Bool</span><span class="o">.</span><span class="n">T</span><span class="p">(</span>
-        <span class="n">default</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s">&#39;Flag for checking whether proposed step lies within&#39;</span>
-             <span class="s">&#39; variable bounds.&#39;</span><span class="p">)</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Flag for checking whether proposed step lies within&#39;</span>
+             <span class="s1">&#39; variable bounds.&#39;</span><span class="p">)</span>
     <span class="n">update_covariances</span> <span class="o">=</span> <span class="n">Bool</span><span class="o">.</span><span class="n">T</span><span class="p">(</span>
-        <span class="n">default</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s">&#39;Update model prediction covariance matrixes in transition &#39;</span>
-             <span class="s">&#39;stages.&#39;</span><span class="p">)</span>
-    <span class="n">rm_flag</span> <span class="o">=</span> <span class="n">Bool</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
-                     <span class="n">help</span><span class="o">=</span><span class="s">&#39;Remove existing stage results prior to sampling.&#39;</span><span class="p">)</span>
-    <span class="n">plot_flag</span> <span class="o">=</span> <span class="n">Bool</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-                       <span class="n">help</span><span class="o">=</span><span class="s">&#39;Plot stage posteriors after sampling of&#39;</span>
-                            <span class="s">&#39;each stage&#39;</span><span class="p">)</span></div>
+        <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Update model prediction covariance matrixes in transition &#39;</span>
+             <span class="s1">&#39;stages.&#39;</span><span class="p">)</span>
+    <span class="n">rm_flag</span> <span class="o">=</span> <span class="n">Bool</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                     <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Remove existing stage results prior to sampling.&#39;</span><span class="p">)</span>
+    <span class="n">plot_flag</span> <span class="o">=</span> <span class="n">Bool</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                       <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Plot stage posteriors after sampling of&#39;</span>
+                            <span class="s1">&#39;each stage&#39;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="SamplerConfig"><a class="viewcode-back" href="../api.html#config.SamplerConfig">[docs]</a><span class="k">class</span> <span class="nc">SamplerConfig</span><span class="p">(</span><span class="n">Object</span><span class="p">):</span>
@@ -455,24 +464,24 @@
 <span class="sd">    Config for the sampler specific parameters.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">name</span> <span class="o">=</span> <span class="n">String</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="s">&#39;ATMCMC&#39;</span><span class="p">,</span>
-                    <span class="n">help</span><span class="o">=</span><span class="s">&#39;Sampler to use for sampling the solution space.&#39;</span>
-                         <span class="s">&#39;Metropolis/ ATMCMC coming soon: ADVI&#39;</span><span class="p">)</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">String</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="s1">&#39;ATMCMC&#39;</span><span class="p">,</span>
+                    <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Sampler to use for sampling the solution space.&#39;</span>
+                         <span class="s1">&#39;Metropolis/ ATMCMC coming soon: ADVI&#39;</span><span class="p">)</span>
     <span class="n">parameters</span> <span class="o">=</span> <span class="n">SamplerParameters</span><span class="o">.</span><span class="n">T</span><span class="p">(</span>
         <span class="n">default</span><span class="o">=</span><span class="n">ATMCMCConfig</span><span class="o">.</span><span class="n">D</span><span class="p">(),</span>
-        <span class="n">optional</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s">&#39;Sampler dependend Parameters&#39;</span><span class="p">)</span>
+        <span class="n">optional</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Sampler dependend Parameters&#39;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">set_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="bp">None</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;Sampler not defined, using default sampler: ATMCMC&#39;</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s">&#39;ATMCMC&#39;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Sampler not defined, using default sampler: ATMCMC&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;ATMCMC&#39;</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s">&#39;Metropolis&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;Metropolis&#39;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="n">MetropolisConfig</span><span class="p">()</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s">&#39;ATMCMC&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;ATMCMC&#39;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="n">ATMCMCConfig</span><span class="p">()</span></div>
 
 
@@ -485,21 +494,21 @@
 
     <span class="n">name</span> <span class="o">=</span> <span class="n">String</span><span class="o">.</span><span class="n">T</span><span class="p">()</span>
     <span class="n">date</span> <span class="o">=</span> <span class="n">String</span><span class="o">.</span><span class="n">T</span><span class="p">()</span>
-    <span class="n">event</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">Event</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">optional</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-    <span class="n">project_dir</span> <span class="o">=</span> <span class="n">String</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="s">&#39;event/&#39;</span><span class="p">)</span>
+    <span class="n">event</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">Event</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">optional</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">project_dir</span> <span class="o">=</span> <span class="n">String</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="s1">&#39;event/&#39;</span><span class="p">)</span>
 
     <span class="n">problem_config</span> <span class="o">=</span> <span class="n">ProblemConfig</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="n">ProblemConfig</span><span class="o">.</span><span class="n">D</span><span class="p">())</span>
     <span class="n">geodetic_config</span> <span class="o">=</span> <span class="n">GeodeticConfig</span><span class="o">.</span><span class="n">T</span><span class="p">(</span>
-        <span class="n">default</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">optional</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">optional</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">seismic_config</span> <span class="o">=</span> <span class="n">SeismicConfig</span><span class="o">.</span><span class="n">T</span><span class="p">(</span>
-        <span class="n">default</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">optional</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">optional</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">sampler_config</span> <span class="o">=</span> <span class="n">SamplerConfig</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="n">SamplerConfig</span><span class="o">.</span><span class="n">D</span><span class="p">())</span></div>
 
 
-<div class="viewcode-block" id="init_config"><a class="viewcode-back" href="../api.html#config.init_config">[docs]</a><span class="k">def</span> <span class="nf">init_config</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">date</span><span class="p">,</span> <span class="n">min_magnitude</span><span class="o">=</span><span class="mf">6.0</span><span class="p">,</span> <span class="n">main_path</span><span class="o">=</span><span class="s">&#39;./&#39;</span><span class="p">,</span>
-                <span class="n">datasets</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;geodetic&#39;</span><span class="p">],</span>
-                <span class="n">mode</span><span class="o">=</span><span class="s">&#39;geometry&#39;</span><span class="p">,</span> <span class="n">n_faults</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                <span class="n">sampler</span><span class="o">=</span><span class="s">&#39;ATMCMC&#39;</span><span class="p">,</span> <span class="n">use_custom</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+<div class="viewcode-block" id="init_config"><a class="viewcode-back" href="../api.html#config.init_config">[docs]</a><span class="k">def</span> <span class="nf">init_config</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">date</span><span class="p">,</span> <span class="n">min_magnitude</span><span class="o">=</span><span class="mf">6.0</span><span class="p">,</span> <span class="n">main_path</span><span class="o">=</span><span class="s1">&#39;./&#39;</span><span class="p">,</span>
+                <span class="n">datasets</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;geodetic&#39;</span><span class="p">],</span>
+                <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;geometry&#39;</span><span class="p">,</span> <span class="n">n_faults</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">sampler</span><span class="o">=</span><span class="s1">&#39;ATMCMC&#39;</span><span class="p">,</span> <span class="n">use_custom</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Initialise BEATconfig File and write it main_path/name .</span>
 <span class="sd">    Fine parameters have to be edited in the config file .yaml manually.</span>
@@ -540,29 +549,29 @@
         <span class="n">n_faults</span><span class="o">=</span><span class="n">n_faults</span><span class="p">,</span> <span class="n">datasets</span><span class="o">=</span><span class="n">datasets</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">)</span>
     <span class="n">c</span><span class="o">.</span><span class="n">problem_config</span><span class="o">.</span><span class="n">init_vars</span><span class="p">()</span>
 
-    <span class="k">if</span> <span class="s">&#39;geodetic&#39;</span> <span class="ow">in</span> <span class="n">datasets</span><span class="p">:</span>
+    <span class="k">if</span> <span class="s1">&#39;geodetic&#39;</span> <span class="ow">in</span> <span class="n">datasets</span><span class="p">:</span>
         <span class="n">c</span><span class="o">.</span><span class="n">geodetic_config</span> <span class="o">=</span> <span class="n">GeodeticConfig</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">use_custom</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;use_custom flag set! The velocity model in the&#39;</span>
-                        <span class="s">&#39; geodetic GF configuration has to be updated!&#39;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;use_custom flag set! The velocity model in the&#39;</span>
+                        <span class="s1">&#39; geodetic GF configuration has to be updated!&#39;</span><span class="p">)</span>
             <span class="n">c</span><span class="o">.</span><span class="n">geodetic_config</span><span class="o">.</span><span class="n">gf_config</span><span class="o">.</span><span class="n">custom_velocity_model</span> <span class="o">=</span> \
                 <span class="n">load_model</span><span class="p">()</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">depth_max</span><span class="o">=</span><span class="mf">100.</span> <span class="o">*</span> <span class="n">km</span><span class="p">)</span>
-            <span class="n">c</span><span class="o">.</span><span class="n">geodetic_config</span><span class="o">.</span><span class="n">gf_config</span><span class="o">.</span><span class="n">use_crust2</span> <span class="o">=</span> <span class="bp">False</span>
-            <span class="n">c</span><span class="o">.</span><span class="n">geodetic_config</span><span class="o">.</span><span class="n">gf_config</span><span class="o">.</span><span class="n">replace_water</span> <span class="o">=</span> <span class="bp">False</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">geodetic_config</span><span class="o">.</span><span class="n">gf_config</span><span class="o">.</span><span class="n">use_crust2</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">geodetic_config</span><span class="o">.</span><span class="n">gf_config</span><span class="o">.</span><span class="n">replace_water</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">c</span><span class="o">.</span><span class="n">geodetic_config</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="n">c</span><span class="o">.</span><span class="n">geodetic_config</span> <span class="o">=</span> <span class="kc">None</span>
 
-    <span class="k">if</span> <span class="s">&#39;seismic&#39;</span> <span class="ow">in</span> <span class="n">datasets</span><span class="p">:</span>
+    <span class="k">if</span> <span class="s1">&#39;seismic&#39;</span> <span class="ow">in</span> <span class="n">datasets</span><span class="p">:</span>
         <span class="n">c</span><span class="o">.</span><span class="n">seismic_config</span> <span class="o">=</span> <span class="n">SeismicConfig</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">use_custom</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;use_custom flag set! The velocity model in the&#39;</span>
-                        <span class="s">&#39; seismic GF configuration has to be updated!&#39;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;use_custom flag set! The velocity model in the&#39;</span>
+                        <span class="s1">&#39; seismic GF configuration has to be updated!&#39;</span><span class="p">)</span>
             <span class="n">c</span><span class="o">.</span><span class="n">seismic_config</span><span class="o">.</span><span class="n">gf_config</span><span class="o">.</span><span class="n">custom_velocity_model</span> <span class="o">=</span> \
                 <span class="n">load_model</span><span class="p">()</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">depth_max</span><span class="o">=</span><span class="mf">100.</span> <span class="o">*</span> <span class="n">km</span><span class="p">)</span>
-            <span class="n">c</span><span class="o">.</span><span class="n">seismic_config</span><span class="o">.</span><span class="n">gf_config</span><span class="o">.</span><span class="n">use_crust2</span> <span class="o">=</span> <span class="bp">False</span>
-            <span class="n">c</span><span class="o">.</span><span class="n">seismic_config</span><span class="o">.</span><span class="n">gf_config</span><span class="o">.</span><span class="n">replace_water</span> <span class="o">=</span> <span class="bp">False</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">seismic_config</span><span class="o">.</span><span class="n">gf_config</span><span class="o">.</span><span class="n">use_crust2</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">seismic_config</span><span class="o">.</span><span class="n">gf_config</span><span class="o">.</span><span class="n">replace_water</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">c</span><span class="o">.</span><span class="n">seismic_config</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="n">c</span><span class="o">.</span><span class="n">seismic_config</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="n">c</span><span class="o">.</span><span class="n">sampler_config</span> <span class="o">=</span> <span class="n">SamplerConfig</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">sampler</span><span class="p">)</span>
     <span class="n">c</span><span class="o">.</span><span class="n">sampler_config</span><span class="o">.</span><span class="n">set_parameters</span><span class="p">()</span>
@@ -570,10 +579,10 @@
     <span class="n">c</span><span class="o">.</span><span class="n">validate</span><span class="p">()</span>
     <span class="n">c</span><span class="o">.</span><span class="n">problem_config</span><span class="o">.</span><span class="n">validate_priors</span><span class="p">()</span>
 
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;Project_directory: </span><span class="si">%s</span><span class="s"> </span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">c</span><span class="o">.</span><span class="n">project_dir</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Project_directory: </span><span class="si">%s</span><span class="s1"> </span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">c</span><span class="o">.</span><span class="n">project_dir</span><span class="p">)</span>
     <span class="n">util</span><span class="o">.</span><span class="n">ensuredir</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">project_dir</span><span class="p">)</span>
 
-    <span class="n">config_file_name</span> <span class="o">=</span> <span class="s">&#39;config_&#39;</span> <span class="o">+</span> <span class="n">mode</span> <span class="o">+</span> <span class="s">&#39;.yaml&#39;</span>
+    <span class="n">config_file_name</span> <span class="o">=</span> <span class="s1">&#39;config_&#39;</span> <span class="o">+</span> <span class="n">mode</span> <span class="o">+</span> <span class="s1">&#39;.yaml&#39;</span>
     <span class="n">conf_out</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">project_dir</span><span class="p">,</span> <span class="n">config_file_name</span><span class="p">)</span>
     <span class="n">dump</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="n">conf_out</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">c</span></div>
@@ -594,7 +603,7 @@
 <span class="sd">    -------</span>
 <span class="sd">    :class:`BEATconfig`</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">config_file_name</span> <span class="o">=</span> <span class="s">&#39;config_&#39;</span> <span class="o">+</span> <span class="n">mode</span> <span class="o">+</span> <span class="s">&#39;.yaml&#39;</span>
+    <span class="n">config_file_name</span> <span class="o">=</span> <span class="s1">&#39;config_&#39;</span> <span class="o">+</span> <span class="n">mode</span> <span class="o">+</span> <span class="s1">&#39;.yaml&#39;</span>
 
     <span class="n">config_fn</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">project_dir</span><span class="p">,</span> <span class="n">config_file_name</span><span class="p">)</span>
     <span class="n">config</span> <span class="o">=</span> <span class="n">load</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">config_fn</span><span class="p">)</span>

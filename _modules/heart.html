@@ -30,6 +30,9 @@
   
 
   
+        <link rel="index" title="Index"
+              href="../genindex.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
     <link rel="top" title="beat 0.1 documentation" href="../index.html"/>
         <link rel="up" title="Module code" href="index.html"/> 
 
@@ -81,6 +84,8 @@
             
             
                 <ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html#prerequisites">Prerequisites</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html">The <code class="docutils literal"><span class="pre">heart</span></code> Module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html#the-config-module">The <code class="docutils literal"><span class="pre">config</span></code> Module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html#module-atmcmc">The <code class="docutils literal"><span class="pre">atmcmc</span></code> Module</a></li>
@@ -138,7 +143,7 @@
            <div itemprop="articleBody">
             
   <h1>Source code for heart</h1><div class="highlight"><pre>
-<span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Core module with functions to calculate Greens Functions and synthetics.</span>
 <span class="sd">Also contains main classes for setup specific parameters.</span>
 <span class="sd">&quot;&quot;&quot;</span>
@@ -148,35 +153,35 @@
 <span class="kn">import</span> <span class="nn">shutil</span>
 <span class="kn">import</span> <span class="nn">copy</span>
 
-<span class="kn">from</span> <span class="nn">beat</span> <span class="kn">import</span> <span class="n">psgrn</span><span class="p">,</span> <span class="n">pscmp</span><span class="p">,</span> <span class="n">utility</span>
+<span class="kn">from</span> <span class="nn">beat</span> <span class="k">import</span> <span class="n">psgrn</span><span class="p">,</span> <span class="n">pscmp</span><span class="p">,</span> <span class="n">utility</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">num</span>
-<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pylab</span> <span class="k">as</span> <span class="n">plt</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">num</span>
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="k">import</span> <span class="n">pylab</span> <span class="k">as</span> <span class="n">plt</span>
 
-<span class="kn">from</span> <span class="nn">pyrocko.guts</span> <span class="kn">import</span> <span class="n">Object</span><span class="p">,</span> <span class="n">String</span><span class="p">,</span> <span class="n">Float</span><span class="p">,</span> <span class="n">Int</span><span class="p">,</span> <span class="n">Tuple</span>
-<span class="kn">from</span> <span class="nn">pyrocko.guts_array</span> <span class="kn">import</span> <span class="n">Array</span>
+<span class="kn">from</span> <span class="nn">pyrocko.guts</span> <span class="k">import</span> <span class="n">Object</span><span class="p">,</span> <span class="n">String</span><span class="p">,</span> <span class="n">Float</span><span class="p">,</span> <span class="n">Int</span><span class="p">,</span> <span class="n">Tuple</span>
+<span class="kn">from</span> <span class="nn">pyrocko.guts_array</span> <span class="k">import</span> <span class="n">Array</span>
 
-<span class="kn">from</span> <span class="nn">pyrocko</span> <span class="kn">import</span> <span class="n">crust2x2</span><span class="p">,</span> <span class="n">gf</span><span class="p">,</span> <span class="n">cake</span><span class="p">,</span> <span class="n">orthodrome</span><span class="p">,</span> <span class="n">trace</span><span class="p">,</span> <span class="n">util</span>
-<span class="kn">from</span> <span class="nn">pyrocko.cake</span> <span class="kn">import</span> <span class="n">GradientLayer</span>
-<span class="kn">from</span> <span class="nn">pyrocko.fomosto</span> <span class="kn">import</span> <span class="n">qseis</span>
-<span class="kn">from</span> <span class="nn">pyrocko.fomosto</span> <span class="kn">import</span> <span class="n">qssp</span>
-<span class="c">#from pyrocko.fomosto import qseis2d</span>
+<span class="kn">from</span> <span class="nn">pyrocko</span> <span class="k">import</span> <span class="n">crust2x2</span><span class="p">,</span> <span class="n">gf</span><span class="p">,</span> <span class="n">cake</span><span class="p">,</span> <span class="n">orthodrome</span><span class="p">,</span> <span class="n">trace</span><span class="p">,</span> <span class="n">util</span>
+<span class="kn">from</span> <span class="nn">pyrocko.cake</span> <span class="k">import</span> <span class="n">GradientLayer</span>
+<span class="kn">from</span> <span class="nn">pyrocko.fomosto</span> <span class="k">import</span> <span class="n">qseis</span>
+<span class="kn">from</span> <span class="nn">pyrocko.fomosto</span> <span class="k">import</span> <span class="n">qssp</span>
+<span class="c1">#from pyrocko.fomosto import qseis2d</span>
 
 
-<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&#39;heart&#39;</span><span class="p">)</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;heart&#39;</span><span class="p">)</span>
 
-<span class="n">c</span> <span class="o">=</span> <span class="mf">299792458.</span>  <span class="c"># [m/s]</span>
+<span class="n">c</span> <span class="o">=</span> <span class="mf">299792458.</span>  <span class="c1"># [m/s]</span>
 <span class="n">km</span> <span class="o">=</span> <span class="mf">1000.</span>
 <span class="n">d2r</span> <span class="o">=</span> <span class="n">num</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mf">180.</span>
 <span class="n">err_depth</span> <span class="o">=</span> <span class="mf">0.1</span>
 <span class="n">err_velocities</span> <span class="o">=</span> <span class="mf">0.05</span>
 
 <span class="n">lambda_sensors</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s">&#39;Envisat&#39;</span><span class="p">:</span> <span class="mf">0.056</span><span class="p">,</span>       <span class="c"># needs updating- no ressource file</span>
-    <span class="s">&#39;ERS1&#39;</span><span class="p">:</span> <span class="mf">0.05656461471698113</span><span class="p">,</span>
-    <span class="s">&#39;ERS2&#39;</span><span class="p">:</span> <span class="mf">0.056</span><span class="p">,</span>          <span class="c"># needs updating</span>
-    <span class="s">&#39;JERS&#39;</span><span class="p">:</span> <span class="mf">0.23513133960784313</span><span class="p">,</span>
-    <span class="s">&#39;RadarSat2&#39;</span><span class="p">:</span> <span class="mf">0.055465772433</span>
+    <span class="s1">&#39;Envisat&#39;</span><span class="p">:</span> <span class="mf">0.056</span><span class="p">,</span>       <span class="c1"># needs updating- no ressource file</span>
+    <span class="s1">&#39;ERS1&#39;</span><span class="p">:</span> <span class="mf">0.05656461471698113</span><span class="p">,</span>
+    <span class="s1">&#39;ERS2&#39;</span><span class="p">:</span> <span class="mf">0.056</span><span class="p">,</span>          <span class="c1"># needs updating</span>
+    <span class="s1">&#39;JERS&#39;</span><span class="p">:</span> <span class="mf">0.23513133960784313</span><span class="p">,</span>
+    <span class="s1">&#39;RadarSat2&#39;</span><span class="p">:</span> <span class="mf">0.055465772433</span>
     <span class="p">}</span>
 
 
@@ -187,7 +192,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__reduce__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">pickled_state</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">PickleableTrace</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__reduce__</span><span class="p">()</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ydata</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ydata</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">updated_state</span> <span class="o">=</span> <span class="n">pickled_state</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ydata</span><span class="p">,)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">updated_state</span> <span class="o">=</span> <span class="n">pickled_state</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
@@ -206,13 +211,13 @@
 <span class="sd">    Reference point of the depth attribute is the top-center of the fault.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">width</span> <span class="o">=</span> <span class="n">Float</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">help</span><span class="o">=</span><span class="s">&#39;width of the fault [m]&#39;</span><span class="p">,</span>
+    <span class="n">width</span> <span class="o">=</span> <span class="n">Float</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">help</span><span class="o">=</span><span class="s1">&#39;width of the fault [m]&#39;</span><span class="p">,</span>
                     <span class="n">default</span><span class="o">=</span><span class="mf">1.</span> <span class="o">*</span> <span class="n">km</span><span class="p">)</span>
-    <span class="n">length</span> <span class="o">=</span> <span class="n">Float</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">help</span><span class="o">=</span><span class="s">&#39;length of the fault [m]&#39;</span><span class="p">,</span>
+    <span class="n">length</span> <span class="o">=</span> <span class="n">Float</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">help</span><span class="o">=</span><span class="s1">&#39;length of the fault [m]&#39;</span><span class="p">,</span>
                     <span class="n">default</span><span class="o">=</span><span class="mf">1.</span> <span class="o">*</span> <span class="n">km</span><span class="p">)</span>
-    <span class="n">slip</span> <span class="o">=</span> <span class="n">Float</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">help</span><span class="o">=</span><span class="s">&#39;slip of the fault [m]&#39;</span><span class="p">,</span>
+    <span class="n">slip</span> <span class="o">=</span> <span class="n">Float</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">help</span><span class="o">=</span><span class="s1">&#39;slip of the fault [m]&#39;</span><span class="p">,</span>
                     <span class="n">default</span><span class="o">=</span><span class="mf">1.</span><span class="p">)</span>
-    <span class="n">opening</span> <span class="o">=</span> <span class="n">Float</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">help</span><span class="o">=</span><span class="s">&#39;opening of the fault [m]&#39;</span><span class="p">,</span>
+    <span class="n">opening</span> <span class="o">=</span> <span class="n">Float</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">help</span><span class="o">=</span><span class="s1">&#39;opening of the fault [m]&#39;</span><span class="p">,</span>
                     <span class="n">default</span><span class="o">=</span><span class="mf">0.</span><span class="p">)</span>
 
     <span class="nd">@staticmethod</span>
@@ -336,7 +341,7 @@
                             <span class="n">strike_vec</span> <span class="o">*</span> <span class="p">((</span><span class="n">i</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">n</span><span class="p">)</span> <span class="o">*</span> <span class="n">length</span><span class="p">)</span> <span class="o">+</span> \
                             <span class="n">dip_vec</span> <span class="o">*</span> <span class="p">((</span><span class="n">j</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">m</span><span class="p">)</span> <span class="o">*</span> <span class="n">width</span><span class="p">)</span>
 
-                <span class="k">if</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s">&#39;seismic&#39;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;seismic&#39;</span><span class="p">:</span>
                     <span class="n">patch</span> <span class="o">=</span> <span class="n">gf</span><span class="o">.</span><span class="n">RectangularSource</span><span class="p">(</span>
                         <span class="n">lat</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lat</span><span class="p">),</span>
                         <span class="n">lon</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lon</span><span class="p">),</span>
@@ -346,7 +351,7 @@
                         <span class="n">strike</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">strike</span><span class="p">,</span> <span class="n">dip</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dip</span><span class="p">,</span> <span class="n">rake</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rake</span><span class="p">,</span>
                         <span class="n">length</span><span class="o">=</span><span class="n">length</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="n">width</span><span class="p">,</span> <span class="n">stf</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">stf</span><span class="p">,</span>
                         <span class="n">time</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">,</span> <span class="n">slip</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">slip</span><span class="p">)</span>
-                <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s">&#39;geodetic&#39;</span><span class="p">:</span>
+                <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;geodetic&#39;</span><span class="p">:</span>
                     <span class="n">patch</span> <span class="o">=</span> <span class="n">pscmp</span><span class="o">.</span><span class="n">PsCmpRectangularSource</span><span class="p">(</span>
                         <span class="n">lat</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lat</span><span class="p">,</span>
                         <span class="n">lon</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lon</span><span class="p">,</span>
@@ -358,14 +363,14 @@
                         <span class="n">opening</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">opening</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
-                        <span class="s">&quot;Datatype not supported either: &#39;seismic/geodetic&#39;&quot;</span><span class="p">)</span>
+                        <span class="s2">&quot;Datatype not supported either: &#39;seismic/geodetic&#39;&quot;</span><span class="p">)</span>
 
                 <span class="n">patches</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">patch</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">patches</span></div></div>
 
 
-<div class="viewcode-block" id="adjust_fault_reference"><a class="viewcode-back" href="../api.html#heart.adjust_fault_reference">[docs]</a><span class="k">def</span> <span class="nf">adjust_fault_reference</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">input_depth</span><span class="o">=</span><span class="s">&#39;top&#39;</span><span class="p">):</span>
+<div class="viewcode-block" id="adjust_fault_reference"><a class="viewcode-back" href="../api.html#heart.adjust_fault_reference">[docs]</a><span class="k">def</span> <span class="nf">adjust_fault_reference</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">input_depth</span><span class="o">=</span><span class="s1">&#39;top&#39;</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Adjusts source depth and east/north-shifts variables of fault according to</span>
 <span class="sd">    input_depth mode &#39;top/center&#39;.</span>
@@ -387,11 +392,11 @@
 
     <span class="n">dip_vec</span> <span class="o">=</span> <span class="n">RF</span><span class="o">.</span><span class="n">dipvector</span><span class="p">(</span><span class="n">dip</span><span class="o">=</span><span class="n">source</span><span class="o">.</span><span class="n">dip</span><span class="p">,</span> <span class="n">strike</span><span class="o">=</span><span class="n">source</span><span class="o">.</span><span class="n">strike</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">input_depth</span> <span class="o">==</span> <span class="s">&#39;top&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">input_depth</span> <span class="o">==</span> <span class="s1">&#39;top&#39;</span><span class="p">:</span>
         <span class="n">center</span> <span class="o">=</span> <span class="n">RF</span><span class="o">.</span><span class="n">center</span><span class="p">(</span><span class="n">top_depth</span><span class="o">=</span><span class="n">source</span><span class="o">.</span><span class="n">depth</span><span class="p">,</span>
                        <span class="n">width</span><span class="o">=</span><span class="n">source</span><span class="o">.</span><span class="n">width</span><span class="p">,</span>
                        <span class="n">dipvector</span><span class="o">=</span><span class="n">dip_vec</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">input_depth</span> <span class="o">==</span> <span class="s">&#39;center&#39;</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="n">input_depth</span> <span class="o">==</span> <span class="s1">&#39;center&#39;</span><span class="p">:</span>
         <span class="n">center</span> <span class="o">=</span> <span class="n">num</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="n">source</span><span class="o">.</span><span class="n">depth</span><span class="p">])</span>
 
     <span class="n">source</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">east_shift</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">center</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">source</span><span class="o">.</span><span class="n">east_shift</span><span class="p">),</span>
@@ -399,7 +404,7 @@
                   <span class="n">depth</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">center</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span></div>
 
 
-<div class="viewcode-block" id="log_determinant"><a class="viewcode-back" href="../api.html#heart.log_determinant">[docs]</a><span class="k">def</span> <span class="nf">log_determinant</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">inverse</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+<div class="viewcode-block" id="log_determinant"><a class="viewcode-back" href="../api.html#heart.log_determinant">[docs]</a><span class="k">def</span> <span class="nf">log_determinant</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">inverse</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculates the natural logarithm of a determinant of the given matrix &#39;</span>
 <span class="sd">    according to the properties of a triangular matrix.</span>
@@ -432,25 +437,25 @@
 <span class="sd">    for one observation object.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">data</span> <span class="o">=</span> <span class="n">Array</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">Array</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
                     <span class="n">dtype</span><span class="o">=</span><span class="n">num</span><span class="o">.</span><span class="n">float</span><span class="p">,</span>
-                    <span class="n">help</span><span class="o">=</span><span class="s">&#39;Data covariance matrix&#39;</span><span class="p">,</span>
-                    <span class="n">optional</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-    <span class="n">pred_g</span> <span class="o">=</span> <span class="n">Array</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>
+                    <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Data covariance matrix&#39;</span><span class="p">,</span>
+                    <span class="n">optional</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">pred_g</span> <span class="o">=</span> <span class="n">Array</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
                     <span class="n">dtype</span><span class="o">=</span><span class="n">num</span><span class="o">.</span><span class="n">float</span><span class="p">,</span>
-                    <span class="n">help</span><span class="o">=</span><span class="s">&#39;Model prediction covariance matrix, fault geometry&#39;</span><span class="p">,</span>
-                    <span class="n">optional</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-    <span class="n">pred_v</span> <span class="o">=</span> <span class="n">Array</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>
+                    <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Model prediction covariance matrix, fault geometry&#39;</span><span class="p">,</span>
+                    <span class="n">optional</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">pred_v</span> <span class="o">=</span> <span class="n">Array</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
                     <span class="n">dtype</span><span class="o">=</span><span class="n">num</span><span class="o">.</span><span class="n">float</span><span class="p">,</span>
-                    <span class="n">help</span><span class="o">=</span><span class="s">&#39;Model prediction covariance matrix, velocity model&#39;</span><span class="p">,</span>
-                    <span class="n">optional</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+                    <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Model prediction covariance matrix, velocity model&#39;</span><span class="p">,</span>
+                    <span class="n">optional</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">p_total</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pred_g</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pred_g</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">pred_g</span> <span class="o">=</span> <span class="n">num</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pred_v</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pred_v</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">pred_v</span> <span class="o">=</span> <span class="n">num</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pred_g</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">pred_v</span>
@@ -498,9 +503,9 @@
 
     <span class="n">covariance</span> <span class="o">=</span> <span class="n">Covariance</span><span class="o">.</span><span class="n">T</span><span class="p">(</span>
         <span class="n">default</span><span class="o">=</span><span class="n">Covariance</span><span class="o">.</span><span class="n">D</span><span class="p">(),</span>
-        <span class="n">optional</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s">&#39;:py:class:`Covariance` that holds data&#39;</span>
-             <span class="s">&#39;and model prediction covariance matrixes&#39;</span><span class="p">)</span></div>
+        <span class="n">optional</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;:py:class:`Covariance` that holds data&#39;</span>
+             <span class="s1">&#39;and model prediction covariance matrixes&#39;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="ArrivalTaper"><a class="viewcode-back" href="../api.html#heart.ArrivalTaper">[docs]</a><span class="k">class</span> <span class="nc">ArrivalTaper</span><span class="p">(</span><span class="n">trace</span><span class="o">.</span><span class="n">Taper</span><span class="p">):</span>
@@ -509,13 +514,13 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">a</span> <span class="o">=</span> <span class="n">Float</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mf">15.</span><span class="p">,</span>
-                <span class="n">help</span><span class="o">=</span><span class="s">&#39;start of fading in; [s] w.r.t. phase arrival&#39;</span><span class="p">)</span>
+                <span class="n">help</span><span class="o">=</span><span class="s1">&#39;start of fading in; [s] w.r.t. phase arrival&#39;</span><span class="p">)</span>
     <span class="n">b</span> <span class="o">=</span> <span class="n">Float</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mf">10.</span><span class="p">,</span>
-                <span class="n">help</span><span class="o">=</span><span class="s">&#39;end of fading in; [s] w.r.t. phase arrival&#39;</span><span class="p">)</span>
+                <span class="n">help</span><span class="o">=</span><span class="s1">&#39;end of fading in; [s] w.r.t. phase arrival&#39;</span><span class="p">)</span>
     <span class="n">c</span> <span class="o">=</span> <span class="n">Float</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mf">50.</span><span class="p">,</span>
-                <span class="n">help</span><span class="o">=</span><span class="s">&#39;start of fading in; [s] w.r.t. phase arrival&#39;</span><span class="p">)</span>
+                <span class="n">help</span><span class="o">=</span><span class="s1">&#39;start of fading in; [s] w.r.t. phase arrival&#39;</span><span class="p">)</span>
     <span class="n">d</span> <span class="o">=</span> <span class="n">Float</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mf">55.</span><span class="p">,</span>
-                <span class="n">help</span><span class="o">=</span><span class="s">&#39;end of fading in; [s] w.r.t phase arrival&#39;</span><span class="p">)</span></div>
+                <span class="n">help</span><span class="o">=</span><span class="s1">&#39;end of fading in; [s] w.r.t phase arrival&#39;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Filter"><a class="viewcode-back" href="../api.html#heart.Filter">[docs]</a><span class="k">class</span> <span class="nc">Filter</span><span class="p">(</span><span class="n">Object</span><span class="p">):</span>
@@ -525,13 +530,13 @@
 
     <span class="n">lower_corner</span> <span class="o">=</span> <span class="n">Float</span><span class="o">.</span><span class="n">T</span><span class="p">(</span>
         <span class="n">default</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s">&#39;Lower corner frequency&#39;</span><span class="p">)</span>
+        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Lower corner frequency&#39;</span><span class="p">)</span>
     <span class="n">upper_corner</span> <span class="o">=</span> <span class="n">Float</span><span class="o">.</span><span class="n">T</span><span class="p">(</span>
         <span class="n">default</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s">&#39;Upper corner frequency&#39;</span><span class="p">)</span>
+        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Upper corner frequency&#39;</span><span class="p">)</span>
     <span class="n">order</span> <span class="o">=</span> <span class="n">Int</span><span class="o">.</span><span class="n">T</span><span class="p">(</span>
         <span class="n">default</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s">&#39;order of filter, the higher the steeper&#39;</span><span class="p">)</span></div>
+        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;order of filter, the higher the steeper&#39;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Parameter"><a class="viewcode-back" href="../api.html#heart.Parameter">[docs]</a><span class="k">class</span> <span class="nc">Parameter</span><span class="p">(</span><span class="n">Object</span><span class="p">):</span>
@@ -539,30 +544,30 @@
 <span class="sd">    Optimization parameter determines the bounds of the search space.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">name</span> <span class="o">=</span> <span class="n">String</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="s">&#39;lon&#39;</span><span class="p">)</span>
-    <span class="n">form</span> <span class="o">=</span> <span class="n">String</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="s">&#39;Uniform&#39;</span><span class="p">,</span>
-                    <span class="n">help</span><span class="o">=</span><span class="s">&#39;Type of prior distribution to use. Options:&#39;</span>
-                         <span class="s">&#39; &quot;Uniform&quot;, ...&#39;</span><span class="p">)</span>
-    <span class="n">lower</span> <span class="o">=</span> <span class="n">Array</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="bp">None</span><span class="p">,),</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">String</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="s1">&#39;lon&#39;</span><span class="p">)</span>
+    <span class="n">form</span> <span class="o">=</span> <span class="n">String</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="s1">&#39;Uniform&#39;</span><span class="p">,</span>
+                    <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Type of prior distribution to use. Options:&#39;</span>
+                         <span class="s1">&#39; &quot;Uniform&quot;, ...&#39;</span><span class="p">)</span>
+    <span class="n">lower</span> <span class="o">=</span> <span class="n">Array</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="kc">None</span><span class="p">,),</span>
                     <span class="n">dtype</span><span class="o">=</span><span class="n">num</span><span class="o">.</span><span class="n">float</span><span class="p">,</span>
-                    <span class="n">serialize_as</span><span class="o">=</span><span class="s">&#39;list&#39;</span><span class="p">,</span>
+                    <span class="n">serialize_as</span><span class="o">=</span><span class="s1">&#39;list&#39;</span><span class="p">,</span>
                     <span class="n">default</span><span class="o">=</span><span class="n">num</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">]))</span>
-    <span class="n">upper</span> <span class="o">=</span> <span class="n">Array</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="bp">None</span><span class="p">,),</span>
+    <span class="n">upper</span> <span class="o">=</span> <span class="n">Array</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="kc">None</span><span class="p">,),</span>
                     <span class="n">dtype</span><span class="o">=</span><span class="n">num</span><span class="o">.</span><span class="n">float</span><span class="p">,</span>
-                    <span class="n">serialize_as</span><span class="o">=</span><span class="s">&#39;list&#39;</span><span class="p">,</span>
+                    <span class="n">serialize_as</span><span class="o">=</span><span class="s1">&#39;list&#39;</span><span class="p">,</span>
                     <span class="n">default</span><span class="o">=</span><span class="n">num</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">]))</span>
-    <span class="n">testvalue</span> <span class="o">=</span> <span class="n">Array</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="bp">None</span><span class="p">,),</span>
+    <span class="n">testvalue</span> <span class="o">=</span> <span class="n">Array</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="kc">None</span><span class="p">,),</span>
                         <span class="n">dtype</span><span class="o">=</span><span class="n">num</span><span class="o">.</span><span class="n">float</span><span class="p">,</span>
-                        <span class="n">serialize_as</span><span class="o">=</span><span class="s">&#39;list&#39;</span><span class="p">,</span>
+                        <span class="n">serialize_as</span><span class="o">=</span><span class="s1">&#39;list&#39;</span><span class="p">,</span>
                         <span class="n">default</span><span class="o">=</span><span class="n">num</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">]))</span>
 
     <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">lower</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">lower</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dimension</span><span class="p">):</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">testvalue</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">upper</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="ow">or</span> \
                     <span class="bp">self</span><span class="o">.</span><span class="n">testvalue</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">lower</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
-                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;the testvalue of parameter &quot;</span><span class="si">%s</span><span class="s">&quot; has to be&#39;</span>
-                        <span class="s">&#39;within the upper and lower bounds&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;the testvalue of parameter &quot;</span><span class="si">%s</span><span class="s1">&quot; has to be&#39;</span>
+                        <span class="s1">&#39;within the upper and lower bounds&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">dimension</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -578,27 +583,27 @@
 <span class="sd">    Interferogram class as a dataset in the optimization.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">track</span> <span class="o">=</span> <span class="n">String</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="s">&#39;A&#39;</span><span class="p">)</span>
-    <span class="n">master</span> <span class="o">=</span> <span class="n">String</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">optional</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-                      <span class="n">help</span><span class="o">=</span><span class="s">&#39;Acquisition time of master image YYYY-MM-DD&#39;</span><span class="p">)</span>
-    <span class="n">slave</span> <span class="o">=</span> <span class="n">String</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">optional</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-                      <span class="n">help</span><span class="o">=</span><span class="s">&#39;Acquisition time of slave image YYYY-MM-DD&#39;</span><span class="p">)</span>
-    <span class="n">amplitude</span> <span class="o">=</span> <span class="n">Array</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="bp">None</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">num</span><span class="o">.</span><span class="n">float</span><span class="p">,</span> <span class="n">optional</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-    <span class="n">wrapped_phase</span> <span class="o">=</span> <span class="n">Array</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="bp">None</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">num</span><span class="o">.</span><span class="n">float</span><span class="p">,</span> <span class="n">optional</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-    <span class="n">incidence</span> <span class="o">=</span> <span class="n">Array</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="bp">None</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">num</span><span class="o">.</span><span class="n">float</span><span class="p">,</span> <span class="n">optional</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-    <span class="n">heading</span> <span class="o">=</span> <span class="n">Array</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="bp">None</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">num</span><span class="o">.</span><span class="n">float</span><span class="p">,</span> <span class="n">optional</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-    <span class="n">los_vector</span> <span class="o">=</span> <span class="n">Array</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">num</span><span class="o">.</span><span class="n">float</span><span class="p">,</span> <span class="n">optional</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-    <span class="n">utmn</span> <span class="o">=</span> <span class="n">Array</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="bp">None</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">num</span><span class="o">.</span><span class="n">float</span><span class="p">,</span> <span class="n">optional</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-    <span class="n">utme</span> <span class="o">=</span> <span class="n">Array</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="bp">None</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">num</span><span class="o">.</span><span class="n">float</span><span class="p">,</span> <span class="n">optional</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-    <span class="n">lats</span> <span class="o">=</span> <span class="n">Array</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="bp">None</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">num</span><span class="o">.</span><span class="n">float</span><span class="p">,</span> <span class="n">optional</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-    <span class="n">lons</span> <span class="o">=</span> <span class="n">Array</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="bp">None</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">num</span><span class="o">.</span><span class="n">float</span><span class="p">,</span> <span class="n">optional</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-    <span class="n">satellite</span> <span class="o">=</span> <span class="n">String</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="s">&#39;Envisat&#39;</span><span class="p">)</span>
+    <span class="n">track</span> <span class="o">=</span> <span class="n">String</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="s1">&#39;A&#39;</span><span class="p">)</span>
+    <span class="n">master</span> <span class="o">=</span> <span class="n">String</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">optional</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                      <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Acquisition time of master image YYYY-MM-DD&#39;</span><span class="p">)</span>
+    <span class="n">slave</span> <span class="o">=</span> <span class="n">String</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">optional</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                      <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Acquisition time of slave image YYYY-MM-DD&#39;</span><span class="p">)</span>
+    <span class="n">amplitude</span> <span class="o">=</span> <span class="n">Array</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="kc">None</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">num</span><span class="o">.</span><span class="n">float</span><span class="p">,</span> <span class="n">optional</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">wrapped_phase</span> <span class="o">=</span> <span class="n">Array</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="kc">None</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">num</span><span class="o">.</span><span class="n">float</span><span class="p">,</span> <span class="n">optional</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">incidence</span> <span class="o">=</span> <span class="n">Array</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="kc">None</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">num</span><span class="o">.</span><span class="n">float</span><span class="p">,</span> <span class="n">optional</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">heading</span> <span class="o">=</span> <span class="n">Array</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="kc">None</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">num</span><span class="o">.</span><span class="n">float</span><span class="p">,</span> <span class="n">optional</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">los_vector</span> <span class="o">=</span> <span class="n">Array</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">num</span><span class="o">.</span><span class="n">float</span><span class="p">,</span> <span class="n">optional</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">utmn</span> <span class="o">=</span> <span class="n">Array</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="kc">None</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">num</span><span class="o">.</span><span class="n">float</span><span class="p">,</span> <span class="n">optional</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">utme</span> <span class="o">=</span> <span class="n">Array</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="kc">None</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">num</span><span class="o">.</span><span class="n">float</span><span class="p">,</span> <span class="n">optional</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">lats</span> <span class="o">=</span> <span class="n">Array</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="kc">None</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">num</span><span class="o">.</span><span class="n">float</span><span class="p">,</span> <span class="n">optional</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">lons</span> <span class="o">=</span> <span class="n">Array</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="kc">None</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">num</span><span class="o">.</span><span class="n">float</span><span class="p">,</span> <span class="n">optional</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">satellite</span> <span class="o">=</span> <span class="n">String</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="s1">&#39;Envisat&#39;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">s</span> <span class="o">=</span> <span class="s">&#39;IFG Acquisition Track: </span><span class="si">%s</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">track</span>
-        <span class="n">s</span> <span class="o">+=</span> <span class="s">&#39;  timerange: </span><span class="si">%s</span><span class="s"> - </span><span class="si">%s</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">slave</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">lats</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-            <span class="n">s</span> <span class="o">+=</span> <span class="s">&#39;  number of pixels: </span><span class="si">%i</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">lats</span><span class="o">.</span><span class="n">size</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="s1">&#39;IFG Acquisition Track: </span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">track</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="s1">&#39;  timerange: </span><span class="si">%s</span><span class="s1"> - </span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">slave</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">lats</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="s1">&#39;  number of pixels: </span><span class="si">%i</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">lats</span><span class="o">.</span><span class="n">size</span>
         <span class="k">return</span> <span class="n">s</span>
 
     <span class="nd">@property</span>
@@ -614,8 +619,8 @@
 <span class="sd">        :class:`numpy.ndarray` (n_points, 3)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">incidence</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">heading</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-            <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;Incidence and Heading need to be provided!&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">incidence</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">heading</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Incidence and Heading need to be provided!&#39;</span><span class="p">)</span>
 
         <span class="n">Su</span> <span class="o">=</span> <span class="n">num</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">num</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">incidence</span><span class="p">))</span>
         <span class="n">Sn</span> <span class="o">=</span> <span class="o">-</span> <span class="n">num</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">num</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">incidence</span><span class="p">))</span> <span class="o">*</span> \
@@ -632,21 +637,21 @@
 <span class="sd">    of synthetics and container for SAR data.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">unwrapped_phase</span> <span class="o">=</span> <span class="n">Array</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="bp">None</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">num</span><span class="o">.</span><span class="n">float</span><span class="p">,</span> <span class="n">optional</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-    <span class="n">coherence</span> <span class="o">=</span> <span class="n">Array</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="bp">None</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">num</span><span class="o">.</span><span class="n">float</span><span class="p">,</span> <span class="n">optional</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-    <span class="n">reference_point</span> <span class="o">=</span> <span class="n">Tuple</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">Float</span><span class="o">.</span><span class="n">T</span><span class="p">(),</span> <span class="n">optional</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-    <span class="n">reference_value</span> <span class="o">=</span> <span class="n">Float</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">optional</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
-    <span class="n">displacement</span> <span class="o">=</span> <span class="n">Array</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="bp">None</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">num</span><span class="o">.</span><span class="n">float</span><span class="p">,</span> <span class="n">optional</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">unwrapped_phase</span> <span class="o">=</span> <span class="n">Array</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="kc">None</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">num</span><span class="o">.</span><span class="n">float</span><span class="p">,</span> <span class="n">optional</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">coherence</span> <span class="o">=</span> <span class="n">Array</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="kc">None</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">num</span><span class="o">.</span><span class="n">float</span><span class="p">,</span> <span class="n">optional</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">reference_point</span> <span class="o">=</span> <span class="n">Tuple</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">Float</span><span class="o">.</span><span class="n">T</span><span class="p">(),</span> <span class="n">optional</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">reference_value</span> <span class="o">=</span> <span class="n">Float</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">optional</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+    <span class="n">displacement</span> <span class="o">=</span> <span class="n">Array</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="kc">None</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">num</span><span class="o">.</span><span class="n">float</span><span class="p">,</span> <span class="n">optional</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">covariance</span> <span class="o">=</span> <span class="n">Covariance</span><span class="o">.</span><span class="n">T</span><span class="p">(</span>
-        <span class="n">optional</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s">&#39;:py:class:`Covariance` that holds data&#39;</span>
-             <span class="s">&#39;and model prediction covariance matrixes&#39;</span><span class="p">)</span>
+        <span class="n">optional</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;:py:class:`Covariance` that holds data&#39;</span>
+             <span class="s1">&#39;and model prediction covariance matrixes&#39;</span><span class="p">)</span>
     <span class="n">odw</span> <span class="o">=</span> <span class="n">Array</span><span class="o">.</span><span class="n">T</span><span class="p">(</span>
-        <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="bp">None</span><span class="p">,),</span>
+        <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="kc">None</span><span class="p">,),</span>
         <span class="n">dtype</span><span class="o">=</span><span class="n">num</span><span class="o">.</span><span class="n">float</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s">&#39;Overlapping data weights, additional weight factor to the&#39;</span>
-             <span class="s">&#39;dataset for overlaps with other datasets&#39;</span><span class="p">,</span>
-        <span class="n">optional</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Overlapping data weights, additional weight factor to the&#39;</span>
+             <span class="s1">&#39;dataset for overlaps with other datasets&#39;</span><span class="p">,</span>
+        <span class="n">optional</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 <div class="viewcode-block" id="DiffIFG.plot"><a class="viewcode-back" href="../api.html#heart.DiffIFG.plot">[docs]</a>    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">point_size</span><span class="o">=</span><span class="mi">20</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -658,17 +663,17 @@
 <span class="sd">            determines the size of the scatter plot points</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="c">#colim = num.max([disp.max(), num.abs(disp.min())])</span>
+        <span class="c1">#colim = num.max([disp.max(), num.abs(disp.min())])</span>
         <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">axes</span><span class="p">()</span>
         <span class="n">im</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lons</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lats</span><span class="p">,</span> <span class="n">point_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">displacement</span><span class="p">,</span>
-            <span class="n">edgecolors</span><span class="o">=</span><span class="s">&#39;none&#39;</span><span class="p">)</span>
+            <span class="n">edgecolors</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">im</span><span class="p">)</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s">&#39;Displacements [m] </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">track</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Displacements [m] </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">track</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div></div>
 
 
-<div class="viewcode-block" id="init_targets"><a class="viewcode-back" href="../api.html#heart.init_targets">[docs]</a><span class="k">def</span> <span class="nf">init_targets</span><span class="p">(</span><span class="n">stations</span><span class="p">,</span> <span class="n">channels</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;T&#39;</span><span class="p">,</span> <span class="s">&#39;Z&#39;</span><span class="p">],</span> <span class="n">sample_rate</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
-                 <span class="n">crust_inds</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;multilinear&#39;</span><span class="p">):</span>
+<div class="viewcode-block" id="init_targets"><a class="viewcode-back" href="../api.html#heart.init_targets">[docs]</a><span class="k">def</span> <span class="nf">init_targets</span><span class="p">(</span><span class="n">stations</span><span class="p">,</span> <span class="n">channels</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;T&#39;</span><span class="p">,</span> <span class="s1">&#39;Z&#39;</span><span class="p">],</span> <span class="n">sample_rate</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+                 <span class="n">crust_inds</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">interpolation</span><span class="o">=</span><span class="s1">&#39;multilinear&#39;</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Initiate a list of target objects given a list of indexes to the</span>
 <span class="sd">    respective GF store velocity model variation index (crust_inds).</span>
@@ -696,16 +701,16 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">targets</span> <span class="o">=</span> <span class="p">[</span><span class="n">TeleseismicTarget</span><span class="p">(</span>
-        <span class="n">quantity</span><span class="o">=</span><span class="s">&#39;displacement&#39;</span><span class="p">,</span>
+        <span class="n">quantity</span><span class="o">=</span><span class="s1">&#39;displacement&#39;</span><span class="p">,</span>
         <span class="n">codes</span><span class="o">=</span><span class="p">(</span><span class="n">stations</span><span class="p">[</span><span class="n">sta_num</span><span class="p">]</span><span class="o">.</span><span class="n">network</span><span class="p">,</span>
                  <span class="n">stations</span><span class="p">[</span><span class="n">sta_num</span><span class="p">]</span><span class="o">.</span><span class="n">station</span><span class="p">,</span>
-                 <span class="s">&#39;</span><span class="si">%i</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">crust_ind</span><span class="p">,</span> <span class="n">channel</span><span class="p">),</span>  <span class="c"># n, s, l, c</span>
+                 <span class="s1">&#39;</span><span class="si">%i</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">crust_ind</span><span class="p">,</span> <span class="n">channel</span><span class="p">),</span>  <span class="c1"># n, s, l, c</span>
         <span class="n">lat</span><span class="o">=</span><span class="n">stations</span><span class="p">[</span><span class="n">sta_num</span><span class="p">]</span><span class="o">.</span><span class="n">lat</span><span class="p">,</span>
         <span class="n">lon</span><span class="o">=</span><span class="n">stations</span><span class="p">[</span><span class="n">sta_num</span><span class="p">]</span><span class="o">.</span><span class="n">lon</span><span class="p">,</span>
         <span class="n">azimuth</span><span class="o">=</span><span class="n">stations</span><span class="p">[</span><span class="n">sta_num</span><span class="p">]</span><span class="o">.</span><span class="n">get_channel</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span><span class="o">.</span><span class="n">azimuth</span><span class="p">,</span>
         <span class="n">dip</span><span class="o">=</span><span class="n">stations</span><span class="p">[</span><span class="n">sta_num</span><span class="p">]</span><span class="o">.</span><span class="n">get_channel</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span><span class="o">.</span><span class="n">dip</span><span class="p">,</span>
         <span class="n">interpolation</span><span class="o">=</span><span class="n">interpolation</span><span class="p">,</span>
-        <span class="n">store_id</span><span class="o">=</span><span class="s">&#39;</span><span class="si">%s</span><span class="s">_ak135_</span><span class="si">%.3f</span><span class="s">Hz_</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">stations</span><span class="p">[</span><span class="n">sta_num</span><span class="p">]</span><span class="o">.</span><span class="n">station</span><span class="p">,</span>
+        <span class="n">store_id</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">_ak135_</span><span class="si">%.3f</span><span class="s1">Hz_</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">stations</span><span class="p">[</span><span class="n">sta_num</span><span class="p">]</span><span class="o">.</span><span class="n">station</span><span class="p">,</span>
                                                 <span class="n">sample_rate</span><span class="p">,</span> <span class="n">crust_ind</span><span class="p">))</span>
 
         <span class="k">for</span> <span class="n">channel</span> <span class="ow">in</span> <span class="n">channels</span>
@@ -747,29 +752,29 @@
     <span class="n">new_earthmod</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">earthmod</span><span class="p">)</span>
     <span class="n">layers</span> <span class="o">=</span> <span class="n">new_earthmod</span><span class="o">.</span><span class="n">layers</span><span class="p">()</span>
 
-    <span class="n">last_l</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="n">last_l</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">cost</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">deltaz</span> <span class="o">=</span> <span class="mi">0</span>
 
-    <span class="c"># uncertainties in discontinuity depth after Shearer 1991</span>
-    <span class="n">discont_unc</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;410&#39;</span><span class="p">:</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">km</span><span class="p">,</span>
-                   <span class="s">&#39;520&#39;</span><span class="p">:</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">km</span><span class="p">,</span>
-                   <span class="s">&#39;660&#39;</span><span class="p">:</span> <span class="mi">8</span> <span class="o">*</span> <span class="n">km</span><span class="p">}</span>
+    <span class="c1"># uncertainties in discontinuity depth after Shearer 1991</span>
+    <span class="n">discont_unc</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;410&#39;</span><span class="p">:</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">km</span><span class="p">,</span>
+                   <span class="s1">&#39;520&#39;</span><span class="p">:</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">km</span><span class="p">,</span>
+                   <span class="s1">&#39;660&#39;</span><span class="p">:</span> <span class="mi">8</span> <span class="o">*</span> <span class="n">km</span><span class="p">}</span>
 
-    <span class="c"># uncertainties in velocity for upper and lower mantle from Woodward 1991</span>
-    <span class="n">mantle_vel_unc</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;200&#39;</span><span class="p">:</span> <span class="mf">0.02</span><span class="p">,</span>     <span class="c"># above 200</span>
-                      <span class="s">&#39;400&#39;</span><span class="p">:</span> <span class="mf">0.01</span><span class="p">}</span>     <span class="c"># above 400</span>
+    <span class="c1"># uncertainties in velocity for upper and lower mantle from Woodward 1991</span>
+    <span class="n">mantle_vel_unc</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;200&#39;</span><span class="p">:</span> <span class="mf">0.02</span><span class="p">,</span>     <span class="c1"># above 200</span>
+                      <span class="s1">&#39;400&#39;</span><span class="p">:</span> <span class="mf">0.01</span><span class="p">}</span>     <span class="c1"># above 400</span>
 
     <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="n">layers</span><span class="p">:</span>
-        <span class="c"># stop if depth_limit_variation is reached</span>
+        <span class="c1"># stop if depth_limit_variation is reached</span>
         <span class="k">if</span> <span class="n">depth_limit_variation</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">layer</span><span class="o">.</span><span class="n">ztop</span> <span class="o">&gt;=</span> <span class="n">depth_limit_variation</span><span class="p">:</span>
                 <span class="n">layer</span><span class="o">.</span><span class="n">ztop</span> <span class="o">=</span> <span class="n">last_l</span><span class="o">.</span><span class="n">zbot</span>
-                <span class="c"># assign large cost if previous layer has higher velocity</span>
+                <span class="c1"># assign large cost if previous layer has higher velocity</span>
                 <span class="k">if</span> <span class="n">layer</span><span class="o">.</span><span class="n">mtop</span><span class="o">.</span><span class="n">vp</span> <span class="o">&lt;</span> <span class="n">last_l</span><span class="o">.</span><span class="n">mtop</span><span class="o">.</span><span class="n">vp</span> <span class="ow">or</span> \
                    <span class="n">layer</span><span class="o">.</span><span class="n">mtop</span><span class="o">.</span><span class="n">vp</span> <span class="o">&gt;</span> <span class="n">layer</span><span class="o">.</span><span class="n">mbot</span><span class="o">.</span><span class="n">vp</span><span class="p">:</span>
                     <span class="n">cost</span> <span class="o">=</span> <span class="mi">1000</span>
-                <span class="c"># assign large cost if layer bottom depth smaller than top</span>
+                <span class="c1"># assign large cost if layer bottom depth smaller than top</span>
                 <span class="k">if</span> <span class="n">layer</span><span class="o">.</span><span class="n">zbot</span> <span class="o">&lt;</span> <span class="n">layer</span><span class="o">.</span><span class="n">ztop</span><span class="p">:</span>
                     <span class="n">cost</span> <span class="o">=</span> <span class="mi">1000</span>
                 <span class="k">break</span>
@@ -779,12 +784,12 @@
             <span class="k">if</span> <span class="n">count</span> <span class="o">&gt;</span> <span class="mi">1000</span><span class="p">:</span>
                 <span class="k">break</span>
 
-            <span class="c"># vary layer velocity</span>
-            <span class="c"># check for layer depth and use hardcoded uncertainties</span>
+            <span class="c1"># vary layer velocity</span>
+            <span class="c1"># check for layer depth and use hardcoded uncertainties</span>
             <span class="k">for</span> <span class="n">l_depth</span><span class="p">,</span> <span class="n">vel_unc</span> <span class="ow">in</span> <span class="n">mantle_vel_unc</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                 <span class="k">if</span> <span class="nb">float</span><span class="p">(</span><span class="n">l_depth</span><span class="p">)</span> <span class="o">*</span> <span class="n">km</span> <span class="o">&lt;</span> <span class="n">layer</span><span class="o">.</span><span class="n">ztop</span><span class="p">:</span>
                     <span class="n">err_velocities</span> <span class="o">=</span> <span class="n">vel_unc</span>
-                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;Velocity error: </span><span class="si">%f</span><span class="s"> &#39;</span><span class="p">,</span> <span class="n">err_velocities</span><span class="p">)</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Velocity error: </span><span class="si">%f</span><span class="s1"> &#39;</span><span class="p">,</span> <span class="n">err_velocities</span><span class="p">)</span>
 
             <span class="n">deltavp</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">num</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span>
                         <span class="mi">0</span><span class="p">,</span> <span class="n">layer</span><span class="o">.</span><span class="n">mtop</span><span class="o">.</span><span class="n">vp</span> <span class="o">*</span> <span class="n">err_velocities</span> <span class="o">/</span> <span class="mf">3.</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
@@ -793,9 +798,9 @@
                 <span class="n">layer</span><span class="o">.</span><span class="n">mtop</span><span class="o">.</span><span class="n">vp</span> <span class="o">+=</span> <span class="n">deltavp</span>
                 <span class="n">layer</span><span class="o">.</span><span class="n">mbot</span><span class="o">.</span><span class="n">vs</span> <span class="o">+=</span> <span class="p">(</span><span class="n">deltavp</span> <span class="o">/</span> <span class="n">layer</span><span class="o">.</span><span class="n">mbot</span><span class="o">.</span><span class="n">vp_vs_ratio</span><span class="p">())</span>
 
-            <span class="c"># ensure increasing velocity with depth</span>
+            <span class="c1"># ensure increasing velocity with depth</span>
             <span class="k">if</span> <span class="n">last_l</span><span class="p">:</span>
-                <span class="c"># gradient layer without interface</span>
+                <span class="c1"># gradient layer without interface</span>
                 <span class="k">if</span> <span class="n">layer</span><span class="o">.</span><span class="n">mtop</span><span class="o">.</span><span class="n">vp</span> <span class="o">==</span> <span class="n">last_l</span><span class="o">.</span><span class="n">mbot</span><span class="o">.</span><span class="n">vp</span><span class="p">:</span>
                     <span class="k">if</span> <span class="n">layer</span><span class="o">.</span><span class="n">mbot</span><span class="o">.</span><span class="n">vp</span> <span class="o">+</span> <span class="n">deltavp</span> <span class="o">&lt;</span> <span class="n">layer</span><span class="o">.</span><span class="n">mtop</span><span class="o">.</span><span class="n">vp</span><span class="p">:</span>
                         <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
@@ -819,20 +824,20 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">repeat</span> <span class="o">=</span> <span class="mi">0</span>
 
-        <span class="c"># vary layer depth</span>
+        <span class="c1"># vary layer depth</span>
         <span class="n">layer</span><span class="o">.</span><span class="n">ztop</span> <span class="o">+=</span> <span class="n">deltaz</span>
         <span class="n">repeat</span> <span class="o">=</span> <span class="mi">1</span>
 
-        <span class="c"># use hard coded uncertainties for mantle discontinuities</span>
-        <span class="k">if</span> <span class="s">&#39;</span><span class="si">%i</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">zbot</span> <span class="o">/</span> <span class="n">km</span><span class="p">)</span> <span class="ow">in</span> <span class="n">discont_unc</span><span class="p">:</span>
-            <span class="n">factor_d</span> <span class="o">=</span> <span class="n">discont_unc</span><span class="p">[</span><span class="s">&#39;</span><span class="si">%i</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">zbot</span> <span class="o">/</span> <span class="n">km</span><span class="p">)]</span> <span class="o">/</span> <span class="n">layer</span><span class="o">.</span><span class="n">zbot</span>
+        <span class="c1"># use hard coded uncertainties for mantle discontinuities</span>
+        <span class="k">if</span> <span class="s1">&#39;</span><span class="si">%i</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">zbot</span> <span class="o">/</span> <span class="n">km</span><span class="p">)</span> <span class="ow">in</span> <span class="n">discont_unc</span><span class="p">:</span>
+            <span class="n">factor_d</span> <span class="o">=</span> <span class="n">discont_unc</span><span class="p">[</span><span class="s1">&#39;</span><span class="si">%i</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">zbot</span> <span class="o">/</span> <span class="n">km</span><span class="p">)]</span> <span class="o">/</span> <span class="n">layer</span><span class="o">.</span><span class="n">zbot</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">factor_d</span> <span class="o">=</span> <span class="n">err_depth</span>
 
         <span class="k">while</span> <span class="n">repeat</span><span class="p">:</span>
-            <span class="c"># ensure that bottom of layer is not shallower than the top</span>
+            <span class="c1"># ensure that bottom of layer is not shallower than the top</span>
             <span class="n">deltaz</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">num</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span>
-                       <span class="mi">0</span><span class="p">,</span> <span class="n">layer</span><span class="o">.</span><span class="n">zbot</span> <span class="o">*</span> <span class="n">factor_d</span> <span class="o">/</span> <span class="mf">3.</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>  <span class="c"># 3 sigma</span>
+                       <span class="mi">0</span><span class="p">,</span> <span class="n">layer</span><span class="o">.</span><span class="n">zbot</span> <span class="o">*</span> <span class="n">factor_d</span> <span class="o">/</span> <span class="mf">3.</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>  <span class="c1"># 3 sigma</span>
             <span class="n">layer</span><span class="o">.</span><span class="n">zbot</span> <span class="o">+=</span> <span class="n">deltaz</span>
             <span class="k">if</span> <span class="n">layer</span><span class="o">.</span><span class="n">zbot</span> <span class="o">&lt;</span> <span class="n">layer</span><span class="o">.</span><span class="n">ztop</span><span class="p">:</span>
                 <span class="n">layer</span><span class="o">.</span><span class="n">zbot</span> <span class="o">-=</span> <span class="n">deltaz</span>
@@ -881,7 +886,7 @@
             <span class="n">depth_limit_variation</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">cost</span> <span class="o">&gt;</span> <span class="mi">20</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;Skipped unlikely model </span><span class="si">%f</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">cost</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Skipped unlikely model </span><span class="si">%f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">cost</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
             <span class="n">earthmods</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_model</span><span class="p">)</span>
@@ -889,13 +894,13 @@
     <span class="k">return</span> <span class="n">earthmods</span></div>
 
 
-<div class="viewcode-block" id="seis_construct_gf"><a class="viewcode-back" href="../api.html#heart.seis_construct_gf">[docs]</a><span class="k">def</span> <span class="nf">seis_construct_gf</span><span class="p">(</span><span class="n">station</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">store_superdir</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="s">&#39;qssp&#39;</span><span class="p">,</span>
+<div class="viewcode-block" id="seis_construct_gf"><a class="viewcode-back" href="../api.html#heart.seis_construct_gf">[docs]</a><span class="k">def</span> <span class="nf">seis_construct_gf</span><span class="p">(</span><span class="n">station</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">store_superdir</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="s1">&#39;qssp&#39;</span><span class="p">,</span>
         <span class="n">source_depth_min</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">source_depth_max</span><span class="o">=</span><span class="mf">10.</span><span class="p">,</span> <span class="n">source_depth_spacing</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span>
         <span class="n">source_distance_radius</span><span class="o">=</span><span class="mf">10.</span><span class="p">,</span> <span class="n">source_distance_spacing</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span>
         <span class="n">sample_rate</span><span class="o">=</span><span class="mf">2.</span><span class="p">,</span> <span class="n">depth_limit_variation</span><span class="o">=</span><span class="mi">600</span><span class="p">,</span>
-        <span class="n">earth_model</span><span class="o">=</span><span class="s">&#39;ak135-f-average.m&#39;</span><span class="p">,</span> <span class="n">crust_ind</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-        <span class="n">execute</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">rm_gfs</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">nworkers</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">use_crust2</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-        <span class="n">replace_water</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">custom_velocity_model</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="n">earth_model</span><span class="o">=</span><span class="s1">&#39;ak135-f-average.m&#39;</span><span class="p">,</span> <span class="n">crust_ind</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">execute</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">rm_gfs</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">nworkers</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">use_crust2</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">replace_water</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">custom_velocity_model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculate seismic Greens Functions (GFs) and create a repository &#39;store&#39;</span>
 <span class="sd">    that is being used later on repeatetly to calculate the synthetic</span>
@@ -960,20 +965,20 @@
 <span class="sd">        Flag to overwrite existing GF stores</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="c"># calculate distance to station [m]</span>
+    <span class="c1"># calculate distance to station [m]</span>
     <span class="n">distance</span> <span class="o">=</span> <span class="n">orthodrome</span><span class="o">.</span><span class="n">distance_accurate50m</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">station</span><span class="p">)</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;Station </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">station</span><span class="o">.</span><span class="n">station</span><span class="p">)</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;---------------------&#39;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Station </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">station</span><span class="o">.</span><span class="n">station</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;---------------------&#39;</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">use_crust2</span><span class="p">:</span>
-        <span class="c"># load velocity profile from CRUST2x2 and check for water layer</span>
+        <span class="c1"># load velocity profile from CRUST2x2 and check for water layer</span>
         <span class="n">profile_station</span> <span class="o">=</span> <span class="n">crust2x2</span><span class="o">.</span><span class="n">get_profile</span><span class="p">(</span><span class="n">station</span><span class="o">.</span><span class="n">lat</span><span class="p">,</span> <span class="n">station</span><span class="o">.</span><span class="n">lon</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">replace_water</span><span class="p">:</span>
             <span class="n">thickness_lwater</span> <span class="o">=</span> <span class="n">profile_station</span><span class="o">.</span><span class="n">get_layer</span><span class="p">(</span><span class="n">crust2x2</span><span class="o">.</span><span class="n">LWATER</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
             <span class="k">if</span> <span class="n">thickness_lwater</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;Water layer </span><span class="si">%f</span><span class="s"> in CRUST model!&#39;</span>
-                    <span class="s">&#39; Remove and add to lower crust&#39;</span> <span class="o">%</span> <span class="n">thickness_lwater</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Water layer </span><span class="si">%f</span><span class="s1"> in CRUST model!&#39;</span>
+                    <span class="s1">&#39; Remove and add to lower crust&#39;</span> <span class="o">%</span> <span class="n">thickness_lwater</span><span class="p">)</span>
                 <span class="n">thickness_llowercrust</span> <span class="o">=</span> <span class="n">profile_station</span><span class="o">.</span><span class="n">get_layer</span><span class="p">(</span>
                                                 <span class="n">crust2x2</span><span class="o">.</span><span class="n">LLOWERCRUST</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
                 <span class="n">thickness_lsoftsed</span> <span class="o">=</span> <span class="n">profile_station</span><span class="o">.</span><span class="n">get_layer</span><span class="p">(</span>
@@ -988,17 +993,17 @@
                         <span class="p">(</span><span class="n">thickness_lsoftsed</span> <span class="o">-</span> <span class="n">num</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">thickness_lsoftsed</span> <span class="o">/</span> <span class="mi">3</span><span class="p">))</span>
                         <span class="p">)</span>
                 <span class="n">profile_station</span><span class="o">.</span><span class="n">_elevation</span> <span class="o">=</span> <span class="mf">0.0</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;New Lower crust layer thickness </span><span class="si">%f</span><span class="s">&#39;</span> <span class="o">%</span> \
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;New Lower crust layer thickness </span><span class="si">%f</span><span class="s1">&#39;</span> <span class="o">%</span> \
                     <span class="n">profile_station</span><span class="o">.</span><span class="n">get_layer</span><span class="p">(</span><span class="n">crust2x2</span><span class="o">.</span><span class="n">LLOWERCRUST</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
 
         <span class="n">profile_event</span> <span class="o">=</span> <span class="n">crust2x2</span><span class="o">.</span><span class="n">get_profile</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">lat</span><span class="p">,</span> <span class="n">event</span><span class="o">.</span><span class="n">lon</span><span class="p">)</span>
 
-        <span class="c">#extract model for source region</span>
+        <span class="c1">#extract model for source region</span>
         <span class="n">source_model</span> <span class="o">=</span> <span class="n">cake</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span>
             <span class="n">earth_model</span><span class="p">,</span> <span class="n">crust2_profile</span><span class="o">=</span><span class="n">profile_event</span><span class="p">)</span>
 
-        <span class="c"># extract model for receiver stations,</span>
-        <span class="c"># lowest layer has to be as well in source layer structure!</span>
+        <span class="c1"># extract model for receiver stations,</span>
+        <span class="c1"># lowest layer has to be as well in source layer structure!</span>
         <span class="n">receiver_model</span> <span class="o">=</span> <span class="n">cake</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span>
             <span class="n">earth_model</span><span class="p">,</span> <span class="n">crust2_profile</span><span class="o">=</span><span class="n">profile_station</span><span class="p">)</span>
 
@@ -1009,9 +1014,9 @@
 
         <span class="n">receiver_model</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">source_model</span><span class="p">)</span>
 
-    <span class="c"># randomly vary receiver site crustal model</span>
+    <span class="c1"># randomly vary receiver site crustal model</span>
     <span class="k">if</span> <span class="n">crust_ind</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="c">#moho_depth = receiver_model.discontinuity(&#39;moho&#39;).z</span>
+        <span class="c1">#moho_depth = receiver_model.discontinuity(&#39;moho&#39;).z</span>
         <span class="n">receiver_model</span> <span class="o">=</span> <span class="n">ensemble_earthmodel</span><span class="p">(</span>
             <span class="n">receiver_model</span><span class="p">,</span>
             <span class="n">num_vary</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
@@ -1019,19 +1024,19 @@
             <span class="n">err_velocities</span><span class="o">=</span><span class="n">err_velocities</span><span class="p">,</span>
             <span class="n">depth_limit_variation</span><span class="o">=</span><span class="n">depth_limit_variation</span> <span class="o">*</span> <span class="n">km</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 
-    <span class="c"># define phases</span>
+    <span class="c1"># define phases</span>
     <span class="n">tabulated_phases</span> <span class="o">=</span> <span class="p">[</span>
         <span class="n">gf</span><span class="o">.</span><span class="n">TPDef</span><span class="p">(</span>
-            <span class="nb">id</span><span class="o">=</span><span class="s">&#39;any_P&#39;</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s">&#39;p,P,p</span><span class="se">\\</span><span class="s">,P</span><span class="se">\\</span><span class="s">&#39;</span><span class="p">),</span>
+            <span class="nb">id</span><span class="o">=</span><span class="s1">&#39;any_P&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;p,P,p</span><span class="se">\\</span><span class="s1">,P</span><span class="se">\\</span><span class="s1">&#39;</span><span class="p">),</span>
         <span class="n">gf</span><span class="o">.</span><span class="n">TPDef</span><span class="p">(</span>
-            <span class="nb">id</span><span class="o">=</span><span class="s">&#39;any_S&#39;</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s">&#39;s,S,s</span><span class="se">\\</span><span class="s">,S</span><span class="se">\\</span><span class="s">&#39;</span><span class="p">)]</span>
+            <span class="nb">id</span><span class="o">=</span><span class="s1">&#39;any_S&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;s,S,s</span><span class="se">\\</span><span class="s1">,S</span><span class="se">\\</span><span class="s1">&#39;</span><span class="p">)]</span>
 
-    <span class="c"># fill config files for fomosto</span>
+    <span class="c1"># fill config files for fomosto</span>
     <span class="n">fom_conf</span> <span class="o">=</span> <span class="n">gf</span><span class="o">.</span><span class="n">ConfigTypeA</span><span class="p">(</span>
-        <span class="nb">id</span><span class="o">=</span><span class="s">&#39;</span><span class="si">%s</span><span class="s">_</span><span class="si">%s</span><span class="s">_</span><span class="si">%.3f</span><span class="s">Hz_</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">station</span><span class="o">.</span><span class="n">station</span><span class="p">,</span>
-                        <span class="n">earth_model</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;-&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;.&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span>
+        <span class="nb">id</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">_</span><span class="si">%s</span><span class="s1">_</span><span class="si">%.3f</span><span class="s1">Hz_</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">station</span><span class="o">.</span><span class="n">station</span><span class="p">,</span>
+                        <span class="n">earth_model</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span>
                         <span class="n">sample_rate</span><span class="p">,</span>
                         <span class="n">crust_ind</span><span class="p">),</span>
         <span class="n">ncomponents</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
@@ -1045,7 +1050,7 @@
         <span class="n">distance_delta</span><span class="o">=</span><span class="n">source_distance_spacing</span> <span class="o">*</span> <span class="n">km</span><span class="p">,</span>
         <span class="n">tabulated_phases</span><span class="o">=</span><span class="n">tabulated_phases</span><span class="p">)</span>
 
-   <span class="c"># slowness taper</span>
+   <span class="c1"># slowness taper</span>
     <span class="n">phases</span> <span class="o">=</span> <span class="p">[</span>
         <span class="n">fom_conf</span><span class="o">.</span><span class="n">tabulated_phases</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">phases</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span>
@@ -1074,11 +1079,11 @@
                       <span class="mf">1.1</span> <span class="o">*</span> <span class="nb">float</span><span class="p">(</span><span class="n">slownesses</span><span class="o">.</span><span class="n">max</span><span class="p">()),</span>
                       <span class="mf">1.3</span> <span class="o">*</span> <span class="nb">float</span><span class="p">(</span><span class="n">slownesses</span><span class="o">.</span><span class="n">max</span><span class="p">()))</span>
 
-    <span class="k">if</span> <span class="n">code</span> <span class="o">==</span> <span class="s">&#39;qseis&#39;</span><span class="p">:</span>
-        <span class="kn">from</span> <span class="nn">pyrocko.fomosto.qseis</span> <span class="kn">import</span> <span class="n">build</span>
+    <span class="k">if</span> <span class="n">code</span> <span class="o">==</span> <span class="s1">&#39;qseis&#39;</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">pyrocko.fomosto.qseis</span> <span class="k">import</span> <span class="n">build</span>
         <span class="n">receiver_model</span> <span class="o">=</span> <span class="n">receiver_model</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">depth_max</span><span class="o">=</span><span class="mi">200</span> <span class="o">*</span> <span class="n">km</span><span class="p">)</span>
         <span class="n">model_code_id</span> <span class="o">=</span> <span class="n">code</span>
-        <span class="n">version</span> <span class="o">=</span> <span class="s">&#39;2006a&#39;</span>
+        <span class="n">version</span> <span class="o">=</span> <span class="s1">&#39;2006a&#39;</span>
         <span class="n">conf</span> <span class="o">=</span> <span class="n">qseis</span><span class="o">.</span><span class="n">QSeisConfig</span><span class="p">(</span>
             <span class="n">filter_shallow_paths</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
             <span class="n">slowness_window</span><span class="o">=</span><span class="n">slowness_taper</span><span class="p">,</span>
@@ -1087,74 +1092,74 @@
             <span class="n">sw_algorithm</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
             <span class="n">qseis_version</span><span class="o">=</span><span class="n">version</span><span class="p">)</span>
 
-    <span class="k">elif</span> <span class="n">code</span> <span class="o">==</span> <span class="s">&#39;qssp&#39;</span><span class="p">:</span>
-        <span class="kn">from</span> <span class="nn">pyrocko.fomosto.qssp</span> <span class="kn">import</span> <span class="n">build</span>
+    <span class="k">elif</span> <span class="n">code</span> <span class="o">==</span> <span class="s1">&#39;qssp&#39;</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">pyrocko.fomosto.qssp</span> <span class="k">import</span> <span class="n">build</span>
         <span class="n">source_model</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">receiver_model</span><span class="p">)</span>
-        <span class="n">receiver_model</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="n">receiver_model</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">model_code_id</span> <span class="o">=</span> <span class="n">code</span>
-        <span class="n">version</span> <span class="o">=</span> <span class="s">&#39;2010beta&#39;</span>
+        <span class="n">version</span> <span class="o">=</span> <span class="s1">&#39;2010beta&#39;</span>
         <span class="n">conf</span> <span class="o">=</span> <span class="n">qssp</span><span class="o">.</span><span class="n">QSSPConfig</span><span class="p">(</span>
             <span class="n">qssp_version</span><span class="o">=</span><span class="n">version</span><span class="p">,</span>
             <span class="n">slowness_max</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">num</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">slowness_taper</span><span class="p">)),</span>
-            <span class="n">toroidal_modes</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-            <span class="n">spheroidal_modes</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+            <span class="n">toroidal_modes</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">spheroidal_modes</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
             <span class="n">source_patch_radius</span><span class="o">=</span><span class="p">(</span><span class="n">fom_conf</span><span class="o">.</span><span class="n">distance_delta</span> <span class="o">-</span> \
                                  <span class="n">fom_conf</span><span class="o">.</span><span class="n">distance_delta</span> <span class="o">*</span> <span class="mf">0.05</span><span class="p">)</span> <span class="o">/</span> <span class="n">km</span><span class="p">)</span>
 
-    <span class="c">## elif code == &#39;QSEIS2d&#39;:</span>
-    <span class="c">##     from pyrocko.fomosto.qseis2d import build</span>
-    <span class="c">##     model_code_id = &#39;qseis2d&#39;</span>
-    <span class="c">##     version = &#39;2014&#39;</span>
-    <span class="c">##     conf = qseis2d.QSeis2dConfig()</span>
-    <span class="c">##     conf.qseis_s_config.slowness_window = slowness_taper</span>
-    <span class="c">##     conf.qseis_s_config.calc_slowness_window = 0</span>
-    <span class="c">##     conf.qseis_s_config.receiver_max_distance = 11000.</span>
-    <span class="c">##     conf.qseis_s_config.receiver_basement_depth = 35.</span>
-    <span class="c">##     conf.qseis_s_config.sw_flat_earth_transform = 1</span>
-    <span class="c">##     # extract method still buggy!!!</span>
-    <span class="c">##     receiver_model = receiver_model.extract(</span>
-    <span class="c">##             depth_max=conf.qseis_s_config.receiver_basement_depth * km)</span>
+    <span class="c1">## elif code == &#39;QSEIS2d&#39;:</span>
+    <span class="c1">##     from pyrocko.fomosto.qseis2d import build</span>
+    <span class="c1">##     model_code_id = &#39;qseis2d&#39;</span>
+    <span class="c1">##     version = &#39;2014&#39;</span>
+    <span class="c1">##     conf = qseis2d.QSeis2dConfig()</span>
+    <span class="c1">##     conf.qseis_s_config.slowness_window = slowness_taper</span>
+    <span class="c1">##     conf.qseis_s_config.calc_slowness_window = 0</span>
+    <span class="c1">##     conf.qseis_s_config.receiver_max_distance = 11000.</span>
+    <span class="c1">##     conf.qseis_s_config.receiver_basement_depth = 35.</span>
+    <span class="c1">##     conf.qseis_s_config.sw_flat_earth_transform = 1</span>
+    <span class="c1">##     # extract method still buggy!!!</span>
+    <span class="c1">##     receiver_model = receiver_model.extract(</span>
+    <span class="c1">##             depth_max=conf.qseis_s_config.receiver_basement_depth * km)</span>
 
-    <span class="c"># fill remaining fomosto params</span>
-    <span class="n">fom_conf</span><span class="o">.</span><span class="n">earthmodel_1d</span> <span class="o">=</span> <span class="n">source_model</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">depth_max</span><span class="o">=</span><span class="s">&#39;cmb&#39;</span><span class="p">)</span>
+    <span class="c1"># fill remaining fomosto params</span>
+    <span class="n">fom_conf</span><span class="o">.</span><span class="n">earthmodel_1d</span> <span class="o">=</span> <span class="n">source_model</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">depth_max</span><span class="o">=</span><span class="s1">&#39;cmb&#39;</span><span class="p">)</span>
     <span class="n">fom_conf</span><span class="o">.</span><span class="n">earthmodel_receiver_1d</span> <span class="o">=</span> <span class="n">receiver_model</span>
-    <span class="n">fom_conf</span><span class="o">.</span><span class="n">modelling_code_id</span> <span class="o">=</span> <span class="n">model_code_id</span> <span class="o">+</span> <span class="s">&#39;.&#39;</span> <span class="o">+</span> <span class="n">version</span>
+    <span class="n">fom_conf</span><span class="o">.</span><span class="n">modelling_code_id</span> <span class="o">=</span> <span class="n">model_code_id</span> <span class="o">+</span> <span class="s1">&#39;.&#39;</span> <span class="o">+</span> <span class="n">version</span>
 
-    <span class="n">window_extension</span> <span class="o">=</span> <span class="mf">60.</span>   <span class="c"># [s]</span>
+    <span class="n">window_extension</span> <span class="o">=</span> <span class="mf">60.</span>   <span class="c1"># [s]</span>
 
     <span class="n">conf</span><span class="o">.</span><span class="n">time_region</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="n">gf</span><span class="o">.</span><span class="n">Timing</span><span class="p">(</span><span class="n">tabulated_phases</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">id</span> <span class="o">+</span> <span class="s">&#39;-</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="mf">1.1</span> <span class="o">*</span> <span class="n">window_extension</span><span class="p">)),</span>
-        <span class="n">gf</span><span class="o">.</span><span class="n">Timing</span><span class="p">(</span><span class="n">tabulated_phases</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">id</span> <span class="o">+</span> <span class="s">&#39;+</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="mf">1.6</span> <span class="o">*</span> <span class="n">window_extension</span><span class="p">)))</span>
+        <span class="n">gf</span><span class="o">.</span><span class="n">Timing</span><span class="p">(</span><span class="n">tabulated_phases</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">id</span> <span class="o">+</span> <span class="s1">&#39;-</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="mf">1.1</span> <span class="o">*</span> <span class="n">window_extension</span><span class="p">)),</span>
+        <span class="n">gf</span><span class="o">.</span><span class="n">Timing</span><span class="p">(</span><span class="n">tabulated_phases</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">id</span> <span class="o">+</span> <span class="s1">&#39;+</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="mf">1.6</span> <span class="o">*</span> <span class="n">window_extension</span><span class="p">)))</span>
 
     <span class="n">conf</span><span class="o">.</span><span class="n">cut</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="n">gf</span><span class="o">.</span><span class="n">Timing</span><span class="p">(</span><span class="n">tabulated_phases</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">id</span> <span class="o">+</span> <span class="s">&#39;-</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">window_extension</span><span class="p">),</span>
-        <span class="n">gf</span><span class="o">.</span><span class="n">Timing</span><span class="p">(</span><span class="n">tabulated_phases</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">id</span> <span class="o">+</span> <span class="s">&#39;+</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="mf">1.5</span> <span class="o">*</span> <span class="n">window_extension</span><span class="p">)))</span>
+        <span class="n">gf</span><span class="o">.</span><span class="n">Timing</span><span class="p">(</span><span class="n">tabulated_phases</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">id</span> <span class="o">+</span> <span class="s1">&#39;-</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">window_extension</span><span class="p">),</span>
+        <span class="n">gf</span><span class="o">.</span><span class="n">Timing</span><span class="p">(</span><span class="n">tabulated_phases</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">id</span> <span class="o">+</span> <span class="s1">&#39;+</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="mf">1.5</span> <span class="o">*</span> <span class="n">window_extension</span><span class="p">)))</span>
 
-    <span class="n">conf</span><span class="o">.</span><span class="n">relevel_with_fade_in</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="n">conf</span><span class="o">.</span><span class="n">relevel_with_fade_in</span> <span class="o">=</span> <span class="kc">True</span>
 
     <span class="n">conf</span><span class="o">.</span><span class="n">fade</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="n">gf</span><span class="o">.</span><span class="n">Timing</span><span class="p">(</span><span class="n">tabulated_phases</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">id</span> <span class="o">+</span> <span class="s">&#39;-</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="mf">1.1</span> <span class="o">*</span> <span class="n">window_extension</span><span class="p">)),</span>
-        <span class="n">gf</span><span class="o">.</span><span class="n">Timing</span><span class="p">(</span><span class="n">tabulated_phases</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">id</span> <span class="o">+</span> <span class="s">&#39;-</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">window_extension</span><span class="p">),</span>
-        <span class="n">gf</span><span class="o">.</span><span class="n">Timing</span><span class="p">(</span><span class="n">tabulated_phases</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">id</span> <span class="o">+</span> <span class="s">&#39;+</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="mf">1.5</span> <span class="o">*</span> <span class="n">window_extension</span><span class="p">)),</span>
-        <span class="n">gf</span><span class="o">.</span><span class="n">Timing</span><span class="p">(</span><span class="n">tabulated_phases</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">id</span> <span class="o">+</span> <span class="s">&#39;+</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="mf">1.6</span> <span class="o">*</span> <span class="n">window_extension</span><span class="p">)))</span>
+        <span class="n">gf</span><span class="o">.</span><span class="n">Timing</span><span class="p">(</span><span class="n">tabulated_phases</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">id</span> <span class="o">+</span> <span class="s1">&#39;-</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="mf">1.1</span> <span class="o">*</span> <span class="n">window_extension</span><span class="p">)),</span>
+        <span class="n">gf</span><span class="o">.</span><span class="n">Timing</span><span class="p">(</span><span class="n">tabulated_phases</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">id</span> <span class="o">+</span> <span class="s1">&#39;-</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">window_extension</span><span class="p">),</span>
+        <span class="n">gf</span><span class="o">.</span><span class="n">Timing</span><span class="p">(</span><span class="n">tabulated_phases</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">id</span> <span class="o">+</span> <span class="s1">&#39;+</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="mf">1.5</span> <span class="o">*</span> <span class="n">window_extension</span><span class="p">)),</span>
+        <span class="n">gf</span><span class="o">.</span><span class="n">Timing</span><span class="p">(</span><span class="n">tabulated_phases</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">id</span> <span class="o">+</span> <span class="s1">&#39;+</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="mf">1.6</span> <span class="o">*</span> <span class="n">window_extension</span><span class="p">)))</span>
 
     <span class="n">fom_conf</span><span class="o">.</span><span class="n">validate</span><span class="p">()</span>
     <span class="n">conf</span><span class="o">.</span><span class="n">validate</span><span class="p">()</span>
 
     <span class="n">store_dir</span> <span class="o">=</span> <span class="n">store_superdir</span> <span class="o">+</span> <span class="n">fom_conf</span><span class="o">.</span><span class="n">id</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;Creating Store at </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">store_dir</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Creating Store at </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">store_dir</span><span class="p">)</span>
     <span class="n">gf</span><span class="o">.</span><span class="n">Store</span><span class="o">.</span><span class="n">create_editables</span><span class="p">(</span><span class="n">store_dir</span><span class="p">,</span>
                               <span class="n">config</span><span class="o">=</span><span class="n">fom_conf</span><span class="p">,</span>
                               <span class="n">extra</span><span class="o">=</span><span class="p">{</span><span class="n">model_code_id</span><span class="p">:</span> <span class="n">conf</span><span class="p">},</span>
                               <span class="n">force</span><span class="o">=</span><span class="n">force</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">execute</span><span class="p">:</span>
-        <span class="n">store</span> <span class="o">=</span> <span class="n">gf</span><span class="o">.</span><span class="n">Store</span><span class="p">(</span><span class="n">store_dir</span><span class="p">,</span> <span class="s">&#39;r&#39;</span><span class="p">)</span>
+        <span class="n">store</span> <span class="o">=</span> <span class="n">gf</span><span class="o">.</span><span class="n">Store</span><span class="p">(</span><span class="n">store_dir</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
         <span class="n">store</span><span class="o">.</span><span class="n">make_ttt</span><span class="p">(</span><span class="n">force</span><span class="o">=</span><span class="n">force</span><span class="p">)</span>
         <span class="n">store</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
         <span class="n">build</span><span class="p">(</span><span class="n">store_dir</span><span class="p">,</span> <span class="n">nworkers</span><span class="o">=</span><span class="n">nworkers</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="n">force</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">rm_gfs</span> <span class="ow">and</span> <span class="n">code</span> <span class="o">==</span> <span class="s">&#39;qssp&#39;</span><span class="p">:</span>
-            <span class="n">gf_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">store_dir</span><span class="p">,</span> <span class="s">&#39;qssp_green&#39;</span><span class="p">)</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;Removing QSSP Greens Functions!&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">rm_gfs</span> <span class="ow">and</span> <span class="n">code</span> <span class="o">==</span> <span class="s1">&#39;qssp&#39;</span><span class="p">:</span>
+            <span class="n">gf_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">store_dir</span><span class="p">,</span> <span class="s1">&#39;qssp_green&#39;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Removing QSSP Greens Functions!&#39;</span><span class="p">)</span>
             <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">gf_dir</span><span class="p">)</span></div>
 
 
@@ -1164,9 +1169,9 @@
         <span class="n">source_depth_min</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">source_depth_max</span><span class="o">=</span><span class="mf">40.</span><span class="p">,</span>
         <span class="n">source_distance_spacing</span><span class="o">=</span><span class="mf">5.</span><span class="p">,</span> <span class="n">source_depth_spacing</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
         <span class="n">sampling_interval</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span>
-        <span class="n">earth_model</span><span class="o">=</span><span class="s">&#39;ak135-f-average.m&#39;</span><span class="p">,</span> <span class="n">crust_ind</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-        <span class="n">replace_water</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">use_crust2</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">custom_velocity_model</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-        <span class="n">execute</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="n">earth_model</span><span class="o">=</span><span class="s1">&#39;ak135-f-average.m&#39;</span><span class="p">,</span> <span class="n">crust_ind</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">replace_water</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">use_crust2</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">custom_velocity_model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">execute</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculate geodetic Greens Functions (GFs) and create a repository &#39;store&#39;</span>
 <span class="sd">    that is being used later on repeatetly to calculate the synthetic</span>
@@ -1233,7 +1238,7 @@
 
     <span class="n">c</span><span class="o">.</span><span class="n">sampling_interval</span> <span class="o">=</span> <span class="n">sampling_interval</span>
 
-    <span class="c"># extract source crustal profile and check for water layer</span>
+    <span class="c1"># extract source crustal profile and check for water layer</span>
     <span class="k">if</span> <span class="n">use_crust2</span><span class="p">:</span>
         <span class="n">source_profile</span> <span class="o">=</span> <span class="n">crust2x2</span><span class="o">.</span><span class="n">get_profile</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">lat</span><span class="p">,</span> <span class="n">event</span><span class="o">.</span><span class="n">lon</span><span class="p">)</span>
 
@@ -1241,8 +1246,8 @@
             <span class="n">thickness_lwater</span> <span class="o">=</span> <span class="n">source_profile</span><span class="o">.</span><span class="n">get_layer</span><span class="p">(</span><span class="n">crust2x2</span><span class="o">.</span><span class="n">LWATER</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 
             <span class="k">if</span> <span class="n">thickness_lwater</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;Water layer </span><span class="si">%f</span><span class="s"> in CRUST model! &#39;</span>
-                        <span class="s">&#39;Remove and add to lower crust&#39;</span> <span class="o">%</span> <span class="n">thickness_lwater</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Water layer </span><span class="si">%f</span><span class="s1"> in CRUST model! &#39;</span>
+                        <span class="s1">&#39;Remove and add to lower crust&#39;</span> <span class="o">%</span> <span class="n">thickness_lwater</span><span class="p">)</span>
 
                 <span class="n">thickness_llowercrust</span> <span class="o">=</span> <span class="n">source_profile</span><span class="o">.</span><span class="n">get_layer</span><span class="p">(</span>
                                         <span class="n">crust2x2</span><span class="o">.</span><span class="n">LLOWERCRUST</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
@@ -1254,7 +1259,7 @@
 
                 <span class="n">source_profile</span><span class="o">.</span><span class="n">_elevation</span> <span class="o">=</span> <span class="mf">0.0</span>
 
-                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;New Lower crust layer thickness </span><span class="si">%f</span><span class="s">&#39;</span> <span class="o">%</span> \
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;New Lower crust layer thickness </span><span class="si">%f</span><span class="s1">&#39;</span> <span class="o">%</span> \
                     <span class="n">source_profile</span><span class="o">.</span><span class="n">get_layer</span><span class="p">(</span><span class="n">crust2x2</span><span class="o">.</span><span class="n">LLOWERCRUST</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
 
         <span class="n">source_model</span> <span class="o">=</span> <span class="n">cake</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span>
@@ -1263,13 +1268,13 @@
                 <span class="n">depth_max</span><span class="o">=</span><span class="n">source_depth_max</span> <span class="o">*</span> <span class="n">km</span><span class="p">)</span>
 
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">custom_velocity_model</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;custom velocity model not given!&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">custom_velocity_model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;custom velocity model not given!&#39;</span><span class="p">)</span>
 
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;Using custom model from config file&#39;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Using custom model from config file&#39;</span><span class="p">)</span>
         <span class="n">source_model</span> <span class="o">=</span> <span class="n">custom_velocity_model</span>
 
-    <span class="c"># potentially vary source model</span>
+    <span class="c1"># potentially vary source model</span>
     <span class="k">if</span> <span class="n">crust_ind</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">source_model</span> <span class="o">=</span> <span class="n">ensemble_earthmodel</span><span class="p">(</span>
             <span class="n">source_model</span><span class="p">,</span>
@@ -1279,7 +1284,7 @@
 
     <span class="n">c</span><span class="o">.</span><span class="n">earthmodel_1d</span> <span class="o">=</span> <span class="n">source_model</span>
     <span class="n">c</span><span class="o">.</span><span class="n">psgrn_outdir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-        <span class="n">store_superdir</span><span class="p">,</span> <span class="s">&#39;psgrn_green_</span><span class="si">%i</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">crust_ind</span><span class="p">))</span>
+        <span class="n">store_superdir</span><span class="p">,</span> <span class="s1">&#39;psgrn_green_</span><span class="si">%i</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">crust_ind</span><span class="p">))</span>
     <span class="n">c</span><span class="o">.</span><span class="n">validate</span><span class="p">()</span>
 
     <span class="n">util</span><span class="o">.</span><span class="n">ensuredir</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">psgrn_outdir</span><span class="p">)</span>
@@ -1287,17 +1292,17 @@
     <span class="n">runner</span> <span class="o">=</span> <span class="n">psgrn</span><span class="o">.</span><span class="n">PsGrnRunner</span><span class="p">(</span><span class="n">outdir</span><span class="o">=</span><span class="n">c</span><span class="o">.</span><span class="n">psgrn_outdir</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">execute</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;Geo GFs can be created in directory: </span><span class="si">%s</span><span class="s"> ! &#39;</span>
-                    <span class="s">&#39;(execute=True necessary)! GF params: </span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">c</span><span class="o">.</span><span class="n">psgrn_outdir</span><span class="p">)</span>
-        <span class="k">print</span> <span class="n">c</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Geo GFs can be created in directory: </span><span class="si">%s</span><span class="s1"> ! &#39;</span>
+                    <span class="s1">&#39;(execute=True necessary)! GF params: </span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">c</span><span class="o">.</span><span class="n">psgrn_outdir</span><span class="p">)</span>
+        <span class="nb">print</span> <span class="n">c</span>
 
     <span class="k">if</span> <span class="n">execute</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;Creating Geo GFs in directory: </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">c</span><span class="o">.</span><span class="n">psgrn_outdir</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Creating Geo GFs in directory: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">c</span><span class="o">.</span><span class="n">psgrn_outdir</span><span class="p">)</span>
         <span class="n">runner</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">force</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="geo_layer_synthetics"><a class="viewcode-back" href="../api.html#heart.geo_layer_synthetics">[docs]</a><span class="k">def</span> <span class="nf">geo_layer_synthetics</span><span class="p">(</span><span class="n">store_superdir</span><span class="p">,</span> <span class="n">crust_ind</span><span class="p">,</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">,</span> <span class="n">sources</span><span class="p">,</span>
-                         <span class="n">keep_tmp</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+                         <span class="n">keep_tmp</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculate synthetic displacements for a given Greens Function database</span>
 <span class="sd">    sources and observation points on the earths surface.</span>
@@ -1326,16 +1331,16 @@
     <span class="n">c</span> <span class="o">=</span> <span class="n">pscmp</span><span class="o">.</span><span class="n">PsCmpConfigFull</span><span class="p">()</span>
     <span class="n">c</span><span class="o">.</span><span class="n">observation</span> <span class="o">=</span> <span class="n">pscmp</span><span class="o">.</span><span class="n">PsCmpScatter</span><span class="p">(</span><span class="n">lats</span><span class="o">=</span><span class="n">lats</span><span class="p">,</span> <span class="n">lons</span><span class="o">=</span><span class="n">lons</span><span class="p">)</span>
     <span class="n">c</span><span class="o">.</span><span class="n">psgrn_outdir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-        <span class="n">store_superdir</span><span class="p">,</span> <span class="s">&#39;psgrn_green_</span><span class="si">%i</span><span class="s">/&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">crust_ind</span><span class="p">))</span>
+        <span class="n">store_superdir</span><span class="p">,</span> <span class="s1">&#39;psgrn_green_</span><span class="si">%i</span><span class="s1">/&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">crust_ind</span><span class="p">))</span>
 
-    <span class="c"># only coseismic displacement</span>
+    <span class="c1"># only coseismic displacement</span>
     <span class="n">c</span><span class="o">.</span><span class="n">times_snapshots</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">c</span><span class="o">.</span><span class="n">rectangular_source_patches</span> <span class="o">=</span> <span class="n">sources</span>
 
     <span class="n">runner</span> <span class="o">=</span> <span class="n">pscmp</span><span class="o">.</span><span class="n">PsCmpRunner</span><span class="p">(</span><span class="n">keep_tmp</span><span class="o">=</span><span class="n">keep_tmp</span><span class="p">)</span>
     <span class="n">runner</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
-    <span class="c"># returns list of displacements for each snapshot</span>
-    <span class="k">return</span> <span class="n">runner</span><span class="o">.</span><span class="n">get_results</span><span class="p">(</span><span class="n">component</span><span class="o">=</span><span class="s">&#39;displ&#39;</span><span class="p">,</span> <span class="n">flip_z</span><span class="o">=</span><span class="bp">True</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span></div>
+    <span class="c1"># returns list of displacements for each snapshot</span>
+    <span class="k">return</span> <span class="n">runner</span><span class="o">.</span><span class="n">get_results</span><span class="p">(</span><span class="n">component</span><span class="o">=</span><span class="s1">&#39;displ&#39;</span><span class="p">,</span> <span class="n">flip_z</span><span class="o">=</span><span class="kc">True</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span></div>
 
 
 <div class="viewcode-block" id="get_phase_arrival_time"><a class="viewcode-back" href="../api.html#heart.get_phase_arrival_time">[docs]</a><span class="k">def</span> <span class="nf">get_phase_arrival_time</span><span class="p">(</span><span class="n">engine</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
@@ -1361,12 +1366,12 @@
     <span class="n">store</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">get_store</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">store_id</span><span class="p">)</span>
     <span class="n">dist</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">distance_to</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>
     <span class="n">depth</span> <span class="o">=</span> <span class="n">source</span><span class="o">.</span><span class="n">depth</span>
-    <span class="k">if</span> <span class="n">target</span><span class="o">.</span><span class="n">codes</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;T&#39;</span><span class="p">:</span>
-        <span class="n">wave</span> <span class="o">=</span> <span class="s">&#39;any_S&#39;</span>
-    <span class="k">elif</span> <span class="n">target</span><span class="o">.</span><span class="n">codes</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;Z&#39;</span><span class="p">:</span>
-        <span class="n">wave</span> <span class="o">=</span> <span class="s">&#39;any_P&#39;</span>
+    <span class="k">if</span> <span class="n">target</span><span class="o">.</span><span class="n">codes</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;T&#39;</span><span class="p">:</span>
+        <span class="n">wave</span> <span class="o">=</span> <span class="s1">&#39;any_S&#39;</span>
+    <span class="k">elif</span> <span class="n">target</span><span class="o">.</span><span class="n">codes</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;Z&#39;</span><span class="p">:</span>
+        <span class="n">wave</span> <span class="o">=</span> <span class="s1">&#39;any_P&#39;</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;Channel not supported! Either: &quot;T&quot; or &quot;Z&quot;&#39;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Channel not supported! Either: &quot;T&quot; or &quot;Z&quot;&#39;</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">store</span><span class="o">.</span><span class="n">t</span><span class="p">(</span><span class="n">wave</span><span class="p">,</span> <span class="p">(</span><span class="n">depth</span><span class="p">,</span> <span class="n">dist</span><span class="p">))</span> <span class="o">+</span> <span class="n">source</span><span class="o">.</span><span class="n">time</span></div>
 
@@ -1400,9 +1405,9 @@
     <span class="k">return</span> <span class="n">taperer</span></div>
 
 
-<div class="viewcode-block" id="seis_synthetics"><a class="viewcode-back" href="../api.html#heart.seis_synthetics">[docs]</a><span class="k">def</span> <span class="nf">seis_synthetics</span><span class="p">(</span><span class="n">engine</span><span class="p">,</span> <span class="n">sources</span><span class="p">,</span> <span class="n">targets</span><span class="p">,</span> <span class="n">arrival_taper</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-                    <span class="n">filterer</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">reference_taperer</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
-                    <span class="n">nprocs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">outmode</span><span class="o">=</span><span class="s">&#39;array&#39;</span><span class="p">):</span>
+<div class="viewcode-block" id="seis_synthetics"><a class="viewcode-back" href="../api.html#heart.seis_synthetics">[docs]</a><span class="k">def</span> <span class="nf">seis_synthetics</span><span class="p">(</span><span class="n">engine</span><span class="p">,</span> <span class="n">sources</span><span class="p">,</span> <span class="n">targets</span><span class="p">,</span> <span class="n">arrival_taper</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                    <span class="n">filterer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">reference_taperer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                    <span class="n">nprocs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">outmode</span><span class="o">=</span><span class="s1">&#39;array&#39;</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculate synthetic seismograms of combination of targets and sources,</span>
 <span class="sd">    filtering and tapering afterwards (filterer)</span>
@@ -1439,8 +1444,8 @@
 
     <span class="n">synt_trcs</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">source</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">iter_results</span><span class="p">():</span>
-        <span class="k">if</span> <span class="n">arrival_taper</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">reference_taperer</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">arrival_taper</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">reference_taperer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">taperer</span> <span class="o">=</span> <span class="n">get_phase_taperer</span><span class="p">(</span>
                     <span class="n">engine</span><span class="p">,</span>
                     <span class="n">sources</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
@@ -1449,11 +1454,11 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">taperer</span> <span class="o">=</span> <span class="n">reference_taperer</span>
 
-            <span class="c"># cut traces</span>
-            <span class="n">tr</span><span class="o">.</span><span class="n">taper</span><span class="p">(</span><span class="n">taperer</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">chop</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+            <span class="c1"># cut traces</span>
+            <span class="n">tr</span><span class="o">.</span><span class="n">taper</span><span class="p">(</span><span class="n">taperer</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">chop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">filterer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-            <span class="c"># filter traces</span>
+        <span class="k">if</span> <span class="n">filterer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># filter traces</span>
             <span class="n">tr</span><span class="o">.</span><span class="n">bandpass</span><span class="p">(</span><span class="n">corner_hp</span><span class="o">=</span><span class="n">filterer</span><span class="o">.</span><span class="n">lower_corner</span><span class="p">,</span>
                     <span class="n">corner_lp</span><span class="o">=</span><span class="n">filterer</span><span class="o">.</span><span class="n">upper_corner</span><span class="p">,</span>
                     <span class="n">order</span><span class="o">=</span><span class="n">filterer</span><span class="o">.</span><span class="n">order</span><span class="p">)</span>
@@ -1468,11 +1473,11 @@
 
     <span class="n">tmins</span> <span class="o">=</span> <span class="n">num</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">synt_trcs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">tmin</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nt</span><span class="p">)])</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
 
-    <span class="k">if</span> <span class="n">arrival_taper</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">arrival_taper</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">synths</span> <span class="o">=</span> <span class="n">num</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span>
             <span class="p">[</span><span class="n">synt_trcs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">ydata</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">synt_trcs</span><span class="p">))])</span>
 
-        <span class="c"># stack traces for all sources</span>
+        <span class="c1"># stack traces for all sources</span>
         <span class="k">if</span> <span class="n">ns</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ns</span><span class="p">):</span>
                 <span class="n">outstack</span> <span class="o">=</span> <span class="n">num</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">nt</span><span class="p">,</span> <span class="n">synths</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span>
@@ -1480,7 +1485,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">outstack</span> <span class="o">=</span> <span class="n">synths</span>
 
-    <span class="k">if</span> <span class="n">outmode</span> <span class="o">==</span> <span class="s">&#39;traces&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">outmode</span> <span class="o">==</span> <span class="s1">&#39;traces&#39;</span><span class="p">:</span>
         <span class="n">outstack</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nt</span><span class="p">):</span>
             <span class="n">synt_trcs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">ydata</span> <span class="o">=</span> <span class="n">outstack</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span>
@@ -1488,18 +1493,18 @@
 
         <span class="k">return</span> <span class="n">outstack</span><span class="p">,</span> <span class="n">tmins</span>
 
-    <span class="k">elif</span> <span class="n">outmode</span> <span class="o">==</span> <span class="s">&#39;data&#39;</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="n">outmode</span> <span class="o">==</span> <span class="s1">&#39;data&#39;</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">synt_trcs</span><span class="p">,</span> <span class="n">tmins</span>
 
-    <span class="k">elif</span> <span class="n">outmode</span> <span class="o">==</span> <span class="s">&#39;array&#39;</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="n">outmode</span> <span class="o">==</span> <span class="s1">&#39;array&#39;</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">outstack</span><span class="p">,</span> <span class="n">tmins</span>
 
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&#39;Outmode </span><span class="si">%s</span><span class="s"> not supported!&#39;</span> <span class="o">%</span> <span class="n">outmode</span><span class="p">)</span></div>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Outmode </span><span class="si">%s</span><span class="s1"> not supported!&#39;</span> <span class="o">%</span> <span class="n">outmode</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="taper_filter_traces"><a class="viewcode-back" href="../api.html#heart.taper_filter_traces">[docs]</a><span class="k">def</span> <span class="nf">taper_filter_traces</span><span class="p">(</span><span class="n">data_traces</span><span class="p">,</span> <span class="n">arrival_taper</span><span class="p">,</span> <span class="n">filterer</span><span class="p">,</span> <span class="n">tmins</span><span class="p">,</span>
-                        <span class="n">plot</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+                        <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Taper and filter data_traces according to given taper and filterers.</span>
 <span class="sd">    Tapering will start at the given tmin.</span>
@@ -1525,18 +1530,18 @@
 
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">tr</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">data_traces</span><span class="p">):</span>
         <span class="n">cut_trace</span> <span class="o">=</span> <span class="n">tr</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">arrival_taper</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">arrival_taper</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">taperer</span> <span class="o">=</span> <span class="n">trace</span><span class="o">.</span><span class="n">CosTaper</span><span class="p">(</span>
                 <span class="nb">float</span><span class="p">(</span><span class="n">tmins</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span>
                 <span class="nb">float</span><span class="p">(</span><span class="n">tmins</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">arrival_taper</span><span class="o">.</span><span class="n">b</span><span class="p">),</span>
                 <span class="nb">float</span><span class="p">(</span><span class="n">tmins</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">arrival_taper</span><span class="o">.</span><span class="n">a</span> <span class="o">+</span> <span class="n">arrival_taper</span><span class="o">.</span><span class="n">c</span><span class="p">),</span>
                 <span class="nb">float</span><span class="p">(</span><span class="n">tmins</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">arrival_taper</span><span class="o">.</span><span class="n">a</span> <span class="o">+</span> <span class="n">arrival_taper</span><span class="o">.</span><span class="n">d</span><span class="p">))</span>
 
-            <span class="c"># taper and cut traces</span>
-            <span class="n">cut_trace</span><span class="o">.</span><span class="n">taper</span><span class="p">(</span><span class="n">taperer</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">chop</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+            <span class="c1"># taper and cut traces</span>
+            <span class="n">cut_trace</span><span class="o">.</span><span class="n">taper</span><span class="p">(</span><span class="n">taperer</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">chop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">filterer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-            <span class="c"># filter traces</span>
+        <span class="k">if</span> <span class="n">filterer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># filter traces</span>
             <span class="n">cut_trace</span><span class="o">.</span><span class="n">bandpass</span><span class="p">(</span><span class="n">corner_hp</span><span class="o">=</span><span class="n">filterer</span><span class="o">.</span><span class="n">lower_corner</span><span class="p">,</span>
                                <span class="n">corner_lp</span><span class="o">=</span><span class="n">filterer</span><span class="o">.</span><span class="n">upper_corner</span><span class="p">,</span>
                                <span class="n">order</span><span class="o">=</span><span class="n">filterer</span><span class="o">.</span><span class="n">order</span><span class="p">)</span>
