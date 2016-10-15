@@ -34,7 +34,7 @@
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
     <link rel="top" title="beat 0.1 documentation" href="index.html"/>
-        <link rel="next" title="The heart Module" href="api.html"/>
+        <link rel="next" title="API Reference" href="api.html"/>
         <link rel="prev" title="Welcome to beat’s documentation!" href="index.html"/> 
 
   
@@ -85,28 +85,20 @@
             
             
                 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Installation instructions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="#prerequisites">Prerequisites</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#numerics">Numerics</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#openblas">OpenBlas</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#numpy">Numpy</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#theano">Theano</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Installation instructions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#prerequisites">Prerequisites</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#numerics">Numerics</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#openblas">OpenBlas</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#numpy">Numpy</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#theano">Theano</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="api.html">The <code class="docutils literal"><span class="pre">heart</span></code> Module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api.html#the-config-module">The <code class="docutils literal"><span class="pre">config</span></code> Module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api.html#module-atmcmc">The <code class="docutils literal"><span class="pre">atmcmc</span></code> Module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api.html#module-backend">The <code class="docutils literal"><span class="pre">backend</span></code> Module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api.html#module-models">The <code class="docutils literal"><span class="pre">models</span></code> Module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api.html#module-psgrn">The <code class="docutils literal"><span class="pre">psgrn</span></code> Module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api.html#module-pscmp">The <code class="docutils literal"><span class="pre">pscmp</span></code> Module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api.html#module-covariance">The <code class="docutils literal"><span class="pre">covariance</span></code> Module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api.html#module-theanof">The <code class="docutils literal"><span class="pre">theanof</span></code> Module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api.html#module-utility">The <code class="docutils literal"><span class="pre">utility</span></code> Module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api.html#module-plotting">The <code class="docutils literal"><span class="pre">plotting</span></code> Module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api.html#module-inputf">The <code class="docutils literal"><span class="pre">inputf</span></code> Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#main-packages">Main Packages</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
 </ul>
 
             
@@ -154,15 +146,14 @@
   <div class="section" id="installation-instructions">
 <h1>Installation instructions<a class="headerlink" href="#installation-instructions" title="Permalink to this headline">¶</a></h1>
 <p>BEAT can be installed on any Unix based system that supports its prerequisites.</p>
-</div>
 <div class="section" id="prerequisites">
-<h1>Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this headline">¶</a></h1>
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this headline">¶</a></h2>
 <p>First of all we need a fortran compiler and the python developers library:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">git</span> <span class="n">python</span><span class="o">-</span><span class="n">dev</span> <span class="n">gfortran</span>
 </pre></div>
 </div>
 <div class="section" id="numerics">
-<h2>Numerics<a class="headerlink" href="#numerics" title="Permalink to this headline">¶</a></h2>
+<h3>Numerics<a class="headerlink" href="#numerics" title="Permalink to this headline">¶</a></h3>
 <p>BEAT does many intensive calculations, which is why we need to get as much as
 possible out of the available libraries in terms of computational efficiency.
 There are actually significant speedups possible by not using the standard
@@ -176,9 +167,9 @@ For all the heavy details I refer to these links:</p>
 <p><a class="reference external" href="https://hunseblog.wordpress.com/2014/09/15/installing-numpy-and-openblas/">https://hunseblog.wordpress.com/2014/09/15/installing-numpy-and-openblas/</a>
 <a class="reference external" href="http://www.johnwittenauer.net/configuring-theano-for-high-performance-deep-learning/">http://www.johnwittenauer.net/configuring-theano-for-high-performance-deep-learning/</a></p>
 <div class="section" id="openblas">
-<h3>OpenBlas<a class="headerlink" href="#openblas" title="Permalink to this headline">¶</a></h3>
-<p>If the OpenBlas library is compiled locally it is optimized for your machine
-and again speeds up the calculations:</p>
+<h4>OpenBlas<a class="headerlink" href="#openblas" title="Permalink to this headline">¶</a></h4>
+<p>If the OpenBlas library is compiled locally, it is optimized for your machine
+and speeds up the calculations:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">~/</span><span class="n">src</span>  <span class="c1"># or where you keep your source files</span>
 <span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">xianyi</span><span class="o">/</span><span class="n">OpenBLAS</span>
 <span class="n">cd</span> <span class="n">OpenBLAS</span>
@@ -188,32 +179,35 @@ and again speeds up the calculations:</p>
 </div>
 </div>
 <div class="section" id="numpy">
-<h3>Numpy<a class="headerlink" href="#numpy" title="Permalink to this headline">¶</a></h3>
-<p>Again, I want to note how important it is, to compile your numpy locally
+<h4>Numpy<a class="headerlink" href="#numpy" title="Permalink to this headline">¶</a></h4>
+<p>Again, I want to note how important it is to compile your numpy locally
 against the previously installed OpenBlas library. For my machine it resulted
-in a speed-up of the numpy related calculations by a factor of at least 3.</p>
-<blockquote>
-<div>cd ~/src
-git clone <a class="reference external" href="https://github.com/numpy/numpy">https://github.com/numpy/numpy</a>
-cd numpy</div></blockquote>
+in a speed-up of the numpy related calculations by a factor of at least 3.:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">~/</span><span class="n">src</span>
+<span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">numpy</span><span class="o">/</span><span class="n">numpy</span>
+<span class="n">cd</span> <span class="n">numpy</span>
+</pre></div>
+</div>
 <p>Per default, the current developers branch is being installed. We want to
 install one of the most recent stable branches:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">checkout</span> <span class="o">-</span><span class="n">v1</span><span class="o">.</span><span class="mf">11.1</span>
 </pre></div>
 </div>
-<dl class="docutils">
-<dt>Next create a configuration file <cite>site.cfg</cite> that tells numpy where to find the</dt>
-<dd>previously installed OpenBlas library:</dd>
-</dl>
-<p>[default]
-include_dirs = /usr/local/include
-library_dirs = /usr/local/lib</p>
-<p>[openblas]
-openblas_libs = openblas
-library_dirs = /usr/local/lib</p>
-<p>[lapack]
-lapack_libs = openblas
-library_dirs = /usr/local/lib</p>
+<p>Next, create a configuration file <cite>site.cfg</cite> that tells numpy where to find the
+previously installed OpenBlas library:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">default</span><span class="p">]</span>
+<span class="n">include_dirs</span> <span class="o">=</span> <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">local</span><span class="o">/</span><span class="n">include</span>
+<span class="n">library_dirs</span> <span class="o">=</span> <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">local</span><span class="o">/</span><span class="n">lib</span>
+
+<span class="p">[</span><span class="n">openblas</span><span class="p">]</span>
+<span class="n">openblas_libs</span> <span class="o">=</span> <span class="n">openblas</span>
+<span class="n">library_dirs</span> <span class="o">=</span> <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">local</span><span class="o">/</span><span class="n">lib</span>
+
+<span class="p">[</span><span class="n">lapack</span><span class="p">]</span>
+<span class="n">lapack_libs</span> <span class="o">=</span> <span class="n">openblas</span>
+<span class="n">library_dirs</span> <span class="o">=</span> <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">local</span><span class="o">/</span><span class="n">lib</span>
+</pre></div>
+</div>
 <p>To make sure everything is working you should run:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">config</span>
 </pre></div>
@@ -228,14 +222,18 @@ library_dirs = /usr/local/lib</p>
 </div>
 </div>
 <div class="section" id="theano">
-<h3>Theano<a class="headerlink" href="#theano" title="Permalink to this headline">¶</a></h3>
+<h4>Theano<a class="headerlink" href="#theano" title="Permalink to this headline">¶</a></h4>
+</div>
+</div>
+</div>
+<div class="section" id="main-packages">
+<h2>Main Packages<a class="headerlink" href="#main-packages" title="Permalink to this headline">¶</a></h2>
 <p>BEAT relies on 2 main libraries. Detailed installation instructions for each
 can be found on the respective websites:
-<a href="#id1"><span class="problematic" id="id2">*</span></a><cite>pyrocko &lt;http://pyrocko.org/&gt;</cite>
-<a href="#id3"><span class="problematic" id="id4">*</span></a><a href="#id5"><span class="problematic" id="id6">`</span></a>pymc3</p>
+* <cite>pyrocko &lt;http://pyrocko.org/&gt;</cite>
+* <a href="#id1"><span class="problematic" id="id2">`</span></a>pymc3</p>
 <p>pyproj</p>
 <p><a class="reference external" href="http://pyrocko.org/v0.3/install_details.html">http://pyrocko.org/v0.3/install_details.html</a></p>
-</div>
 </div>
 </div>
 
@@ -246,7 +244,7 @@ can be found on the respective websites:
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="api.html" class="btn btn-neutral float-right" title="The heart Module" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="api.html" class="btn btn-neutral float-right" title="API Reference" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="index.html" class="btn btn-neutral" title="Welcome to beat’s documentation!" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>

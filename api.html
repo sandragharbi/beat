@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>The heart Module &mdash; beat 0.1 documentation</title>
+  <title>API Reference &mdash; beat 0.1 documentation</title>
   
 
   
@@ -85,22 +85,24 @@
             
                 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation instructions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="installation.html#prerequisites">Prerequisites</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">The <code class="docutils literal"><span class="pre">heart</span></code> Module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="#the-config-module">The <code class="docutils literal"><span class="pre">config</span></code> Module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="#module-atmcmc">The <code class="docutils literal"><span class="pre">atmcmc</span></code> Module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="#module-backend">The <code class="docutils literal"><span class="pre">backend</span></code> Module</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#file-format">File format</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">API Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-heart">The <code class="docutils literal"><span class="pre">heart</span></code> Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-config">The <code class="docutils literal"><span class="pre">config</span></code> Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-atmcmc">The <code class="docutils literal"><span class="pre">atmcmc</span></code> Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-backend">The <code class="docutils literal"><span class="pre">backend</span></code> Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#file-format">File format</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="#module-models">The <code class="docutils literal"><span class="pre">models</span></code> Module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="#module-psgrn">The <code class="docutils literal"><span class="pre">psgrn</span></code> Module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="#module-pscmp">The <code class="docutils literal"><span class="pre">pscmp</span></code> Module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="#module-covariance">The <code class="docutils literal"><span class="pre">covariance</span></code> Module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="#module-theanof">The <code class="docutils literal"><span class="pre">theanof</span></code> Module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="#module-utility">The <code class="docutils literal"><span class="pre">utility</span></code> Module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="#module-plotting">The <code class="docutils literal"><span class="pre">plotting</span></code> Module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="#module-inputf">The <code class="docutils literal"><span class="pre">inputf</span></code> Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-models">The <code class="docutils literal"><span class="pre">models</span></code> Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-psgrn">The <code class="docutils literal"><span class="pre">psgrn</span></code> Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-pscmp">The <code class="docutils literal"><span class="pre">pscmp</span></code> Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-covariance">The <code class="docutils literal"><span class="pre">covariance</span></code> Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-theanof">The <code class="docutils literal"><span class="pre">theanof</span></code> Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-utility">The <code class="docutils literal"><span class="pre">utility</span></code> Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-plotting">The <code class="docutils literal"><span class="pre">plotting</span></code> Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-inputf">The <code class="docutils literal"><span class="pre">inputf</span></code> Module</a></li>
+</ul>
+</li>
 </ul>
 
             
@@ -131,7 +133,7 @@
   <ul class="wy-breadcrumbs">
     <li><a href="index.html">Docs</a> &raquo;</li>
       
-    <li>The <code class="docutils literal"><span class="pre">heart</span></code> Module</li>
+    <li>API Reference</li>
       <li class="wy-breadcrumbs-aside">
         
           
@@ -145,8 +147,10 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="module-heart">
-<span id="the-heart-module"></span><h1>The <a class="reference internal" href="#module-heart" title="heart"><code class="xref py py-mod docutils literal"><span class="pre">heart</span></code></a> Module<a class="headerlink" href="#module-heart" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="api-reference">
+<h1>API Reference<a class="headerlink" href="#api-reference" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-heart">
+<span id="the-heart-module"></span><h2>The <a class="reference internal" href="#module-heart" title="heart"><code class="xref py py-mod docutils literal"><span class="pre">heart</span></code></a> Module<a class="headerlink" href="#module-heart" title="Permalink to this headline">¶</a></h2>
 <p>Core module with functions to calculate Greens Functions and synthetics.
 Also contains main classes for setup specific parameters.</p>
 <dl class="class">
@@ -733,7 +737,7 @@ be top_depth.)</p>
 <dl class="attribute">
 <dt id="heart.TeleseismicTarget.covariance">
 <code class="descname">covariance</code><a class="headerlink" href="#heart.TeleseismicTarget.covariance" title="Permalink to this definition">¶</a></dt>
-<dd><p><a class="reference internal" href="#heart.Covariance" title="heart.Covariance"><code class="xref py py-class docutils literal"><span class="pre">heart.Covariance</span></code></a>, <em>optional</em>, <em>default:</em> <code class="docutils literal"><span class="pre">&lt;heart.Covariance</span> <span class="pre">object</span> <span class="pre">at</span> <span class="pre">0x73082d0&gt;</span></code>, <a class="reference internal" href="#heart.Covariance" title="heart.Covariance"><code class="xref py py-class docutils literal"><span class="pre">Covariance</span></code></a> that holds dataand model prediction covariance matrixes</p>
+<dd><p><a class="reference internal" href="#heart.Covariance" title="heart.Covariance"><code class="xref py py-class docutils literal"><span class="pre">heart.Covariance</span></code></a>, <em>optional</em>, <em>default:</em> <code class="docutils literal"><span class="pre">&lt;heart.Covariance</span> <span class="pre">object</span> <span class="pre">at</span> <span class="pre">0x74199d0&gt;</span></code>, <a class="reference internal" href="#heart.Covariance" title="heart.Covariance"><code class="xref py py-class docutils literal"><span class="pre">Covariance</span></code></a> that holds dataand model prediction covariance matrixes</p>
 </dd></dl>
 
 <p class="rubric">Attributes</p>
@@ -1310,9 +1314,9 @@ Cost of up to 20 are ok for crustal profiles.</p>
 </dd></dl>
 
 </div>
-<div class="section" id="the-config-module">
-<h1>The <a class="reference internal" href="#module-config" title="config"><code class="xref py py-mod docutils literal"><span class="pre">config</span></code></a> Module<a class="headerlink" href="#the-config-module" title="Permalink to this headline">¶</a></h1>
-<span class="target" id="module-config"></span><p>The config module contains the classes to build the configuration files that
+<div class="section" id="module-config">
+<span id="the-config-module"></span><h2>The <a class="reference internal" href="#module-config" title="config"><code class="xref py py-mod docutils literal"><span class="pre">config</span></code></a> Module<a class="headerlink" href="#module-config" title="Permalink to this headline">¶</a></h2>
+<p>The config module contains the classes to build the configuration files that
 are being read by the beat executable.</p>
 <p>So far there are configuration files for the three main optimization problems
 implemented. Solving the fault geometry, the static distributed slip and the
@@ -1435,7 +1439,7 @@ generation, optimization algorithm and the data being used.</p>
 <dl class="attribute">
 <dt id="config.BEATconfig.problem_config">
 <code class="descname">problem_config</code><a class="headerlink" href="#config.BEATconfig.problem_config" title="Permalink to this definition">¶</a></dt>
-<dd><p><a class="reference internal" href="#config.ProblemConfig" title="config.ProblemConfig"><code class="xref py py-class docutils literal"><span class="pre">config.ProblemConfig</span></code></a>, <em>default:</em> <code class="docutils literal"><span class="pre">&lt;config.ProblemConfig</span> <span class="pre">object</span> <span class="pre">at</span> <span class="pre">0x83c2d50&gt;</span></code></p>
+<dd><p><a class="reference internal" href="#config.ProblemConfig" title="config.ProblemConfig"><code class="xref py py-class docutils literal"><span class="pre">config.ProblemConfig</span></code></a>, <em>default:</em> <code class="docutils literal"><span class="pre">&lt;config.ProblemConfig</span> <span class="pre">object</span> <span class="pre">at</span> <span class="pre">0x8383190&gt;</span></code></p>
 </dd></dl>
 
 <dl class="attribute">
@@ -1453,7 +1457,7 @@ generation, optimization algorithm and the data being used.</p>
 <dl class="attribute">
 <dt id="config.BEATconfig.sampler_config">
 <code class="descname">sampler_config</code><a class="headerlink" href="#config.BEATconfig.sampler_config" title="Permalink to this definition">¶</a></dt>
-<dd><p><a class="reference internal" href="#config.SamplerConfig" title="config.SamplerConfig"><code class="xref py py-class docutils literal"><span class="pre">config.SamplerConfig</span></code></a>, <em>default:</em> <code class="docutils literal"><span class="pre">&lt;config.SamplerConfig</span> <span class="pre">object</span> <span class="pre">at</span> <span class="pre">0x83c2d50&gt;</span></code></p>
+<dd><p><a class="reference internal" href="#config.SamplerConfig" title="config.SamplerConfig"><code class="xref py py-class docutils literal"><span class="pre">config.SamplerConfig</span></code></a>, <em>default:</em> <code class="docutils literal"><span class="pre">&lt;config.SamplerConfig</span> <span class="pre">object</span> <span class="pre">at</span> <span class="pre">0x8383190&gt;</span></code></p>
 </dd></dl>
 
 <p class="rubric">Attributes</p>
@@ -1575,7 +1579,7 @@ generation, optimization algorithm and the data being used.</p>
 <dl class="attribute">
 <dt id="config.GeodeticConfig.gf_config">
 <code class="descname">gf_config</code><a class="headerlink" href="#config.GeodeticConfig.gf_config" title="Permalink to this definition">¶</a></dt>
-<dd><p><a class="reference internal" href="#config.GeodeticGFConfig" title="config.GeodeticGFConfig"><code class="xref py py-class docutils literal"><span class="pre">config.GeodeticGFConfig</span></code></a>, <em>default:</em> <code class="docutils literal"><span class="pre">&lt;config.GeodeticGFConfig</span> <span class="pre">object</span> <span class="pre">at</span> <span class="pre">0x83c1f10&gt;</span></code></p>
+<dd><p><a class="reference internal" href="#config.GeodeticGFConfig" title="config.GeodeticGFConfig"><code class="xref py py-class docutils literal"><span class="pre">config.GeodeticGFConfig</span></code></a>, <em>default:</em> <code class="docutils literal"><span class="pre">&lt;config.GeodeticGFConfig</span> <span class="pre">object</span> <span class="pre">at</span> <span class="pre">0x8406350&gt;</span></code></p>
 </dd></dl>
 
 <p class="rubric">Attributes</p>
@@ -1747,7 +1751,7 @@ generation, optimization algorithm and the data being used.</p>
 <dl class="attribute">
 <dt id="config.SamplerConfig.parameters">
 <code class="descname">parameters</code><a class="headerlink" href="#config.SamplerConfig.parameters" title="Permalink to this definition">¶</a></dt>
-<dd><p><a class="reference internal" href="#config.SamplerParameters" title="config.SamplerParameters"><code class="xref py py-class docutils literal"><span class="pre">config.SamplerParameters</span></code></a>, <em>optional</em>, <em>default:</em> <code class="docutils literal"><span class="pre">&lt;config.ATMCMCConfig</span> <span class="pre">object</span> <span class="pre">at</span> <span class="pre">0x83c2990&gt;</span></code>, Sampler dependend Parameters</p>
+<dd><p><a class="reference internal" href="#config.SamplerParameters" title="config.SamplerParameters"><code class="xref py py-class docutils literal"><span class="pre">config.SamplerParameters</span></code></a>, <em>optional</em>, <em>default:</em> <code class="docutils literal"><span class="pre">&lt;config.ATMCMCConfig</span> <span class="pre">object</span> <span class="pre">at</span> <span class="pre">0x8406d90&gt;</span></code>, Sampler dependend Parameters</p>
 </dd></dl>
 
 <p class="rubric">Attributes</p>
@@ -1815,13 +1819,13 @@ generation, optimization algorithm and the data being used.</p>
 <dl class="attribute">
 <dt id="config.SeismicConfig.arrival_taper">
 <code class="descname">arrival_taper</code><a class="headerlink" href="#config.SeismicConfig.arrival_taper" title="Permalink to this definition">¶</a></dt>
-<dd><p><a class="reference external" href="http://pyrocko.org/v0.3/trace.html#pyrocko.trace.Taper" title="(in Pyrocko v0.3)"><code class="xref py py-class docutils literal"><span class="pre">pyrocko.trace.Taper</span></code></a>, <em>default:</em> <code class="docutils literal"><span class="pre">&lt;beat.heart.ArrivalTaper</span> <span class="pre">object</span> <span class="pre">at</span> <span class="pre">0x83c1d90&gt;</span></code>, Taper a,b/c,d time [s] before/after wave arrival</p>
+<dd><p><a class="reference external" href="http://pyrocko.org/v0.3/trace.html#pyrocko.trace.Taper" title="(in Pyrocko v0.3)"><code class="xref py py-class docutils literal"><span class="pre">pyrocko.trace.Taper</span></code></a>, <em>default:</em> <code class="docutils literal"><span class="pre">&lt;beat.heart.ArrivalTaper</span> <span class="pre">object</span> <span class="pre">at</span> <span class="pre">0x84061d0&gt;</span></code>, Taper a,b/c,d time [s] before/after wave arrival</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="config.SeismicConfig.filterer">
 <code class="descname">filterer</code><a class="headerlink" href="#config.SeismicConfig.filterer" title="Permalink to this definition">¶</a></dt>
-<dd><p><code class="xref py py-class docutils literal"><span class="pre">beat.heart.Filter</span></code>, <em>default:</em> <code class="docutils literal"><span class="pre">&lt;beat.heart.Filter</span> <span class="pre">object</span> <span class="pre">at</span> <span class="pre">0x83c1d50&gt;</span></code></p>
+<dd><p><code class="xref py py-class docutils literal"><span class="pre">beat.heart.Filter</span></code>, <em>default:</em> <code class="docutils literal"><span class="pre">&lt;beat.heart.Filter</span> <span class="pre">object</span> <span class="pre">at</span> <span class="pre">0x8406190&gt;</span></code></p>
 </dd></dl>
 
 <dl class="attribute">
@@ -1833,7 +1837,7 @@ generation, optimization algorithm and the data being used.</p>
 <dl class="attribute">
 <dt id="config.SeismicConfig.gf_config">
 <code class="descname">gf_config</code><a class="headerlink" href="#config.SeismicConfig.gf_config" title="Permalink to this definition">¶</a></dt>
-<dd><p><a class="reference internal" href="#config.SeismicGFConfig" title="config.SeismicGFConfig"><code class="xref py py-class docutils literal"><span class="pre">config.SeismicGFConfig</span></code></a>, <em>default:</em> <code class="docutils literal"><span class="pre">&lt;config.SeismicGFConfig</span> <span class="pre">object</span> <span class="pre">at</span> <span class="pre">0x83c1d50&gt;</span></code></p>
+<dd><p><a class="reference internal" href="#config.SeismicGFConfig" title="config.SeismicGFConfig"><code class="xref py py-class docutils literal"><span class="pre">config.SeismicGFConfig</span></code></a>, <em>default:</em> <code class="docutils literal"><span class="pre">&lt;config.SeismicGFConfig</span> <span class="pre">object</span> <span class="pre">at</span> <span class="pre">0x8406190&gt;</span></code></p>
 </dd></dl>
 
 <p class="rubric">Attributes</p>
@@ -1991,7 +1995,7 @@ Options: &#8216;ATMCMC&#8217;, &#8216;Metropolis&#8217;</p>
 
 </div>
 <div class="section" id="module-atmcmc">
-<span id="the-atmcmc-module"></span><h1>The <a class="reference internal" href="#module-atmcmc" title="atmcmc"><code class="xref py py-mod docutils literal"><span class="pre">atmcmc</span></code></a> Module<a class="headerlink" href="#module-atmcmc" title="Permalink to this headline">¶</a></h1>
+<span id="the-atmcmc-module"></span><h2>The <a class="reference internal" href="#module-atmcmc" title="atmcmc"><code class="xref py py-mod docutils literal"><span class="pre">atmcmc</span></code></a> Module<a class="headerlink" href="#module-atmcmc" title="Permalink to this headline">¶</a></h2>
 <p>Adaptive Transitional Marcov Chain Monte Carlo sampler module.</p>
 <p>Runs on any pymc3 model.</p>
 <p>Created on March, 2016</p>
@@ -2332,12 +2336,12 @@ sampling.</p>
 
 </div>
 <div class="section" id="module-backend">
-<span id="the-backend-module"></span><h1>The <a class="reference internal" href="#module-backend" title="backend"><code class="xref py py-mod docutils literal"><span class="pre">backend</span></code></a> Module<a class="headerlink" href="#module-backend" title="Permalink to this headline">¶</a></h1>
+<span id="the-backend-module"></span><h2>The <a class="reference internal" href="#module-backend" title="backend"><code class="xref py py-mod docutils literal"><span class="pre">backend</span></code></a> Module<a class="headerlink" href="#module-backend" title="Permalink to this headline">¶</a></h2>
 <p>Text file trace backend modified from pymc3 to work efficiently with
 ATMCMC</p>
 <p>Store sampling values as CSV files.</p>
 <div class="section" id="file-format">
-<h2>File format<a class="headerlink" href="#file-format" title="Permalink to this headline">¶</a></h2>
+<h3>File format<a class="headerlink" href="#file-format" title="Permalink to this headline">¶</a></h3>
 <p>Sampling values for each chain are saved in a separate file (under a
 directory specified by the <cite>name</cite> argument).  The rows correspond to
 sampling iterations.  The column names consist of variable names and
@@ -2610,7 +2614,7 @@ that need to be resampled.</p>
 </div>
 </div>
 <div class="section" id="module-models">
-<span id="the-models-module"></span><h1>The <a class="reference internal" href="#module-models" title="models"><code class="xref py py-mod docutils literal"><span class="pre">models</span></code></a> Module<a class="headerlink" href="#module-models" title="Permalink to this headline">¶</a></h1>
+<span id="the-models-module"></span><h2>The <a class="reference internal" href="#module-models" title="models"><code class="xref py py-mod docutils literal"><span class="pre">models</span></code></a> Module<a class="headerlink" href="#module-models" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="models.GeometryOptimizer">
 <em class="property">class </em><code class="descclassname">models.</code><code class="descname">GeometryOptimizer</code><span class="sig-paren">(</span><em>config</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models.html#GeometryOptimizer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#models.GeometryOptimizer" title="Permalink to this definition">¶</a></dt>
@@ -2816,7 +2820,7 @@ with respect to velocity model uncertainties are calculated</p>
 
 </div>
 <div class="section" id="module-psgrn">
-<span id="the-psgrn-module"></span><h1>The <a class="reference internal" href="#module-psgrn" title="psgrn"><code class="xref py py-mod docutils literal"><span class="pre">psgrn</span></code></a> Module<a class="headerlink" href="#module-psgrn" title="Permalink to this headline">¶</a></h1>
+<span id="the-psgrn-module"></span><h2>The <a class="reference internal" href="#module-psgrn" title="psgrn"><code class="xref py py-mod docutils literal"><span class="pre">psgrn</span></code></a> Module<a class="headerlink" href="#module-psgrn" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="psgrn.PsGrnConfig">
 <em class="property">class </em><code class="descclassname">psgrn.</code><code class="descname">PsGrnConfig</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/psgrn.html#PsGrnConfig"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#psgrn.PsGrnConfig" title="Permalink to this definition">¶</a></dt>
@@ -2978,7 +2982,7 @@ with respect to velocity model uncertainties are calculated</p>
 
 </div>
 <div class="section" id="module-pscmp">
-<span id="the-pscmp-module"></span><h1>The <a class="reference internal" href="#module-pscmp" title="pscmp"><code class="xref py py-mod docutils literal"><span class="pre">pscmp</span></code></a> Module<a class="headerlink" href="#module-pscmp" title="Permalink to this headline">¶</a></h1>
+<span id="the-pscmp-module"></span><h2>The <a class="reference internal" href="#module-pscmp" title="pscmp"><code class="xref py py-mod docutils literal"><span class="pre">pscmp</span></code></a> Module<a class="headerlink" href="#module-pscmp" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="pscmp.PsCmpArray">
 <em class="property">class </em><code class="descclassname">pscmp.</code><code class="descname">PsCmpArray</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pscmp.html#PsCmpArray"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pscmp.PsCmpArray" title="Permalink to this definition">¶</a></dt>
@@ -3047,7 +3051,7 @@ with respect to velocity model uncertainties are calculated</p>
 <dl class="attribute">
 <dt id="pscmp.PsCmpConfig.observation">
 <code class="descname">observation</code><a class="headerlink" href="#pscmp.PsCmpConfig.observation" title="Permalink to this definition">¶</a></dt>
-<dd><p><a class="reference internal" href="#pscmp.PsCmpObservation" title="pscmp.PsCmpObservation"><code class="xref py py-class docutils literal"><span class="pre">pscmp.PsCmpObservation</span></code></a>, <em>default:</em> <code class="docutils literal"><span class="pre">&lt;pscmp.PsCmpScatter</span> <span class="pre">object</span> <span class="pre">at</span> <span class="pre">0xa12e290&gt;</span></code></p>
+<dd><p><a class="reference internal" href="#pscmp.PsCmpObservation" title="pscmp.PsCmpObservation"><code class="xref py py-class docutils literal"><span class="pre">pscmp.PsCmpObservation</span></code></a>, <em>default:</em> <code class="docutils literal"><span class="pre">&lt;pscmp.PsCmpScatter</span> <span class="pre">object</span> <span class="pre">at</span> <span class="pre">0xab368d0&gt;</span></code></p>
 </dd></dl>
 
 <dl class="attribute">
@@ -3077,7 +3081,7 @@ with respect to velocity model uncertainties are calculated</p>
 <dl class="attribute">
 <dt id="pscmp.PsCmpConfig.rectangular_source_patches">
 <code class="descname">rectangular_source_patches</code><a class="headerlink" href="#pscmp.PsCmpConfig.rectangular_source_patches" title="Permalink to this definition">¶</a></dt>
-<dd><p><code class="docutils literal"><span class="pre">list</span></code> of <code class="xref py py-class docutils literal"><span class="pre">pyrocko.guts.Any</span></code> objects, <em>default:</em> <code class="docutils literal"><span class="pre">&lt;pyrocko.guts.DefaultMaker</span> <span class="pre">instance</span> <span class="pre">at</span> <span class="pre">0xa152d40&gt;</span></code></p>
+<dd><p><code class="docutils literal"><span class="pre">list</span></code> of <code class="xref py py-class docutils literal"><span class="pre">pyrocko.guts.Any</span></code> objects, <em>default:</em> <code class="docutils literal"><span class="pre">&lt;pyrocko.guts.DefaultMaker</span> <span class="pre">instance</span> <span class="pre">at</span> <span class="pre">0xab353b0&gt;</span></code></p>
 </dd></dl>
 
 <p class="rubric">Attributes</p>
@@ -3114,7 +3118,7 @@ with respect to velocity model uncertainties are calculated</p>
 <dl class="attribute">
 <dt id="pscmp.PsCmpConfigFull.coulomb_master_field">
 <code class="descname">coulomb_master_field</code><a class="headerlink" href="#pscmp.PsCmpConfigFull.coulomb_master_field" title="Permalink to this definition">¶</a></dt>
-<dd><p><a class="reference internal" href="#pscmp.PsCmpCoulombStress" title="pscmp.PsCmpCoulombStress"><code class="xref py py-class docutils literal"><span class="pre">pscmp.PsCmpCoulombStress</span></code></a>, <em>optional</em>, <em>default:</em> <code class="docutils literal"><span class="pre">&lt;pscmp.PsCmpCoulombStressMasterFault</span> <span class="pre">object</span> <span class="pre">at</span> <span class="pre">0xa12e990&gt;</span></code></p>
+<dd><p><a class="reference internal" href="#pscmp.PsCmpCoulombStress" title="pscmp.PsCmpCoulombStress"><code class="xref py py-class docutils literal"><span class="pre">pscmp.PsCmpCoulombStress</span></code></a>, <em>optional</em>, <em>default:</em> <code class="docutils literal"><span class="pre">&lt;pscmp.PsCmpCoulombStressMasterFault</span> <span class="pre">object</span> <span class="pre">at</span> <span class="pre">0xab36fd0&gt;</span></code></p>
 </dd></dl>
 
 <dl class="attribute">
@@ -3471,7 +3475,7 @@ origin (pos_s, pos_d) with respect to the reference coordinates
 
 </div>
 <div class="section" id="module-covariance">
-<span id="the-covariance-module"></span><h1>The <a class="reference internal" href="#module-covariance" title="covariance"><code class="xref py py-mod docutils literal"><span class="pre">covariance</span></code></a> Module<a class="headerlink" href="#module-covariance" title="Permalink to this headline">¶</a></h1>
+<span id="the-covariance-module"></span><h2>The <a class="reference internal" href="#module-covariance" title="covariance"><code class="xref py py-mod docutils literal"><span class="pre">covariance</span></code></a> Module<a class="headerlink" href="#module-covariance" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="covariance.get_geo_cov_velocity_models">
 <code class="descclassname">covariance.</code><code class="descname">get_geo_cov_velocity_models</code><span class="sig-paren">(</span><em>store_superdir</em>, <em>crust_inds</em>, <em>dataset</em>, <em>sources</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/covariance.html#get_geo_cov_velocity_models"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#covariance.get_geo_cov_velocity_models" title="Permalink to this definition">¶</a></dt>
@@ -3552,7 +3556,7 @@ Duputel et al. 2012 GJI
 
 </div>
 <div class="section" id="module-theanof">
-<span id="the-theanof-module"></span><h1>The <a class="reference internal" href="#module-theanof" title="theanof"><code class="xref py py-mod docutils literal"><span class="pre">theanof</span></code></a> Module<a class="headerlink" href="#module-theanof" title="Permalink to this headline">¶</a></h1>
+<span id="the-theanof-module"></span><h2>The <a class="reference internal" href="#module-theanof" title="theanof"><code class="xref py py-mod docutils literal"><span class="pre">theanof</span></code></a> Module<a class="headerlink" href="#module-theanof" title="Permalink to this headline">¶</a></h2>
 <p>Package for wrapping various functions into Theano-Ops to be able to include
 them into theano graphs as is needed by the pymc3 models.
 Far future:</p>
@@ -3638,7 +3642,7 @@ lengths, widths, slips</p>
 
 </div>
 <div class="section" id="module-utility">
-<span id="the-utility-module"></span><h1>The <a class="reference internal" href="#module-utility" title="utility"><code class="xref py py-mod docutils literal"><span class="pre">utility</span></code></a> Module<a class="headerlink" href="#module-utility" title="Permalink to this headline">¶</a></h1>
+<span id="the-utility-module"></span><h2>The <a class="reference internal" href="#module-utility" title="utility"><code class="xref py py-mod docutils literal"><span class="pre">utility</span></code></a> Module<a class="headerlink" href="#module-utility" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="utility.DataMap">
 <em class="property">class </em><code class="descclassname">utility.</code><code class="descname">DataMap</code><a class="headerlink" href="#utility.DataMap" title="Permalink to this definition">¶</a></dt>
@@ -3976,7 +3980,7 @@ a reference event.</p>
 
 </div>
 <div class="section" id="module-plotting">
-<span id="the-plotting-module"></span><h1>The <a class="reference internal" href="#module-plotting" title="plotting"><code class="xref py py-mod docutils literal"><span class="pre">plotting</span></code></a> Module<a class="headerlink" href="#module-plotting" title="Permalink to this headline">¶</a></h1>
+<span id="the-plotting-module"></span><h2>The <a class="reference internal" href="#module-plotting" title="plotting"><code class="xref py py-mod docutils literal"><span class="pre">plotting</span></code></a> Module<a class="headerlink" href="#module-plotting" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="plotting.n_model_plot">
 <code class="descclassname">plotting.</code><code class="descname">n_model_plot</code><span class="sig-paren">(</span><em>models</em>, <em>axes=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plotting.html#n_model_plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotting.n_model_plot" title="Permalink to this definition">¶</a></dt>
@@ -4012,7 +4016,7 @@ lines - a point to draw vertical lines for</p>
 
 </div>
 <div class="section" id="module-inputf">
-<span id="the-inputf-module"></span><h1>The <a class="reference internal" href="#module-inputf" title="inputf"><code class="xref py py-mod docutils literal"><span class="pre">inputf</span></code></a> Module<a class="headerlink" href="#module-inputf" title="Permalink to this headline">¶</a></h1>
+<span id="the-inputf-module"></span><h2>The <a class="reference internal" href="#module-inputf" title="inputf"><code class="xref py py-mod docutils literal"><span class="pre">inputf</span></code></a> Module<a class="headerlink" href="#module-inputf" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="inputf.load_SAR_data">
 <code class="descclassname">inputf.</code><code class="descname">load_SAR_data</code><span class="sig-paren">(</span><em>datadir</em>, <em>tracks</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/inputf.html#load_SAR_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#inputf.load_SAR_data" title="Permalink to this definition">¶</a></dt>
@@ -4032,6 +4036,7 @@ Returns Diff_IFG objects.</p>
 <dd><p>Load data traces for the given stations and channels.</p>
 </dd></dl>
 
+</div>
 </div>
 
 
