@@ -93,9 +93,20 @@
 <li class="toctree-l4"><a class="reference internal" href="#theano">Theano</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="#main-packages">Main Packages</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#pyrocko">Pyrocko</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#main-packages">Main Packages</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#beat-source">BEAT source</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#greens-function-calculations">Greens Function calculations</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#seismic-synthetics">Seismic synthetics</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#geodetic-synthetics">Geodetic synthetics</a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
@@ -164,8 +175,8 @@ everybody, it is really worth doing so! If you have done a similar optimization
 to your machine&#8217;s libraries already, you can start at the Main Packages section.</p>
 <p>For everyone else I summarized the relevant points below.
 For all the heavy details I refer to these links:</p>
-<p><a class="reference external" href="https://hunseblog.wordpress.com/2014/09/15/installing-numpy-and-openblas/">https://hunseblog.wordpress.com/2014/09/15/installing-numpy-and-openblas/</a>
-<a class="reference external" href="http://www.johnwittenauer.net/configuring-theano-for-high-performance-deep-learning/">http://www.johnwittenauer.net/configuring-theano-for-high-performance-deep-learning/</a></p>
+<p><a class="reference external" href="https://hunseblog.wordpress.com/2014/09/15/installing-numpy-and-openblas/">Numpy configure</a></p>
+<p><a class="reference external" href="http://www.johnwittenauer.net/configuring-theano-for-high-performance-deep-learning/">Theano configure</a></p>
 <div class="section" id="openblas">
 <h4>OpenBlas<a class="headerlink" href="#openblas" title="Permalink to this headline">¶</a></h4>
 <p>If the OpenBlas library is compiled locally, it is optimized for your machine
@@ -180,8 +191,8 @@ and speeds up the calculations:</p>
 </div>
 <div class="section" id="numpy">
 <h4>Numpy<a class="headerlink" href="#numpy" title="Permalink to this headline">¶</a></h4>
-<p>Again, I want to note how important it is to compile your numpy locally
-against the previously installed OpenBlas library. For my machine it resulted
+<p>If you compile your numpy locally against the previously installed OpenBlas
+library you can gain significant speedup. For my machine it resulted
 in a speed-up of the numpy related calculations by a factor of at least 3.:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">~/</span><span class="n">src</span>
 <span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">numpy</span><span class="o">/</span><span class="n">numpy</span>
@@ -212,7 +223,7 @@ previously installed OpenBlas library:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">config</span>
 </pre></div>
 </div>
-<p>If everything worked ok, no mention of the ATLAS library run:</p>
+<p>If everything worked ok,i.e. no mention of the ATLAS library, run:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">build</span>
 </pre></div>
 </div>
@@ -223,17 +234,199 @@ previously installed OpenBlas library:</p>
 </div>
 <div class="section" id="theano">
 <h4>Theano<a class="headerlink" href="#theano" title="Permalink to this headline">¶</a></h4>
+<p>Theano is a package that was originally designed for deep learning and enables
+to compile the python code into GPU cuda code or CPU C++. Therefore, you can
+decide to use the GPU of your computer rather than the CPU, without needing to
+reimplement all the codes. Using the GPU is very much useful, if many heavy
+matrix multiplications have to be done, which is the case for some of the BEAT
+models (static and kinematic optimizers). Thus, it is worth to spent the time
+to configure your theano to efficiently use your GPU. Even if you dont plan to
+use your GPU, these instructions will help boosting your CPU performance as
+well.</p>
+<p>For the bleeding edge installation do:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">Theano</span><span class="o">/</span><span class="n">Theano</span>
+<span class="n">cd</span> <span class="n">Theano</span>
+<span class="n">sudo</span> <span class="n">python</span> <span class="n">setup</span> <span class="n">install</span>
+</pre></div>
+</div>
+<p>For any troubleshooting and detailed installation instructions I refer to the
+<a class="reference external" href="http://deeplearning.net/software/theano/install.html">Theano</a> webpage.</p>
+<div class="section" id="cpu-setup">
+<h5>CPU setup<a class="headerlink" href="#cpu-setup" title="Permalink to this headline">¶</a></h5>
+<p>In your home directory create a file <cite>.theanorc</cite>.
+The file has to be edited depending on the type of processing unit that is
+intended to be used. For CPU:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">blas</span><span class="p">]</span>
+<span class="n">ldflags</span> <span class="o">=</span> <span class="o">-</span><span class="n">L</span><span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">local</span><span class="o">/</span><span class="n">lib</span> <span class="o">-</span><span class="n">lopenblas</span> <span class="o">-</span><span class="n">lgfortran</span>
+
+<span class="p">[</span><span class="n">nvcc</span><span class="p">]</span>
+<span class="n">fastmath</span> <span class="o">=</span> <span class="kc">True</span>
+
+<span class="p">[</span><span class="k">global</span><span class="p">]</span>
+<span class="n">device</span> <span class="o">=</span> <span class="n">cpu</span>
+<span class="n">floatX</span> <span class="o">=</span> <span class="n">float64</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="gpu-setup">
+<h5>GPU setup<a class="headerlink" href="#gpu-setup" title="Permalink to this headline">¶</a></h5>
+<p>For NVIDIA graphics cards there is the CUDA package that needs to be installed.:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">nvidia</span><span class="o">-</span><span class="n">current</span>
+<span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">nvdidia</span><span class="o">-</span><span class="n">cuda</span><span class="o">-</span><span class="n">toolkit</span>
+</pre></div>
+</div>
+<p>Restart the system.
+To check if the installation worked well type:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">nvidia</span><span class="o">-</span><span class="n">smi</span>
+</pre></div>
+</div>
+<p>This should display stats about your graphics card model.</p>
+<p>Now we have to tell theano where to find the cuda package.
+For doing so we have to add the library folder to the $LD_LIBRARY_PATH and the
+CUDA root direct to the $PATH.</p>
+<p>In bash you can do it like this, e.g. (depending on the path to your cuda
+installation) add to your .bashrc file in the home directory:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>export CUDA_LIB=&quot;/usr/local/cuda-5.5/lib64&quot;
+export CUDA_ROOT=&quot;/usr/local/cuda-5.5/bin&quot;
+
+export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:$CUDA_LIB
+export PATH=${PATH}:$CUDA_ROOT
+</pre></div>
+</div>
+<p>Theano also supports OpenCL, however, I haven&#8217;t set it up myself so far and
+cannot provide instructions on how to do it.</p>
+<p>In your home directory create a file <cite>.theanorc</cite> with these settings:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">blas</span><span class="p">]</span>
+<span class="n">ldflags</span> <span class="o">=</span> <span class="o">-</span><span class="n">L</span><span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">local</span><span class="o">/</span><span class="n">lib</span> <span class="o">-</span><span class="n">lopenblas</span> <span class="o">-</span><span class="n">lgfortran</span>
+
+<span class="p">[</span><span class="n">nvcc</span><span class="p">]</span>
+<span class="n">fastmath</span> <span class="o">=</span> <span class="kc">True</span>
+
+<span class="p">[</span><span class="k">global</span><span class="p">]</span>
+<span class="n">device</span> <span class="o">=</span> <span class="n">gpu</span>
+<span class="n">floatX</span> <span class="o">=</span> <span class="n">float32</span>
+</pre></div>
+</div>
+<p>To check if the GPU is being actually active and used in the calculations
+copy and paste the follwing code and run it:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">theano</span> <span class="k">import</span> <span class="n">function</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">shared</span><span class="p">,</span> <span class="n">sandbox</span>
+<span class="kn">import</span> <span class="nn">theano.tensor</span> <span class="k">as</span> <span class="nn">T</span>
+<span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">import</span> <span class="nn">time</span>
+
+<span class="n">vlen</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">*</span> <span class="mi">30</span> <span class="o">*</span> <span class="mi">768</span>  <span class="c1"># 10 x #cores x # threads per core</span>
+<span class="n">iters</span> <span class="o">=</span> <span class="mi">1000</span>
+
+<span class="n">rng</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">RandomState</span><span class="p">(</span><span class="mi">22</span><span class="p">)</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">shared</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">rng</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">vlen</span><span class="p">),</span> <span class="n">config</span><span class="o">.</span><span class="n">floatX</span><span class="p">))</span>
+<span class="n">f</span> <span class="o">=</span> <span class="n">function</span><span class="p">([],</span> <span class="n">T</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">maker</span><span class="o">.</span><span class="n">fgraph</span><span class="o">.</span><span class="n">toposort</span><span class="p">())</span>
+<span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">iters</span><span class="p">):</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">f</span><span class="p">()</span>
+<span class="n">t1</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Looping </span><span class="si">%d</span><span class="s2"> times took </span><span class="si">%f</span><span class="s2"> seconds&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">iters</span><span class="p">,</span> <span class="n">t1</span> <span class="o">-</span> <span class="n">t0</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Result is </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">r</span><span class="p">,))</span>
+<span class="k">if</span> <span class="n">numpy</span><span class="o">.</span><span class="n">any</span><span class="p">([</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">op</span><span class="p">,</span> <span class="n">T</span><span class="o">.</span><span class="n">Elemwise</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">f</span><span class="o">.</span><span class="n">maker</span><span class="o">.</span><span class="n">fgraph</span><span class="o">.</span><span class="n">toposort</span><span class="p">()]):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Used the cpu&#39;</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Used the gpu&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Using the CPU:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">THEANO_FLAGS</span><span class="o">=</span><span class="n">mode</span><span class="o">=</span><span class="n">FAST_RUN</span><span class="p">,</span><span class="n">device</span><span class="o">=</span><span class="n">cpu</span><span class="p">,</span><span class="n">floatX</span><span class="o">=</span><span class="n">float32</span> <span class="n">python</span> <span class="n">gpu_test</span><span class="o">.</span><span class="n">py</span>
+
+<span class="p">[</span><span class="n">Elemwise</span><span class="p">{</span><span class="n">exp</span><span class="p">,</span><span class="n">no_inplace</span><span class="p">}(</span><span class="o">&lt;</span><span class="n">TensorType</span><span class="p">(</span><span class="n">float32</span><span class="p">,</span> <span class="n">vector</span><span class="p">)</span><span class="o">&gt;</span><span class="p">)]</span>
+<span class="n">Looping</span> <span class="mi">1000</span> <span class="n">times</span> <span class="n">took</span> <span class="mf">1.311933</span> <span class="n">seconds</span>
+<span class="n">Result</span> <span class="ow">is</span> <span class="p">[</span> <span class="mf">1.23178029</span>  <span class="mf">1.61879337</span>  <span class="mf">1.52278066</span> <span class="o">...</span><span class="p">,</span>  <span class="mf">2.20771813</span>  <span class="mf">2.29967761</span>
+  <span class="mf">1.62323284</span><span class="p">]</span>
+<span class="n">Used</span> <span class="n">the</span> <span class="n">cpu</span>
+</pre></div>
+</div>
+<p>Using the GPU:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">THEANO_FLAGS</span><span class="o">=</span><span class="n">mode</span><span class="o">=</span><span class="n">FAST_RUN</span><span class="p">,</span><span class="n">device</span><span class="o">=</span><span class="n">gpu</span><span class="p">,</span><span class="n">floatX</span><span class="o">=</span><span class="n">float32</span> <span class="n">python</span> <span class="n">gpu_test</span><span class="o">.</span><span class="n">py</span>
+<span class="n">Using</span> <span class="n">gpu</span> <span class="n">device</span> <span class="mi">0</span><span class="p">:</span> <span class="n">Quadro</span> <span class="mi">5000</span> <span class="p">(</span><span class="n">CNMeM</span> <span class="ow">is</span> <span class="n">disabled</span><span class="p">,</span> <span class="n">cuDNN</span> <span class="ow">not</span> <span class="n">available</span><span class="p">)</span>
+<span class="p">[</span><span class="n">GpuElemwise</span><span class="p">{</span><span class="n">exp</span><span class="p">,</span><span class="n">no_inplace</span><span class="p">}(</span><span class="o">&lt;</span><span class="n">CudaNdarrayType</span><span class="p">(</span><span class="n">float32</span><span class="p">,</span> <span class="n">vector</span><span class="p">)</span><span class="o">&gt;</span><span class="p">),</span>
+ <span class="n">HostFromGpu</span><span class="p">(</span><span class="n">GpuElemwise</span><span class="p">{</span><span class="n">exp</span><span class="p">,</span><span class="n">no_inplace</span><span class="p">}</span><span class="o">.</span><span class="mi">0</span><span class="p">)]</span>
+<span class="n">Looping</span> <span class="mi">1000</span> <span class="n">times</span> <span class="n">took</span> <span class="mf">0.841933</span> <span class="n">seconds</span>
+<span class="n">Result</span> <span class="ow">is</span> <span class="p">[</span> <span class="mf">1.23178029</span>  <span class="mf">1.61879349</span>  <span class="mf">1.52278066</span> <span class="o">...</span><span class="p">,</span>  <span class="mf">2.20771813</span>  <span class="mf">2.29967761</span>
+  <span class="mf">1.62323296</span><span class="p">]</span>
+<span class="n">Used</span> <span class="n">the</span> <span class="n">gpu</span>
+</pre></div>
+</div>
+<p>You are done with the numerics installations!</p>
 </div>
 </div>
 </div>
 <div class="section" id="main-packages">
-<h2>Main Packages<a class="headerlink" href="#main-packages" title="Permalink to this headline">¶</a></h2>
+<h3>Main Packages<a class="headerlink" href="#main-packages" title="Permalink to this headline">¶</a></h3>
 <p>BEAT relies on 2 main libraries. Detailed installation instructions for each
-can be found on the respective websites:
-* <cite>pyrocko &lt;http://pyrocko.org/&gt;</cite>
-* <a href="#id1"><span class="problematic" id="id2">`</span></a>pymc3</p>
-<p>pyproj</p>
-<p><a class="reference external" href="http://pyrocko.org/v0.3/install_details.html">http://pyrocko.org/v0.3/install_details.html</a></p>
+can be found on the respective websites:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>* `pyrocko &lt;http://pyrocko.org/&gt;`__
+* `pymc3 &lt;https://github.com/pymc-devs/pymc3&gt;`__
+</pre></div>
+</div>
+<div class="section" id="pyrocko">
+<h4>Pyrocko<a class="headerlink" href="#pyrocko" title="Permalink to this headline">¶</a></h4>
+<p>Pyrocko is an extensive library for seismological applications and provides a
+framework to efficiently store and access Greens Functions.:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">~/</span><span class="n">src</span>
+<span class="n">git</span> <span class="n">clone</span> <span class="n">git</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">pyrocko</span><span class="o">/</span><span class="n">pyrocko</span><span class="o">.</span><span class="n">git</span> <span class="n">pyrocko</span>
+<span class="n">cd</span> <span class="n">beat</span>
+<span class="n">sudo</span> <span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span>
+</pre></div>
+</div>
+<p>Pyproj is the last and most easy one to install:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">pyproj</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="beat-source">
+<h2>BEAT source<a class="headerlink" href="#beat-source" title="Permalink to this headline">¶</a></h2>
+<p>After these long and heavy installations, BEAT itself is easy and
+straight-forward to install:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">~/</span><span class="n">src</span>
+<span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">hvasbath</span><span class="o">/</span><span class="n">beat</span>
+<span class="n">cd</span> <span class="n">beat</span>
+<span class="n">sudo</span> <span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span>
+</pre></div>
+</div>
+<div class="section" id="greens-function-calculations">
+<h3>Greens Function calculations<a class="headerlink" href="#greens-function-calculations" title="Permalink to this headline">¶</a></h3>
+<p>To calculate the Greens Functions we rely on modeling codes written by
+<a class="reference external" href="http://www.gfz-potsdam.de/en/section/physics-of-earthquakes-and-volcanoes/staff/profil/rongjiang-wang/">Rongjiang Wang</a>.
+If you plan to use the GreensFunction calculation framework
+these codes are required and need to be compiled manually.
+The original codes packeged for windows can be found
+<a class="reference external" href="http://www.gfz-potsdam.de/en/section/physics-of-earthquakes-and-volcanoes/data-products-services/downloads-software/">here</a>.</p>
+<p>For Unix systems the codes had to be repackaged.</p>
+<div class="section" id="seismic-synthetics">
+<h4>Seismic synthetics<a class="headerlink" href="#seismic-synthetics" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li><a class="reference external" href="http://kinherd.org/fomosto-qseis-2006a.tar.gz">QSEIS</a></li>
+<li><a class="reference external" href="http://kinherd.org/fomosto-qssp-2010.tar.gz">QSSP</a></li>
+</ul>
+</div>
+<div class="section" id="geodetic-synthetics">
+<h4>Geodetic synthetics<a class="headerlink" href="#geodetic-synthetics" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>PSGRN and PSCMP</li>
+</ul>
+<p>Is so far included in the beat repository, but will be a part of the pyrocko framework in the future.
+In the BEAT folder:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">fomosto</span><span class="o">-</span><span class="n">psgrn</span><span class="o">-</span><span class="n">pscmp</span>
+<span class="n">autoreconf</span> <span class="o">-</span><span class="n">i</span>   <span class="c1"># only if &#39;configure&#39; script is missing</span>
+<span class="n">F77</span><span class="o">=</span><span class="n">gfortran</span> <span class="n">FFLAGS</span><span class="o">=-</span><span class="n">mcmodel</span><span class="o">=</span><span class="n">medium</span> <span class="o">./</span><span class="n">configure</span>
+<span class="n">make</span>
+<span class="n">sudo</span> <span class="n">make</span> <span class="n">install</span>
+</pre></div>
+</div>
+<p>If the number of modelled points is large the FFLAGS flag has to be changed to
+FFLAGS=-mcmodel=large, this will result in a long compilation time.</p>
+</div>
+</div>
 </div>
 </div>
 
