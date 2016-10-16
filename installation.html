@@ -95,6 +95,7 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#main-packages">Main Packages</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#pyrocko">Pyrocko</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pymc3">pymc3</a></li>
 </ul>
 </li>
 </ul>
@@ -362,8 +363,8 @@ copy and paste the follwing code and run it:</p>
 <h3>Main Packages<a class="headerlink" href="#main-packages" title="Permalink to this headline">¶</a></h3>
 <p>BEAT relies on 2 main libraries. Detailed installation instructions for each
 can be found on the respective websites:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>* `pyrocko &lt;http://pyrocko.org/&gt;`__
-* `pymc3 &lt;https://github.com/pymc-devs/pymc3&gt;`__
+<div class="highlight-default"><div class="highlight"><pre><span></span>`pyrocko &lt;http://pyrocko.org/&gt;`__
+`pymc3 &lt;https://github.com/pymc-devs/pymc3&gt;`__
 </pre></div>
 </div>
 <div class="section" id="pyrocko">
@@ -378,6 +379,17 @@ framework to efficiently store and access Greens Functions.:</p>
 </div>
 <p>Pyproj is the last and most easy one to install:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">pyproj</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="pymc3">
+<h4>pymc3<a class="headerlink" href="#pymc3" title="Permalink to this headline">¶</a></h4>
+<p>Pymc3 is a framework that provides various optimization algorithms allows and
+allows to build Bayesian models.:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">~/</span><span class="n">src</span>
+<span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">pymc</span><span class="o">-</span><span class="n">devs</span><span class="o">/</span><span class="n">pymc3</span>
+<span class="n">cd</span> <span class="n">beat</span>
+<span class="n">sudo</span> <span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span>
 </pre></div>
 </div>
 </div>
@@ -397,9 +409,9 @@ straight-forward to install:</p>
 <h3>Greens Function calculations<a class="headerlink" href="#greens-function-calculations" title="Permalink to this headline">¶</a></h3>
 <p>To calculate the Greens Functions we rely on modeling codes written by
 <a class="reference external" href="http://www.gfz-potsdam.de/en/section/physics-of-earthquakes-and-volcanoes/staff/profil/rongjiang-wang/">Rongjiang Wang</a>.
-If you plan to use the GreensFunction calculation framework
+If you plan to use the GreensFunction calculation framework,
 these codes are required and need to be compiled manually.
-The original codes packeged for windows can be found
+The original codes are packaged for windows and can be found
 <a class="reference external" href="http://www.gfz-potsdam.de/en/section/physics-of-earthquakes-and-volcanoes/data-products-services/downloads-software/">here</a>.</p>
 <p>For Unix systems the codes had to be repackaged.</p>
 <div class="section" id="seismic-synthetics">
@@ -414,7 +426,7 @@ The original codes packeged for windows can be found
 <ul class="simple">
 <li>PSGRN and PSCMP</li>
 </ul>
-<p>Is so far included in the beat repository, but will be a part of the pyrocko framework in the future.
+<p>These codes are so far included in the beat repository, but will be a part of the pyrocko framework in the future.
 In the BEAT folder:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">fomosto</span><span class="o">-</span><span class="n">psgrn</span><span class="o">-</span><span class="n">pscmp</span>
 <span class="n">autoreconf</span> <span class="o">-</span><span class="n">i</span>   <span class="c1"># only if &#39;configure&#39; script is missing</span>
