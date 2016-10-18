@@ -245,10 +245,6 @@
                        <span class="s1">&#39;qseis2d)&#39;</span><span class="p">)</span>
     <span class="n">sample_rate</span> <span class="o">=</span> <span class="n">Float</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mf">2.</span><span class="p">,</span>
                           <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Sample rate for the Greens Functions.&#39;</span><span class="p">)</span>
-    <span class="n">calc_data_cov</span> <span class="o">=</span> <span class="n">Bool</span><span class="o">.</span><span class="n">T</span><span class="p">(</span>
-        <span class="n">default</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Flag for calculating the data covariance matrix based on the&#39;</span>
-             <span class="s1">&#39; pre P arrival data trace noise.&#39;</span><span class="p">)</span>
     <span class="n">depth_limit_variation</span> <span class="o">=</span> <span class="n">Float</span><span class="o">.</span><span class="n">T</span><span class="p">(</span>
         <span class="n">default</span><span class="o">=</span><span class="mf">600.</span><span class="p">,</span>
         <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Depth limit [km] for varying the velocity model.&#39;</span><span class="p">)</span>
@@ -297,7 +293,10 @@
                        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Station name for station to be thrown out.&#39;</span><span class="p">)</span>
     <span class="n">distances</span> <span class="o">=</span> <span class="n">Tuple</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">Float</span><span class="o">.</span><span class="n">T</span><span class="p">(),</span> <span class="n">default</span><span class="o">=</span><span class="p">(</span><span class="mf">30.</span><span class="p">,</span> <span class="mf">90.</span><span class="p">))</span>
     <span class="n">channels</span> <span class="o">=</span> <span class="n">List</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">String</span><span class="o">.</span><span class="n">T</span><span class="p">(),</span> <span class="n">default</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Z&#39;</span><span class="p">,</span> <span class="s1">&#39;T&#39;</span><span class="p">])</span>
-
+    <span class="n">calc_data_cov</span> <span class="o">=</span> <span class="n">Bool</span><span class="o">.</span><span class="n">T</span><span class="p">(</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Flag for calculating the data covariance matrix based on the&#39;</span>
+             <span class="s1">&#39; pre P arrival data trace noise.&#39;</span><span class="p">)</span>
     <span class="n">arrival_taper</span> <span class="o">=</span> <span class="n">trace</span><span class="o">.</span><span class="n">Taper</span><span class="o">.</span><span class="n">T</span><span class="p">(</span>
                 <span class="n">default</span><span class="o">=</span><span class="n">ArrivalTaper</span><span class="o">.</span><span class="n">D</span><span class="p">(),</span>
                 <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Taper a,b/c,d time [s] before/after wave arrival&#39;</span><span class="p">)</span>
