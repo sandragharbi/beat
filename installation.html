@@ -424,6 +424,13 @@ The original codes are packaged for windows and can be found
 <li><a class="reference external" href="http://kinherd.org/fomosto-qseis-2006a.tar.gz">QSEIS</a></li>
 <li><a class="reference external" href="http://kinherd.org/fomosto-qssp-2010.tar.gz">QSSP</a></li>
 </ul>
+<p>After unpacking each package within each folder:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">autoreconf</span> <span class="o">-</span><span class="n">i</span>   <span class="c1"># only if &#39;configure&#39; script is missing</span>
+<span class="n">F77</span><span class="o">=</span><span class="n">gfortran</span> <span class="o">./</span><span class="n">configure</span>
+<span class="n">make</span>
+<span class="n">sudo</span> <span class="n">make</span> <span class="n">install</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="geodetic-synthetics">
 <h4>Geodetic synthetics<a class="headerlink" href="#geodetic-synthetics" title="Permalink to this headline">¶</a></h4>
@@ -432,7 +439,8 @@ The original codes are packaged for windows and can be found
 </ul>
 <p>These codes are so far included in the beat repository, but will be a part of the pyrocko framework in the future.
 In the BEAT folder:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">fomosto</span><span class="o">-</span><span class="n">psgrn</span><span class="o">-</span><span class="n">pscmp</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">tar</span> <span class="o">-</span><span class="n">xvzf</span> <span class="n">fomosto</span><span class="o">-</span><span class="n">psgrn</span><span class="o">-</span><span class="n">pscmp</span><span class="o">.</span><span class="n">tar</span><span class="o">.</span><span class="n">gz</span>
+<span class="n">cd</span> <span class="n">fomosto</span><span class="o">-</span><span class="n">psgrn</span><span class="o">-</span><span class="n">pscmp</span>
 <span class="n">autoreconf</span> <span class="o">-</span><span class="n">i</span>   <span class="c1"># only if &#39;configure&#39; script is missing</span>
 <span class="n">F77</span><span class="o">=</span><span class="n">gfortran</span> <span class="n">FFLAGS</span><span class="o">=-</span><span class="n">mcmodel</span><span class="o">=</span><span class="n">medium</span> <span class="o">./</span><span class="n">configure</span>
 <span class="n">make</span>
