@@ -467,13 +467,19 @@ In the BEAT folder:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">tar</span> <span class="o">-</span><span class="n">xvzf</span> <span class="n">fomosto</span><span class="o">-</span><span class="n">psgrn</span><span class="o">-</span><span class="n">pscmp</span><span class="o">.</span><span class="n">tar</span><span class="o">.</span><span class="n">gz</span>
 <span class="n">cd</span> <span class="n">fomosto</span><span class="o">-</span><span class="n">psgrn</span><span class="o">-</span><span class="n">pscmp</span>
 <span class="n">autoreconf</span> <span class="o">-</span><span class="n">i</span>   <span class="c1"># only if &#39;configure&#39; script is missing</span>
-<span class="n">F77</span><span class="o">=</span><span class="n">gfortran</span> <span class="n">FFLAGS</span><span class="o">=-</span><span class="n">mcmodel</span><span class="o">=</span><span class="n">medium</span> <span class="o">./</span><span class="n">configure</span>
-<span class="n">make</span>
-<span class="n">sudo</span> <span class="n">make</span> <span class="n">install</span>
+<span class="o">./</span><span class="n">configure</span>
 </pre></div>
 </div>
 <p>If the number of modelled points is large the FFLAGS flag has to be changed to
-FFLAGS=-mcmodel=large, this will result in a long compilation time.</p>
+FFLAGS=-mcmodel=large, this will result in a long compilation time.:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">FFLAGS</span><span class="o">=-</span><span class="n">mcmodel</span><span class="o">=</span><span class="n">large</span> <span class="o">./</span><span class="n">configure</span>
+</pre></div>
+</div>
+<p>After configuration:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">make</span>
+<span class="n">sudo</span> <span class="n">make</span> <span class="n">install</span>
+</pre></div>
+</div>
 </div>
 </div>
 </div>
