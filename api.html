@@ -319,24 +319,6 @@ of synthetics and container for SAR data.</p>
 </tbody>
 </table>
 <p class="rubric">Methods</p>
-<dl class="method">
-<dt id="heart.DiffIFG.plot">
-<code class="descname">plot</code><span class="sig-paren">(</span><em>point_size=20</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/heart.html#DiffIFG.plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#heart.DiffIFG.plot" title="Permalink to this definition">¶</a></dt>
-<dd><p>Very simple scatter plot of given attribute for fast inspections.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>point_size</strong> : int</p>
-<blockquote class="last">
-<div><p>determines the size of the scatter plot points</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
 </dd></dl>
 
 <dl class="class">
@@ -359,6 +341,31 @@ of synthetics and container for SAR data.</p>
 <dt id="heart.Filter.order">
 <code class="descname">order</code><a class="headerlink" href="#heart.Filter.order" title="Permalink to this definition">¶</a></dt>
 <dd><p><code class="docutils literal"><span class="pre">int</span></code>, <em>default:</em> <code class="docutils literal"><span class="pre">4</span></code>, order of filter, the higher the steeper</p>
+</dd></dl>
+
+<p class="rubric">Attributes</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="47%" />
+<col width="53%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>dummy_for</td>
+<td>&nbsp;</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Methods</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="heart.GeodeticTarget">
+<em class="property">class </em><code class="descclassname">heart.</code><code class="descname">GeodeticTarget</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/heart.html#GeodeticTarget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#heart.GeodeticTarget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Overall geodetic data set class</p>
+<dl class="attribute">
+<dt id="heart.GeodeticTarget.typ">
+<code class="descname">typ</code><a class="headerlink" href="#heart.GeodeticTarget.typ" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="docutils literal"><span class="pre">str</span></code>, <em>default:</em> <code class="docutils literal"><span class="pre">'SAR'</span></code></p>
 </dd></dl>
 
 <p class="rubric">Attributes</p>
@@ -737,7 +744,7 @@ be top_depth.)</p>
 <dl class="attribute">
 <dt id="heart.TeleseismicTarget.covariance">
 <code class="descname">covariance</code><a class="headerlink" href="#heart.TeleseismicTarget.covariance" title="Permalink to this definition">¶</a></dt>
-<dd><p><a class="reference internal" href="#heart.Covariance" title="heart.Covariance"><code class="xref py py-class docutils literal"><span class="pre">heart.Covariance</span></code></a>, <em>optional</em>, <em>default:</em> <code class="docutils literal"><span class="pre">&lt;heart.Covariance</span> <span class="pre">object</span> <span class="pre">at</span> <span class="pre">0x64f5350&gt;</span></code>, <a class="reference internal" href="#heart.Covariance" title="heart.Covariance"><code class="xref py py-class docutils literal"><span class="pre">Covariance</span></code></a> that holds dataand model prediction covariance matrixes</p>
+<dd><p><a class="reference internal" href="#heart.Covariance" title="heart.Covariance"><code class="xref py py-class docutils literal"><span class="pre">heart.Covariance</span></code></a>, <em>optional</em>, <em>default:</em> <code class="docutils literal"><span class="pre">&lt;heart.Covariance</span> <span class="pre">object</span> <span class="pre">at</span> <span class="pre">0x4757d10&gt;</span></code>, <a class="reference internal" href="#heart.Covariance" title="heart.Covariance"><code class="xref py py-class docutils literal"><span class="pre">Covariance</span></code></a> that holds dataand model prediction covariance matrixes</p>
 </dd></dl>
 
 <p class="rubric">Attributes</p>
@@ -1358,7 +1365,7 @@ kinematic distributed slip.</p>
 <dl class="attribute">
 <dt id="config.ATMCMCConfig.stage">
 <code class="descname">stage</code><a class="headerlink" href="#config.ATMCMCConfig.stage" title="Permalink to this definition">¶</a></dt>
-<dd><p><code class="docutils literal"><span class="pre">int</span></code>, <em>default:</em> <code class="docutils literal"><span class="pre">0</span></code>, Stage where to start/continue the sampling.</p>
+<dd><p><code class="docutils literal"><span class="pre">str</span></code>, <em>default:</em> <code class="docutils literal"><span class="pre">'0'</span></code>, Stage where to start/continue the sampling. Has to be int or &#8220;final&#8221;</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -1439,7 +1446,7 @@ generation, optimization algorithm and the data being used.</p>
 <dl class="attribute">
 <dt id="config.BEATconfig.problem_config">
 <code class="descname">problem_config</code><a class="headerlink" href="#config.BEATconfig.problem_config" title="Permalink to this definition">¶</a></dt>
-<dd><p><a class="reference internal" href="#config.ProblemConfig" title="config.ProblemConfig"><code class="xref py py-class docutils literal"><span class="pre">config.ProblemConfig</span></code></a>, <em>default:</em> <code class="docutils literal"><span class="pre">&lt;config.ProblemConfig</span> <span class="pre">object</span> <span class="pre">at</span> <span class="pre">0x74f3a10&gt;</span></code></p>
+<dd><p><a class="reference internal" href="#config.ProblemConfig" title="config.ProblemConfig"><code class="xref py py-class docutils literal"><span class="pre">config.ProblemConfig</span></code></a>, <em>default:</em> <code class="docutils literal"><span class="pre">&lt;config.ProblemConfig</span> <span class="pre">object</span> <span class="pre">at</span> <span class="pre">0x57e9250&gt;</span></code></p>
 </dd></dl>
 
 <dl class="attribute">
@@ -1457,7 +1464,7 @@ generation, optimization algorithm and the data being used.</p>
 <dl class="attribute">
 <dt id="config.BEATconfig.sampler_config">
 <code class="descname">sampler_config</code><a class="headerlink" href="#config.BEATconfig.sampler_config" title="Permalink to this definition">¶</a></dt>
-<dd><p><a class="reference internal" href="#config.SamplerConfig" title="config.SamplerConfig"><code class="xref py py-class docutils literal"><span class="pre">config.SamplerConfig</span></code></a>, <em>default:</em> <code class="docutils literal"><span class="pre">&lt;config.SamplerConfig</span> <span class="pre">object</span> <span class="pre">at</span> <span class="pre">0x74f3a10&gt;</span></code></p>
+<dd><p><a class="reference internal" href="#config.SamplerConfig" title="config.SamplerConfig"><code class="xref py py-class docutils literal"><span class="pre">config.SamplerConfig</span></code></a>, <em>default:</em> <code class="docutils literal"><span class="pre">&lt;config.SamplerConfig</span> <span class="pre">object</span> <span class="pre">at</span> <span class="pre">0x57e9250&gt;</span></code></p>
 </dd></dl>
 
 <p class="rubric">Attributes</p>
@@ -1473,6 +1480,12 @@ generation, optimization algorithm and the data being used.</p>
 </tbody>
 </table>
 <p class="rubric">Methods</p>
+<dl class="method">
+<dt id="config.BEATconfig.update_hypers">
+<code class="descname">update_hypers</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/config.html#BEATconfig.update_hypers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#config.BEATconfig.update_hypers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate the whole config and initialise necessary hyperparameters.</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="class">
@@ -1571,15 +1584,15 @@ generation, optimization algorithm and the data being used.</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="config.GeodeticConfig.targets">
-<code class="descname">targets</code><a class="headerlink" href="#config.GeodeticConfig.targets" title="Permalink to this definition">¶</a></dt>
-<dd><p><code class="docutils literal"><span class="pre">list</span></code> of <code class="xref py py-class docutils literal"><span class="pre">pyrocko.guts.Any</span></code> objects, <em>optional</em></p>
+<dt id="config.GeodeticConfig.types">
+<code class="descname">types</code><a class="headerlink" href="#config.GeodeticConfig.types" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="docutils literal"><span class="pre">list</span></code> of <code class="xref py py-class docutils literal"><span class="pre">pyrocko.guts.Any</span></code> objects, <em>default:</em> <code class="docutils literal"><span class="pre">['SAR']</span></code>, Types of geodetic data, i.e. SAR, GPS, ...</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="config.GeodeticConfig.gf_config">
 <code class="descname">gf_config</code><a class="headerlink" href="#config.GeodeticConfig.gf_config" title="Permalink to this definition">¶</a></dt>
-<dd><p><a class="reference internal" href="#config.GeodeticGFConfig" title="config.GeodeticGFConfig"><code class="xref py py-class docutils literal"><span class="pre">config.GeodeticGFConfig</span></code></a>, <em>default:</em> <code class="docutils literal"><span class="pre">&lt;config.GeodeticGFConfig</span> <span class="pre">object</span> <span class="pre">at</span> <span class="pre">0x7436bd0&gt;</span></code></p>
+<dd><p><a class="reference internal" href="#config.GeodeticGFConfig" title="config.GeodeticGFConfig"><code class="xref py py-class docutils literal"><span class="pre">config.GeodeticGFConfig</span></code></a>, <em>default:</em> <code class="docutils literal"><span class="pre">&lt;config.GeodeticGFConfig</span> <span class="pre">object</span> <span class="pre">at</span> <span class="pre">0x57e6390&gt;</span></code></p>
 </dd></dl>
 
 <p class="rubric">Attributes</p>
@@ -1690,7 +1703,7 @@ generation, optimization algorithm and the data being used.</p>
 <dl class="attribute">
 <dt id="config.ProblemConfig.mode">
 <code class="descname">mode</code><a class="headerlink" href="#config.ProblemConfig.mode" title="Permalink to this definition">¶</a></dt>
-<dd><p><code class="docutils literal"><span class="pre">str</span></code>, <em>default:</em> <code class="docutils literal"><span class="pre">'geometry'</span></code>, Problem to solve: &#8220;Geometry&#8221;, &#8220;Static&#8221;,&#8221;Kinematic&#8221;</p>
+<dd><p><code class="docutils literal"><span class="pre">str</span></code>, <em>default:</em> <code class="docutils literal"><span class="pre">'geometry'</span></code>, Problem to solve: &#8220;geometry&#8221;, &#8220;static&#8221;,&#8221;kinematic&#8221;</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -1708,7 +1721,7 @@ generation, optimization algorithm and the data being used.</p>
 <dl class="attribute">
 <dt id="config.ProblemConfig.hyperparameters">
 <code class="descname">hyperparameters</code><a class="headerlink" href="#config.ProblemConfig.hyperparameters" title="Permalink to this definition">¶</a></dt>
-<dd><p><code class="docutils literal"><span class="pre">list</span></code> of <code class="xref py py-class docutils literal"><span class="pre">beat.heart.Parameter</span></code> objects, <em>default:</em> <code class="docutils literal"><span class="pre">[]</span></code>, Hyperparameters to weight different types of datasets.</p>
+<dd><p><code class="docutils literal"><span class="pre">dict</span></code> of <code class="xref py py-class docutils literal"><span class="pre">pyrocko.guts.Any</span></code> objects, <em>default:</em> <code class="docutils literal"><span class="pre">{}</span></code>, Hyperparameters to weight different types of datasets.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -1731,6 +1744,12 @@ generation, optimization algorithm and the data being used.</p>
 </table>
 <p class="rubric">Methods</p>
 <dl class="method">
+<dt id="config.ProblemConfig.validate_hypers">
+<code class="descname">validate_hypers</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/config.html#ProblemConfig.validate_hypers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#config.ProblemConfig.validate_hypers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if hyperparameters and their test values do not contradict!</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="config.ProblemConfig.validate_priors">
 <code class="descname">validate_priors</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/config.html#ProblemConfig.validate_priors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#config.ProblemConfig.validate_priors" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check if priors and their test values do not contradict!</p>
@@ -1751,7 +1770,7 @@ generation, optimization algorithm and the data being used.</p>
 <dl class="attribute">
 <dt id="config.SamplerConfig.parameters">
 <code class="descname">parameters</code><a class="headerlink" href="#config.SamplerConfig.parameters" title="Permalink to this definition">¶</a></dt>
-<dd><p><a class="reference internal" href="#config.SamplerParameters" title="config.SamplerParameters"><code class="xref py py-class docutils literal"><span class="pre">config.SamplerParameters</span></code></a>, <em>optional</em>, <em>default:</em> <code class="docutils literal"><span class="pre">&lt;config.ATMCMCConfig</span> <span class="pre">object</span> <span class="pre">at</span> <span class="pre">0x74f3650&gt;</span></code>, Sampler dependend Parameters</p>
+<dd><p><a class="reference internal" href="#config.SamplerParameters" title="config.SamplerParameters"><code class="xref py py-class docutils literal"><span class="pre">config.SamplerParameters</span></code></a>, <em>optional</em>, <em>default:</em> <code class="docutils literal"><span class="pre">&lt;config.ATMCMCConfig</span> <span class="pre">object</span> <span class="pre">at</span> <span class="pre">0x57e6dd0&gt;</span></code>, Sampler dependend Parameters</p>
 </dd></dl>
 
 <p class="rubric">Attributes</p>
@@ -1825,13 +1844,13 @@ generation, optimization algorithm and the data being used.</p>
 <dl class="attribute">
 <dt id="config.SeismicConfig.arrival_taper">
 <code class="descname">arrival_taper</code><a class="headerlink" href="#config.SeismicConfig.arrival_taper" title="Permalink to this definition">¶</a></dt>
-<dd><p><a class="reference external" href="http://pyrocko.org/v0.3/trace.html#pyrocko.trace.Taper" title="(in Pyrocko v0.3)"><code class="xref py py-class docutils literal"><span class="pre">pyrocko.trace.Taper</span></code></a>, <em>default:</em> <code class="docutils literal"><span class="pre">&lt;beat.heart.ArrivalTaper</span> <span class="pre">object</span> <span class="pre">at</span> <span class="pre">0x7436a50&gt;</span></code>, Taper a,b/c,d time [s] before/after wave arrival</p>
+<dd><p><a class="reference external" href="http://pyrocko.org/v0.3/trace.html#pyrocko.trace.Taper" title="(in Pyrocko v0.3)"><code class="xref py py-class docutils literal"><span class="pre">pyrocko.trace.Taper</span></code></a>, <em>default:</em> <code class="docutils literal"><span class="pre">&lt;beat.heart.ArrivalTaper</span> <span class="pre">object</span> <span class="pre">at</span> <span class="pre">0x57e61d0&gt;</span></code>, Taper a,b/c,d time [s] before/after wave arrival</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="config.SeismicConfig.filterer">
 <code class="descname">filterer</code><a class="headerlink" href="#config.SeismicConfig.filterer" title="Permalink to this definition">¶</a></dt>
-<dd><p><code class="xref py py-class docutils literal"><span class="pre">beat.heart.Filter</span></code>, <em>default:</em> <code class="docutils literal"><span class="pre">&lt;beat.heart.Filter</span> <span class="pre">object</span> <span class="pre">at</span> <span class="pre">0x7436a10&gt;</span></code></p>
+<dd><p><code class="xref py py-class docutils literal"><span class="pre">beat.heart.Filter</span></code>, <em>default:</em> <code class="docutils literal"><span class="pre">&lt;beat.heart.Filter</span> <span class="pre">object</span> <span class="pre">at</span> <span class="pre">0x57e6190&gt;</span></code></p>
 </dd></dl>
 
 <dl class="attribute">
@@ -1843,7 +1862,7 @@ generation, optimization algorithm and the data being used.</p>
 <dl class="attribute">
 <dt id="config.SeismicConfig.gf_config">
 <code class="descname">gf_config</code><a class="headerlink" href="#config.SeismicConfig.gf_config" title="Permalink to this definition">¶</a></dt>
-<dd><p><a class="reference internal" href="#config.SeismicGFConfig" title="config.SeismicGFConfig"><code class="xref py py-class docutils literal"><span class="pre">config.SeismicGFConfig</span></code></a>, <em>default:</em> <code class="docutils literal"><span class="pre">&lt;config.SeismicGFConfig</span> <span class="pre">object</span> <span class="pre">at</span> <span class="pre">0x7436a10&gt;</span></code></p>
+<dd><p><a class="reference internal" href="#config.SeismicGFConfig" title="config.SeismicGFConfig"><code class="xref py py-class docutils literal"><span class="pre">config.SeismicGFConfig</span></code></a>, <em>default:</em> <code class="docutils literal"><span class="pre">&lt;config.SeismicGFConfig</span> <span class="pre">object</span> <span class="pre">at</span> <span class="pre">0x57e6190&gt;</span></code></p>
 </dd></dl>
 
 <p class="rubric">Attributes</p>
@@ -2257,7 +2276,7 @@ Defaults to random draws from variables (defaults to empty dict)</p>
 <div><p>Chain number used to store sample in backend. If <cite>n_jobs</cite> is
 greater than one, chain numbers will start here.</p>
 </div></blockquote>
-<p><strong>stage</strong> : int</p>
+<p><strong>stage</strong> : str</p>
 <blockquote>
 <div><p>Stage where to start or continue the calculation. It is possible to
 continue after completed stages (stage should be the number of the
@@ -3051,7 +3070,7 @@ with respect to velocity model uncertainties are calculated</p>
 <dl class="attribute">
 <dt id="pscmp.PsCmpConfig.observation">
 <code class="descname">observation</code><a class="headerlink" href="#pscmp.PsCmpConfig.observation" title="Permalink to this definition">¶</a></dt>
-<dd><p><a class="reference internal" href="#pscmp.PsCmpObservation" title="pscmp.PsCmpObservation"><code class="xref py py-class docutils literal"><span class="pre">pscmp.PsCmpObservation</span></code></a>, <em>default:</em> <code class="docutils literal"><span class="pre">&lt;pscmp.PsCmpScatter</span> <span class="pre">object</span> <span class="pre">at</span> <span class="pre">0x9c76250&gt;</span></code></p>
+<dd><p><a class="reference internal" href="#pscmp.PsCmpObservation" title="pscmp.PsCmpObservation"><code class="xref py py-class docutils literal"><span class="pre">pscmp.PsCmpObservation</span></code></a>, <em>default:</em> <code class="docutils literal"><span class="pre">&lt;pscmp.PsCmpScatter</span> <span class="pre">object</span> <span class="pre">at</span> <span class="pre">0x9419590&gt;</span></code></p>
 </dd></dl>
 
 <dl class="attribute">
@@ -3081,7 +3100,7 @@ with respect to velocity model uncertainties are calculated</p>
 <dl class="attribute">
 <dt id="pscmp.PsCmpConfig.rectangular_source_patches">
 <code class="descname">rectangular_source_patches</code><a class="headerlink" href="#pscmp.PsCmpConfig.rectangular_source_patches" title="Permalink to this definition">¶</a></dt>
-<dd><p><code class="docutils literal"><span class="pre">list</span></code> of <code class="xref py py-class docutils literal"><span class="pre">pyrocko.guts.Any</span></code> objects, <em>default:</em> <code class="docutils literal"><span class="pre">&lt;pyrocko.guts.DefaultMaker</span> <span class="pre">instance</span> <span class="pre">at</span> <span class="pre">0x9c6fab8&gt;</span></code></p>
+<dd><p><code class="docutils literal"><span class="pre">list</span></code> of <code class="xref py py-class docutils literal"><span class="pre">pyrocko.guts.Any</span></code> objects, <em>default:</em> <code class="docutils literal"><span class="pre">&lt;pyrocko.guts.DefaultMaker</span> <span class="pre">object</span> <span class="pre">at</span> <span class="pre">0x9419410&gt;</span></code></p>
 </dd></dl>
 
 <p class="rubric">Attributes</p>
@@ -3118,7 +3137,7 @@ with respect to velocity model uncertainties are calculated</p>
 <dl class="attribute">
 <dt id="pscmp.PsCmpConfigFull.coulomb_master_field">
 <code class="descname">coulomb_master_field</code><a class="headerlink" href="#pscmp.PsCmpConfigFull.coulomb_master_field" title="Permalink to this definition">¶</a></dt>
-<dd><p><a class="reference internal" href="#pscmp.PsCmpCoulombStress" title="pscmp.PsCmpCoulombStress"><code class="xref py py-class docutils literal"><span class="pre">pscmp.PsCmpCoulombStress</span></code></a>, <em>optional</em>, <em>default:</em> <code class="docutils literal"><span class="pre">&lt;pscmp.PsCmpCoulombStressMasterFault</span> <span class="pre">object</span> <span class="pre">at</span> <span class="pre">0x9c76950&gt;</span></code></p>
+<dd><p><a class="reference internal" href="#pscmp.PsCmpCoulombStress" title="pscmp.PsCmpCoulombStress"><code class="xref py py-class docutils literal"><span class="pre">pscmp.PsCmpCoulombStress</span></code></a>, <em>optional</em>, <em>default:</em> <code class="docutils literal"><span class="pre">&lt;pscmp.PsCmpCoulombStressMasterFault</span> <span class="pre">object</span> <span class="pre">at</span> <span class="pre">0x9419cd0&gt;</span></code></p>
 </dd></dl>
 
 <dl class="attribute">
@@ -3820,6 +3839,33 @@ mode - problem that has been solved (geometry, static, kinematic)</div></blockqu
 </dd></dl>
 
 <dl class="function">
+<dt id="utility.mod_i">
+<code class="descclassname">utility.</code><code class="descname">mod_i</code><span class="sig-paren">(</span><em>i</em>, <em>cycle</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utility.html#mod_i"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utility.mod_i" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates modulus of a function and returns number of full cycles and the
+rest.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>i</strong> : int or float</p>
+<blockquote>
+<div><p>Number to be cycled over</p>
+</div></blockquote>
+<p><strong>cycle</strong> : int o float</p>
+<blockquote>
+<div><p>Cycle length</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>fullc</strong> : int or float depending on input</p>
+<p class="last"><strong>rest</strong> : int or float depending on input</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
 <dt id="utility.near_psd">
 <code class="descclassname">utility.</code><code class="descname">near_psd</code><span class="sig-paren">(</span><em>x</em>, <em>epsilon=2.2204460492503131e-16</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utility.html#near_psd"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utility.near_psd" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates the nearest postive semi-definite matrix for a correlation/
@@ -3918,7 +3964,7 @@ event - Object</p>
 <dt id="utility.split_point">
 <code class="descclassname">utility.</code><code class="descname">split_point</code><span class="sig-paren">(</span><em>point</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utility.html#split_point"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utility.split_point" title="Permalink to this definition">¶</a></dt>
 <dd><p>Split point in solution space into List of dictionaries with source
-parameters for each source.
+parameters for each source. Does a deepcopy of each parameter.
 :py:param: point <code class="xref py py-class docutils literal"><span class="pre">pymc3.Point</span></code></p>
 </dd></dl>
 
@@ -3931,6 +3977,12 @@ parameters for each source.
 Input: sources - list of BEAT sources</p>
 <blockquote>
 <div>datasets - config.problem.config.datasets</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="utility.update_source">
+<code class="descclassname">utility.</code><code class="descname">update_source</code><span class="sig-paren">(</span><em>source</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utility.html#update_source"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utility.update_source" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update source keeping stf and source params seperate.</p>
 </dd></dl>
 
 <dl class="function">
@@ -3982,6 +4034,12 @@ a reference event.</p>
 <div class="section" id="module-plotting">
 <span id="the-plotting-module"></span><h2>The <a class="reference internal" href="#module-plotting" title="plotting"><code class="xref py py-mod docutils literal"><span class="pre">plotting</span></code></a> Module<a class="headerlink" href="#module-plotting" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
+<dt id="plotting.histplot_op">
+<code class="descclassname">plotting.</code><code class="descname">histplot_op</code><span class="sig-paren">(</span><em>ax</em>, <em>data</em>, <em>alpha=0.35</em>, <em>color=None</em>, <em>bins=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plotting.html#histplot_op"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotting.histplot_op" title="Permalink to this definition">¶</a></dt>
+<dd><p>Modified from pymc3. Additional color argument.</p>
+</dd></dl>
+
+<dl class="function">
 <dt id="plotting.n_model_plot">
 <code class="descclassname">plotting.</code><code class="descname">n_model_plot</code><span class="sig-paren">(</span><em>models</em>, <em>axes=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plotting.html#n_model_plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotting.n_model_plot" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot cake layered earth models.</p>
@@ -3989,8 +4047,20 @@ a reference event.</p>
 
 <dl class="function">
 <dt id="plotting.plot">
-<code class="descclassname">plotting.</code><code class="descname">plot</code><span class="sig-paren">(</span><em>lons</em>, <em>lats</em>, <em>disp</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plotting.html#plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotting.plot" title="Permalink to this definition">¶</a></dt>
-<dd><p>Very simple scatter plot of displacements for fast inspections.</p>
+<code class="descclassname">plotting.</code><code class="descname">plot</code><span class="sig-paren">(</span><em>uwifg</em>, <em>point_size=20</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plotting.html#plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotting.plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Very simple scatter plot of given IFG for fast inspections.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>point_size</strong> : int</p>
+<blockquote class="last">
+<div><p>determines the size of the scatter plot points</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
@@ -4012,6 +4082,73 @@ Inputs: problem Object</p>
 <dd><p>Plot variable posteriors from certain stage of the ATMIP algorithm.
 n_steps of chains to select last samples of each trace.
 lines - a point to draw vertical lines for</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="plotting.traceplot">
+<code class="descclassname">plotting.</code><code class="descname">traceplot</code><span class="sig-paren">(</span><em>trace</em>, <em>varnames=None</em>, <em>transform=&lt;function &lt;lambda&gt; at 0x96fe050&gt;</em>, <em>figsize=None</em>, <em>lines=None</em>, <em>combined=False</em>, <em>grid=False</em>, <em>varbins=None</em>, <em>nbins=40</em>, <em>alpha=0.35</em>, <em>priors=None</em>, <em>prior_alpha=1</em>, <em>prior_style='--'</em>, <em>ax=None</em>, <em>posterior=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plotting.html#traceplot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotting.traceplot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots posterior pdfs as histograms from multiple mtrace objects.</p>
+<p>Modified from pymc3.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>trace</strong> : result of MCMC run</p>
+<p><strong>varnames</strong> : list of variable names</p>
+<blockquote>
+<div><p>Variables to be plotted, if None all variable are plotted</p>
+</div></blockquote>
+<p><strong>transform</strong> : callable</p>
+<blockquote>
+<div><p>Function to transform data (defaults to identity)</p>
+</div></blockquote>
+<p><strong>posterior</strong> : str</p>
+<blockquote>
+<div><p>To mark posterior value in distribution &#8216;max&#8217;, &#8216;min&#8217;, &#8216;mean&#8217;</p>
+</div></blockquote>
+<p><strong>figsize</strong> : figure size tuple</p>
+<blockquote>
+<div><p>If None, size is (12, num of variables * 2) inch</p>
+</div></blockquote>
+<p><strong>lines</strong> : dict</p>
+<blockquote>
+<div><p>Dictionary of variable name / value  to be overplotted as vertical
+lines to the posteriors and horizontal lines on sample values
+e.g. mean of posteriors, true values of a simulation</p>
+</div></blockquote>
+<p><strong>combined</strong> : bool</p>
+<blockquote>
+<div><p>Flag for combining multiple chains into a single chain. If False
+(default), chains will be plotted separately.</p>
+</div></blockquote>
+<p><strong>grid</strong> : bool</p>
+<blockquote>
+<div><p>Flag for adding gridlines to histogram. Defaults to True.</p>
+</div></blockquote>
+<p><strong>varbins</strong> : list of arrays</p>
+<blockquote>
+<div><p>List containing the binning arrays for the variables, if None they will
+be created.</p>
+</div></blockquote>
+<p><strong>nbins</strong> : int</p>
+<blockquote>
+<div><p>Number of bins for each histogram</p>
+</div></blockquote>
+<p><strong>alpha</strong> : float</p>
+<blockquote>
+<div><p>Alpha value for plot line. Defaults to 0.35.</p>
+</div></blockquote>
+<p><strong>ax</strong> : axes</p>
+<blockquote>
+<div><p>Matplotlib axes. Defaults to None.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>ax</strong> : matplotlib axes</p>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </div>

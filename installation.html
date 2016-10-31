@@ -94,8 +94,9 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#main-packages">Main Packages</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#pyrocko">Pyrocko</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#pymc3">pymc3</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyrocko">Pyrocko</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyproj">Pyproj</a></li>
 </ul>
 </li>
 </ul>
@@ -196,7 +197,7 @@ the line:</p>
 </pre></div>
 </div>
 <p>If it is there, fine. If not, you have to create it.</p>
-<p>If you decided to install OpenBlas in a totally different directory you have
+<p>If you decided to install OpenBlas in a totally different directory you have to
 create a file <cite>openblas.conf</cite> containing your custom_path:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">custom_path</span><span class="o">/</span><span class="n">lib</span>
 </pre></div>
@@ -204,6 +205,11 @@ create a file <cite>openblas.conf</cite> containing your custom_path:</p>
 <p>In both cases, either only checking if the files are there or creating the new
 file with the path; you have to do:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">ldconfig</span>
+</pre></div>
+</div>
+<p>Alternatively, you could add your /custom_path/lib to the $LD_LIBRARY_PATH in
+your .bashrc or .cshrc in the homedirectory:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>export LD_LIBRARY_PATH=/custom_path/lib:$LD_LIBRARY_PATH
 </pre></div>
 </div>
 </div>
@@ -373,6 +379,7 @@ copy and paste the follwing code and run it:</p>
 </div>
 <p>Using the GPU:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">THEANO_FLAGS</span><span class="o">=</span><span class="n">mode</span><span class="o">=</span><span class="n">FAST_RUN</span><span class="p">,</span><span class="n">device</span><span class="o">=</span><span class="n">gpu</span><span class="p">,</span><span class="n">floatX</span><span class="o">=</span><span class="n">float32</span> <span class="n">python</span> <span class="n">gpu_test</span><span class="o">.</span><span class="n">py</span>
+
 <span class="n">Using</span> <span class="n">gpu</span> <span class="n">device</span> <span class="mi">0</span><span class="p">:</span> <span class="n">Quadro</span> <span class="mi">5000</span> <span class="p">(</span><span class="n">CNMeM</span> <span class="ow">is</span> <span class="n">disabled</span><span class="p">,</span> <span class="n">cuDNN</span> <span class="ow">not</span> <span class="n">available</span><span class="p">)</span>
 <span class="p">[</span><span class="n">GpuElemwise</span><span class="p">{</span><span class="n">exp</span><span class="p">,</span><span class="n">no_inplace</span><span class="p">}(</span><span class="o">&lt;</span><span class="n">CudaNdarrayType</span><span class="p">(</span><span class="n">float32</span><span class="p">,</span> <span class="n">vector</span><span class="p">)</span><span class="o">&gt;</span><span class="p">),</span>
  <span class="n">HostFromGpu</span><span class="p">(</span><span class="n">GpuElemwise</span><span class="p">{</span><span class="n">exp</span><span class="p">,</span><span class="n">no_inplace</span><span class="p">}</span><span class="o">.</span><span class="mi">0</span><span class="p">)]</span>
@@ -390,23 +397,8 @@ copy and paste the follwing code and run it:</p>
 <h3>Main Packages<a class="headerlink" href="#main-packages" title="Permalink to this headline">¶</a></h3>
 <p>BEAT relies on 2 main libraries. Detailed installation instructions for each
 can be found on the respective websites:</p>
-<p><a class="reference external" href="http://pyrocko.org/">pyrocko</a>
-<a class="reference external" href="https://github.com/pymc-devs/pymc3">pymc3</a></p>
-<div class="section" id="pyrocko">
-<h4>Pyrocko<a class="headerlink" href="#pyrocko" title="Permalink to this headline">¶</a></h4>
-<p>Pyrocko is an extensive library for seismological applications and provides a
-framework to efficiently store and access Greens Functions.:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">~/</span><span class="n">src</span>
-<span class="n">git</span> <span class="n">clone</span> <span class="n">git</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">pyrocko</span><span class="o">/</span><span class="n">pyrocko</span><span class="o">.</span><span class="n">git</span> <span class="n">pyrocko</span>
-<span class="n">cd</span> <span class="n">beat</span>
-<span class="n">sudo</span> <span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span>
-</pre></div>
-</div>
-<p>Pyproj is the last and most easy one to install:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">pyproj</span>
-</pre></div>
-</div>
-</div>
+<p><a class="reference external" href="https://github.com/pymc-devs/pymc3">pymc3</a>
+<a class="reference external" href="http://pyrocko.org/">pyrocko</a></p>
 <div class="section" id="pymc3">
 <h4>pymc3<a class="headerlink" href="#pymc3" title="Permalink to this headline">¶</a></h4>
 <p>Pymc3 is a framework that provides various optimization algorithms allows and
@@ -419,6 +411,24 @@ allows to build Bayesian models. For the last stable release:</p>
 <span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">pymc</span><span class="o">-</span><span class="n">devs</span><span class="o">/</span><span class="n">pymc3</span>
 <span class="n">cd</span> <span class="n">pymc3</span>
 <span class="n">sudo</span> <span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="pyrocko">
+<h4>Pyrocko<a class="headerlink" href="#pyrocko" title="Permalink to this headline">¶</a></h4>
+<p>Pyrocko is an extensive library for seismological applications and provides a
+framework to efficiently store and access Greens Functions.:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">~/</span><span class="n">src</span>
+<span class="n">git</span> <span class="n">clone</span> <span class="n">git</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">pyrocko</span><span class="o">/</span><span class="n">pyrocko</span><span class="o">.</span><span class="n">git</span> <span class="n">pyrocko</span>
+<span class="n">cd</span> <span class="n">beat</span>
+<span class="n">sudo</span> <span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="pyproj">
+<h4>Pyproj<a class="headerlink" href="#pyproj" title="Permalink to this headline">¶</a></h4>
+<p>Pyproj is the last package and also the most easy one to install:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">pyproj</span>
 </pre></div>
 </div>
 </div>
@@ -449,7 +459,7 @@ The original codes are packaged for windows and can be found
 <li><a class="reference external" href="http://kinherd.org/fomosto-qseis-2006a.tar.gz">QSEIS</a></li>
 <li><a class="reference external" href="http://kinherd.org/fomosto-qssp-2010.tar.gz">QSSP</a></li>
 </ul>
-<p>After unpacking each package within each folder:</p>
+<p>After unpacking each package, within each folder run:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">autoreconf</span> <span class="o">-</span><span class="n">i</span>   <span class="c1"># only if &#39;configure&#39; script is missing</span>
 <span class="n">F77</span><span class="o">=</span><span class="n">gfortran</span> <span class="o">./</span><span class="n">configure</span>
 <span class="n">make</span>

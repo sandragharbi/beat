@@ -186,7 +186,7 @@
 
         <span class="n">ctrace</span> <span class="o">=</span> <span class="n">tr</span><span class="o">.</span><span class="n">chop</span><span class="p">(</span>
             <span class="n">tmin</span><span class="o">=</span><span class="n">tr</span><span class="o">.</span><span class="n">tmin</span><span class="p">,</span>
-            <span class="n">tmax</span><span class="o">=</span><span class="n">arrival_time</span> <span class="o">-</span> <span class="n">ataper</span><span class="o">.</span><span class="n">b</span><span class="p">,</span>
+            <span class="n">tmax</span><span class="o">=</span><span class="n">arrival_time</span> <span class="o">-</span> <span class="n">num</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">ataper</span><span class="o">.</span><span class="n">b</span><span class="p">),</span>
             <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
         <span class="n">cov_ds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">num</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">ctrace</span><span class="o">.</span><span class="n">ydata</span><span class="p">,</span> <span class="n">ddof</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">csub</span><span class="p">)</span>

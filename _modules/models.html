@@ -487,8 +487,10 @@
 
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Optimization for </span><span class="si">%i</span><span class="s1"> sources&#39;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sources</span><span class="p">))</span>
 
+            <span class="n">pc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">problem_config</span>
+
             <span class="n">input_rvs</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">problem_config</span><span class="o">.</span><span class="n">priors</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">pc</span><span class="o">.</span><span class="n">priors</span><span class="p">:</span>
                 <span class="n">input_rvs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pm</span><span class="o">.</span><span class="n">Uniform</span><span class="p">(</span>
                     <span class="n">param</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
                     <span class="n">shape</span><span class="o">=</span><span class="n">param</span><span class="o">.</span><span class="n">dimension</span><span class="p">,</span>
@@ -497,18 +499,20 @@
                     <span class="n">testval</span><span class="o">=</span><span class="n">param</span><span class="o">.</span><span class="n">testvalue</span><span class="p">,</span>
                     <span class="n">transform</span><span class="o">=</span><span class="kc">None</span><span class="p">))</span>
 
-            <span class="n">hyperparams</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">problem_config</span><span class="o">.</span><span class="n">hyperparameters</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="k">for</span> <span class="n">hyperpar</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">problem_config</span><span class="o">.</span><span class="n">hyperparameters</span><span class="p">:</span>
-                    <span class="n">hyperparams</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pm</span><span class="o">.</span><span class="n">Uniform</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">hyperparams</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">n_hyp</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">pc</span><span class="o">.</span><span class="n">hyperparameters</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
+            <span class="k">for</span> <span class="n">hyperpar</span> <span class="ow">in</span> <span class="n">pc</span><span class="o">.</span><span class="n">hyperparameters</span><span class="o">.</span><span class="n">itervalues</span><span class="p">():</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_seismic_flag</span> <span class="ow">and</span> <span class="n">n_hyp</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">hyperparams</span><span class="p">[</span><span class="n">hyperpar</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">hyperparams</span><span class="p">[</span><span class="n">hyperpar</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">Uniform</span><span class="p">(</span>
                         <span class="n">hyperpar</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
                         <span class="n">shape</span><span class="o">=</span><span class="n">hyperpar</span><span class="o">.</span><span class="n">dimension</span><span class="p">,</span>
                         <span class="n">lower</span><span class="o">=</span><span class="n">hyperpar</span><span class="o">.</span><span class="n">lower</span><span class="p">,</span>
                         <span class="n">upper</span><span class="o">=</span><span class="n">hyperpar</span><span class="o">.</span><span class="n">upper</span><span class="p">,</span>
                         <span class="n">testval</span><span class="o">=</span><span class="n">hyperpar</span><span class="o">.</span><span class="n">testvalue</span><span class="p">,</span>
-                        <span class="n">transform</span><span class="o">=</span><span class="kc">None</span><span class="p">))</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">hyperparams</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+                        <span class="n">transform</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 
             <span class="n">total_llk</span> <span class="o">=</span> <span class="n">tt</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">),</span> <span class="n">tconfig</span><span class="o">.</span><span class="n">floatX</span><span class="p">)</span>
 
@@ -533,13 +537,20 @@
                 <span class="n">seis_res</span> <span class="o">=</span> <span class="n">data_trcs</span> <span class="o">-</span> <span class="n">synths</span>
 
                 <span class="n">logpts_s</span> <span class="o">=</span> <span class="n">tt</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">ns_t</span><span class="p">),</span> <span class="n">tconfig</span><span class="o">.</span><span class="n">floatX</span><span class="p">)</span>
+                <span class="n">M</span> <span class="o">=</span> <span class="n">seis_res</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
 
-                <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ns_t</span><span class="p">):</span>
-                    <span class="n">sfactor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stargets</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">covariance</span><span class="o">.</span><span class="n">log_norm_factor</span>
+                <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">target</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stargets</span><span class="p">):</span>
+                    <span class="n">sfactor</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">covariance</span><span class="o">.</span><span class="n">log_norm_factor</span>
+                    <span class="n">hp_name</span> <span class="o">=</span> <span class="n">bconfig</span><span class="o">.</span><span class="n">hyper_pars</span><span class="p">[</span><span class="n">target</span><span class="o">.</span><span class="n">codes</span><span class="p">[</span><span class="mi">3</span><span class="p">]]</span>
 
                     <span class="n">logpts_s</span> <span class="o">=</span> <span class="n">tt</span><span class="o">.</span><span class="n">set_subtensor</span><span class="p">(</span><span class="n">logpts_s</span><span class="p">[</span><span class="n">k</span><span class="p">:</span><span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span>
-                        <span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">sfactor</span> <span class="o">+</span> <span class="n">seis_res</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span>
-                              <span class="bp">self</span><span class="o">.</span><span class="n">sweights</span><span class="p">[</span><span class="n">k</span><span class="p">])</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">seis_res</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">T</span><span class="p">)))</span>
+                        <span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">sfactor</span> <span class="o">-</span> \
+                        <span class="p">(</span><span class="n">M</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">hyperparams</span><span class="p">[</span><span class="n">hp_name</span><span class="p">])</span> <span class="o">+</span> \
+                        <span class="n">tt</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hyperparams</span><span class="p">[</span><span class="n">hp_name</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> \
+                        <span class="p">(</span><span class="n">seis_res</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">sweights</span><span class="p">[</span><span class="n">k</span><span class="p">])</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">seis_res</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">T</span><span class="p">))</span>
+                                 <span class="p">)</span>
+                                                <span class="p">)</span>
 
                 <span class="n">seis_llk</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">Deterministic</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_seis_like_name</span><span class="p">,</span> <span class="n">logpts_s</span><span class="p">)</span>
 
@@ -571,15 +582,17 @@
 
                 <span class="n">logpts_g</span> <span class="o">=</span> <span class="n">tt</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">ng_t</span><span class="p">),</span> <span class="n">tconfig</span><span class="o">.</span><span class="n">floatX</span><span class="p">)</span>
 
-                <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ng_t</span><span class="p">):</span>
-                    <span class="n">M</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gtargets</span><span class="p">[</span><span class="n">l</span><span class="p">]</span><span class="o">.</span><span class="n">displacement</span><span class="o">.</span><span class="n">size</span>
-                    <span class="n">gfactor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gtargets</span><span class="p">[</span><span class="n">l</span><span class="p">]</span><span class="o">.</span><span class="n">covariance</span><span class="o">.</span><span class="n">log_norm_factor</span>
+                <span class="k">for</span> <span class="n">l</span><span class="p">,</span> <span class="n">target</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gtargets</span><span class="p">):</span>
+                    <span class="n">M</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">displacement</span><span class="o">.</span><span class="n">size</span>
+                    <span class="n">gfactor</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">covariance</span><span class="o">.</span><span class="n">log_norm_factor</span>
+                    <span class="n">hp_name</span> <span class="o">=</span> <span class="n">bconfig</span><span class="o">.</span><span class="n">hyper_pars</span><span class="p">[</span><span class="n">target</span><span class="o">.</span><span class="n">typ</span><span class="p">]</span>
 
                     <span class="n">logpts_g</span> <span class="o">=</span> <span class="n">tt</span><span class="o">.</span><span class="n">set_subtensor</span><span class="p">(</span><span class="n">logpts_g</span><span class="p">[</span><span class="n">l</span><span class="p">:</span><span class="n">l</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span>
                          <span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">gfactor</span> <span class="o">-</span> \
-                         <span class="p">((</span><span class="n">M</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">hyperparams</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> \
-                         <span class="n">tt</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">hyperparams</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> \
-                         <span class="p">(</span><span class="n">geo_res</span><span class="p">[</span><span class="n">l</span><span class="p">]</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gweights</span><span class="p">[</span><span class="n">l</span><span class="p">])</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">geo_res</span><span class="p">[</span><span class="n">l</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">)))</span>
+                         <span class="p">(</span><span class="n">M</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">hyperparams</span><span class="p">[</span><span class="n">hp_name</span><span class="p">])</span> <span class="o">+</span> \
+                         <span class="n">tt</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hyperparams</span><span class="p">[</span><span class="n">hp_name</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> \
+                         <span class="p">(</span><span class="n">geo_res</span><span class="p">[</span><span class="n">l</span><span class="p">]</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gweights</span><span class="p">[</span><span class="n">l</span><span class="p">])</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">geo_res</span><span class="p">[</span><span class="n">l</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">))</span>
+                                  <span class="p">)</span>
                                                <span class="p">)</span>
 
                 <span class="n">geo_llk</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">Deterministic</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_geo_like_name</span><span class="p">,</span> <span class="n">logpts_g</span><span class="p">)</span>
@@ -612,13 +625,20 @@
         <span class="c1"># update sources</span>
         <span class="n">point</span> <span class="o">=</span> <span class="n">utility</span><span class="o">.</span><span class="n">adjust_point_units</span><span class="p">(</span><span class="n">point</span><span class="p">)</span>
 
+        <span class="c1"># remove hyperparameters from point</span>
+        <span class="n">hps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">problem_config</span><span class="o">.</span><span class="n">hyperparameters</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">hps</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">hyper</span> <span class="ow">in</span> <span class="n">hps</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">point</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">hyper</span><span class="p">)</span>
+
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_seismic_flag</span><span class="p">:</span>
             <span class="n">point</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">event</span><span class="o">.</span><span class="n">time</span>
 
         <span class="n">source_points</span> <span class="o">=</span> <span class="n">utility</span><span class="o">.</span><span class="n">split_point</span><span class="p">(</span><span class="n">point</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">source</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sources</span><span class="p">):</span>
-            <span class="n">source</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="o">**</span><span class="n">source_points</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="n">utility</span><span class="o">.</span><span class="n">update_source</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="o">**</span><span class="n">source_points</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
 
         <span class="n">dsources</span> <span class="o">=</span> <span class="n">utility</span><span class="o">.</span><span class="n">transform_sources</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">sources</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">problem_config</span><span class="o">.</span><span class="n">datasets</span><span class="p">)</span>
@@ -700,7 +720,7 @@
         <span class="n">source_points</span> <span class="o">=</span> <span class="n">utility</span><span class="o">.</span><span class="n">split_point</span><span class="p">(</span><span class="n">point</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">source</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sources</span><span class="p">):</span>
-            <span class="n">source</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="o">**</span><span class="n">source_points</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="n">utility</span><span class="o">.</span><span class="n">update_source</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="o">**</span><span class="n">source_points</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
 
         <span class="n">dsources</span> <span class="o">=</span> <span class="n">utility</span><span class="o">.</span><span class="n">transform_sources</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">sources</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">problem_config</span><span class="o">.</span><span class="n">datasets</span><span class="p">)</span>
