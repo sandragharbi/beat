@@ -172,13 +172,6 @@
 <div class="viewcode-block" id="ATMCMC"><a class="viewcode-back" href="../api.html#atmcmc.ATMCMC">[docs]</a><span class="k">class</span> <span class="nc">ATMCMC</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">ArrayStepSharedLLK</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Adaptive Transitional Markov-Chain Monte-Carlo sampler class.</span>
-<span class="sd">    following:</span>
-<span class="sd">        Ching &amp; Chen 2007: Transitional Markov chain Monte Carlo method</span>
-<span class="sd">        for Bayesian model updating, model class selection and model</span>
-<span class="sd">        averaging</span>
-<span class="sd">        Journal of Engineering Mechanics 2007</span>
-<span class="sd">        DOI:10.1016/(ASCE)0733-9399(2007)133:7(816)</span>
-<span class="sd">    http://ascelibrary.org/doi/abs/10.1061/%28ASCE%290733-9399%282007%29133:7%28816%29</span>
 
 <span class="sd">    Creates initial samples and framework around the (C)ATMIP parameters</span>
 
@@ -220,6 +213,15 @@
 <span class="sd">    model : :class:`pymc3.Model`</span>
 <span class="sd">        Optional model for sampling step.</span>
 <span class="sd">        Defaults to None (taken from context).</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [Ching2007] Ching, J. and Chen, Y. (2007).</span>
+<span class="sd">        Transitional Markov Chain Monte Carlo Method for Bayesian Model</span>
+<span class="sd">        Updating, Model Class Selection, and Model Averaging.</span>
+<span class="sd">        J. Eng. Mech., 10.1061/(ASCE)0733-9399(2007)133:7(816), 816-832.</span>
+<span class="sd">        `link &lt;http://ascelibrary.org/doi/abs/10.1061/%28ASCE%290733-9399</span>
+<span class="sd">        %282007%29133:7%28816%29&gt;`__</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">default_blocked</span> <span class="o">=</span> <span class="kc">True</span>
@@ -567,11 +569,7 @@
                   <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">update</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">random_seed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rm_flag</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                   <span class="n">plot_flag</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    (C)ATMIP sampling algorithm from Minson et al. 2013:</span>
-<span class="sd">    Bayesian inversion for finite fault earthquake source models</span>
-<span class="sd">    I- Theory and algorithm</span>
-<span class="sd">    https://gji.oxfordjournals.org/content/194/3/1701.full</span>
-
+<span class="sd">    (C)ATMIP sampling algorithm</span>
 <span class="sd">    (Cascading - (C) not always relevant)</span>
 
 <span class="sd">    Samples the solution space with n_chains of Metropolis chains, where each</span>
@@ -627,6 +625,14 @@
 <span class="sd">    rm_flag : bool</span>
 <span class="sd">        If True existing stage result folders are being deleted prior to</span>
 <span class="sd">        sampling.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [Minson2013] Minson, S. E. and Simons, M. and Beck, J. L., (2013),</span>
+<span class="sd">        Bayesian inversion for finite fault earthquake source models</span>
+<span class="sd">        I- Theory and algorithm. Geophysical Journal International, 2013,</span>
+<span class="sd">        194(3), pp.1701-1726,</span>
+<span class="sd">        `link &lt;https://gji.oxfordjournals.org/content/194/3/1701.full&gt;`__</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">model</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">modelcontext</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
@@ -675,7 +681,7 @@
             <span class="n">step</span><span class="o">.</span><span class="n">stage</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">stage</span><span class="p">)</span>
             <span class="n">stage_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">homepath</span><span class="p">,</span> <span class="s1">&#39;stage_</span><span class="si">%i</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">step</span><span class="o">.</span><span class="n">stage</span><span class="p">)</span>
             <span class="n">draws</span> <span class="o">=</span> <span class="mi">1</span>
-  
+
         <span class="k">elif</span> <span class="n">stage</span> <span class="o">==</span> <span class="s1">&#39;final&#39;</span><span class="p">:</span>
             <span class="c1"># continue sampling final stage</span>
             <span class="n">last</span> <span class="o">=</span> <span class="n">get_highest_sampled_stage</span><span class="p">(</span><span class="n">homepath</span><span class="p">)</span>
@@ -685,7 +691,7 @@
             <span class="n">project_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">homepath</span><span class="p">)</span>
             <span class="n">mode</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">homepath</span><span class="p">)</span>
             <span class="n">step</span><span class="p">,</span> <span class="n">updates</span> <span class="o">=</span> <span class="n">utility</span><span class="o">.</span><span class="n">load_atmip_params</span><span class="p">(</span>
-                <span class="n">project_dir</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">last</span><span class="p">)</span> <span class="p">,</span> <span class="n">mode</span><span class="p">)</span>
+                <span class="n">project_dir</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">last</span><span class="p">),</span> <span class="n">mode</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="n">update</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">update</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">updates</span><span class="p">)</span>
@@ -1065,7 +1071,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">stages</span> <span class="o">=</span> <span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">homedir</span><span class="p">,</span> <span class="s1">&#39;stage_*&#39;</span><span class="p">))</span>
 
-    <span class="n">stagenumbers</span> <span class="o">=</span> <span class="p">[]</span> 
+    <span class="n">stagenumbers</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">stages</span><span class="p">:</span>
         <span class="n">stage_ending</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">s</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
         <span class="k">try</span><span class="p">:</span>

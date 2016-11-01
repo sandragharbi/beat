@@ -450,13 +450,13 @@
 <div class="viewcode-block" id="transform_sources"><a class="viewcode-back" href="../api.html#utility.transform_sources">[docs]</a><span class="k">def</span> <span class="nf">transform_sources</span><span class="p">(</span><span class="n">sources</span><span class="p">,</span> <span class="n">datasets</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Transforms a list of :py:class:`heart.RectangularSource` to a dictionary of</span>
-<span class="sd">    sources :py:class:`pscmp.RectangularSource` for geodetic data and</span>
-<span class="sd">    :py:class:`pyrocko.gf.RectangularSource` for seismic data.</span>
+<span class="sd">    sources :py:class:`pscmp.PsCmpRectangularSource` for geodetic data and</span>
+<span class="sd">    :py:class:`pyrocko.gf.seismosizer.RectangularSource` for seismic data.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    sources : list</span>
-<span class="sd">        :class:`RectangularSource`</span>
+<span class="sd">        :class:`heart.RectangularSource`</span>
 <span class="sd">    datasets : list</span>
 <span class="sd">        of strings with the datasets to be included &#39;geodetic&#39; or &#39;seismic&#39;</span>
 
@@ -790,7 +790,7 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    x : array_like</span>
+<span class="sd">    x : :class:`numpy.ndarray`</span>
 <span class="sd">        Covariance/correlation matrix</span>
 <span class="sd">    epsilon : float</span>
 <span class="sd">        Eigenvalue limit</span>
@@ -799,7 +799,7 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    near_cov : array_like</span>
+<span class="sd">    near_cov : :class:`numpy.ndarray`</span>
 <span class="sd">        closest positive definite covariance/correlation matrix</span>
 
 <span class="sd">    Notes</span>
@@ -843,7 +843,7 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    x : array_like</span>
+<span class="sd">    x : :class:`numpy.ndarray`</span>
 <span class="sd">        Covariance/correlation matrix</span>
 <span class="sd">    epsilon : float</span>
 <span class="sd">        Eigenvalue limit</span>
@@ -852,7 +852,7 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    near_cov : array_like</span>
+<span class="sd">    near_cov : :class:`numpy.ndarray`</span>
 <span class="sd">        closest positive definite covariance/correlation matrix</span>
 
 <span class="sd">    Notes</span>
