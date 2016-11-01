@@ -287,8 +287,8 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        :class:`numpy.ndarray` with x, y, z coordinates of the upper edge of the</span>
-<span class="sd">        fault</span>
+<span class="sd">        :class:`numpy.ndarray` with x, y, z coordinates of the upper edge of</span>
+<span class="sd">        the fault</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">return</span> <span class="n">num</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="n">depth</span><span class="p">])</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">width</span> <span class="o">*</span> <span class="n">dipvector</span></div>
@@ -484,7 +484,7 @@
 
 <div class="viewcode-block" id="TeleseismicTarget"><a class="viewcode-back" href="../api.html#heart.TeleseismicTarget">[docs]</a><span class="k">class</span> <span class="nc">TeleseismicTarget</span><span class="p">(</span><span class="n">gf</span><span class="o">.</span><span class="n">Target</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Extension to :class:`pyrocko.gf.seismpsizer.Target` to have </span>
+<span class="sd">    Extension to :class:`pyrocko.gf.seismpsizer.Target` to have</span>
 <span class="sd">    :class:`Covariance` as an attribute.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -927,7 +927,7 @@
 <span class="sd">    nworkers : int</span>
 <span class="sd">        Number of processors to use for computations</span>
 <span class="sd">    rm_gfs : boolean</span>
-<span class="sd">        Valid if qssp or qseis2d are being used, remove the intermediate </span>
+<span class="sd">        Valid if qssp or qseis2d are being used, remove the intermediate</span>
 <span class="sd">        files after finishing the computation</span>
 <span class="sd">    replace_water : boolean</span>
 <span class="sd">        Flag to remove water layers from the crust2.0 profile</span>
