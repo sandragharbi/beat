@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>heart &mdash; beat 0.1 documentation</title>
+  <title>heart &mdash; beat 0.1alpha documentation</title>
   
 
   
@@ -33,7 +33,7 @@
         <link rel="index" title="Index"
               href="../genindex.html"/>
         <link rel="search" title="Search" href="../search.html"/>
-    <link rel="top" title="beat 0.1 documentation" href="../index.html"/>
+    <link rel="top" title="beat 0.1alpha documentation" href="../index.html"/>
         <link rel="up" title="Module code" href="index.html"/> 
 
   
@@ -62,7 +62,7 @@
             
             
               <div class="version">
-                0.1
+                0.1a
               </div>
             
           
@@ -84,7 +84,9 @@
             
             
                 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../short_installation.html">Short Installation instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Detailed Installation instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Getting started with BEAT</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html">API Reference</a></li>
 </ul>
 
@@ -170,25 +172,6 @@
     <span class="s1">&#39;JERS&#39;</span><span class="p">:</span> <span class="mf">0.23513133960784313</span><span class="p">,</span>
     <span class="s1">&#39;RadarSat2&#39;</span><span class="p">:</span> <span class="mf">0.055465772433</span>
     <span class="p">}</span>
-
-
-<div class="viewcode-block" id="PickleableTrace"><a class="viewcode-back" href="../api.html#heart.PickleableTrace">[docs]</a><span class="k">class</span> <span class="nc">PickleableTrace</span><span class="p">(</span><span class="n">trace</span><span class="o">.</span><span class="n">Trace</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Class build on top of :class:`pyrocko.trace.Trace` to make them pickleable.</span>
-<span class="sd">    Obsolete as this has been implemented in pyrocko.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">__reduce__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">pickled_state</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">PickleableTrace</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__reduce__</span><span class="p">()</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ydata</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">updated_state</span> <span class="o">=</span> <span class="n">pickled_state</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ydata</span><span class="p">,)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">updated_state</span> <span class="o">=</span> <span class="n">pickled_state</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
-
-        <span class="k">return</span> <span class="p">(</span><span class="n">pickled_state</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">pickled_state</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">updated_state</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">__setstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">PickleableTrace</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__setstate__</span><span class="p">(</span><span class="n">state</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">ydata</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span></div>
 
 
 <div class="viewcode-block" id="RectangularSource"><a class="viewcode-back" href="../api.html#heart.RectangularSource">[docs]</a><span class="k">class</span> <span class="nc">RectangularSource</span><span class="p">(</span><span class="n">gf</span><span class="o">.</span><span class="n">DCSource</span><span class="p">,</span> <span class="n">gf</span><span class="o">.</span><span class="n">seismosizer</span><span class="o">.</span><span class="n">Cloneable</span><span class="p">):</span>
@@ -447,23 +430,35 @@
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pred_g</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">pred_v</span>
 
-<div class="viewcode-block" id="Covariance.get_inverse"><a class="viewcode-back" href="../api.html#heart.Covariance.get_inverse">[docs]</a>    <span class="k">def</span> <span class="nf">get_inverse</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">inverse</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Add and invert ALL uncertainty covariance Matrices.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">num</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">p_total</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span></div>
+        <span class="n">Cx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">p_total</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span>
+        <span class="k">if</span> <span class="n">Cx</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;No covariances given, using I matrix!&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">num</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">Cx</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">num</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">Cx</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Covariance.get_inverse_p"><a class="viewcode-back" href="../api.html#heart.Covariance.get_inverse_p">[docs]</a>    <span class="k">def</span> <span class="nf">get_inverse_p</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">inverse_p</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Add and invert different MODEL uncertainty covariance Matrices.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">num</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">p_total</span><span class="p">)</span></div>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">p_total</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;No model covariance defined!&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">num</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">p_total</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Covariance.get_inverse_d"><a class="viewcode-back" href="../api.html#heart.Covariance.get_inverse_d">[docs]</a>    <span class="k">def</span> <span class="nf">get_inverse_d</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">inverse_d</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Invert DATA covariance Matrix.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">num</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span></div>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;No data covariance matrix defined!&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">num</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">log_norm_factor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -476,8 +471,11 @@
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">p_total</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
             <span class="n">ldet_x</span> <span class="o">=</span> <span class="n">log_determinant</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">p_total</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
             <span class="n">ldet_x</span> <span class="o">=</span> <span class="n">log_determinant</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;No covariance defined, using I matrix!&#39;</span><span class="p">)</span>
+            <span class="n">ldet_x</span> <span class="o">=</span> <span class="mf">1.</span>
 
         <span class="k">return</span> <span class="p">(</span><span class="n">N</span> <span class="o">*</span> <span class="n">num</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">num</span><span class="o">.</span><span class="n">pi</span><span class="p">))</span> <span class="o">+</span> <span class="n">ldet_x</span></div>
 
@@ -500,14 +498,26 @@
 <span class="sd">    Cosine arrival Taper.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">a</span> <span class="o">=</span> <span class="n">Float</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mf">15.</span><span class="p">,</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">Float</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=-</span><span class="mf">15.</span><span class="p">,</span>
                 <span class="n">help</span><span class="o">=</span><span class="s1">&#39;start of fading in; [s] w.r.t. phase arrival&#39;</span><span class="p">)</span>
-    <span class="n">b</span> <span class="o">=</span> <span class="n">Float</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mf">10.</span><span class="p">,</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">Float</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=-</span><span class="mf">10.</span><span class="p">,</span>
                 <span class="n">help</span><span class="o">=</span><span class="s1">&#39;end of fading in; [s] w.r.t. phase arrival&#39;</span><span class="p">)</span>
     <span class="n">c</span> <span class="o">=</span> <span class="n">Float</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mf">50.</span><span class="p">,</span>
-                <span class="n">help</span><span class="o">=</span><span class="s1">&#39;start of fading in; [s] w.r.t. phase arrival&#39;</span><span class="p">)</span>
+                <span class="n">help</span><span class="o">=</span><span class="s1">&#39;start of fading out; [s] w.r.t. phase arrival&#39;</span><span class="p">)</span>
     <span class="n">d</span> <span class="o">=</span> <span class="n">Float</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mf">55.</span><span class="p">,</span>
-                <span class="n">help</span><span class="o">=</span><span class="s1">&#39;end of fading in; [s] w.r.t phase arrival&#39;</span><span class="p">)</span></div>
+                <span class="n">help</span><span class="o">=</span><span class="s1">&#39;end of fading out; [s] w.r.t phase arrival&#39;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">duration</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">num</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">d</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">fade</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">num</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">a</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Trace"><a class="viewcode-back" href="../api.html#heart.Trace">[docs]</a><span class="k">class</span> <span class="nc">Trace</span><span class="p">(</span><span class="n">Object</span><span class="p">):</span>
+    <span class="k">pass</span></div>
 
 
 <div class="viewcode-block" id="Filter"><a class="viewcode-back" href="../api.html#heart.Filter">[docs]</a><span class="k">class</span> <span class="nc">Filter</span><span class="p">(</span><span class="n">Object</span><span class="p">):</span>
@@ -524,6 +534,20 @@
     <span class="n">order</span> <span class="o">=</span> <span class="n">Int</span><span class="o">.</span><span class="n">T</span><span class="p">(</span>
         <span class="n">default</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
         <span class="n">help</span><span class="o">=</span><span class="s1">&#39;order of filter, the higher the steeper&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SeismicResult"><a class="viewcode-back" href="../api.html#heart.SeismicResult">[docs]</a><span class="k">class</span> <span class="nc">SeismicResult</span><span class="p">(</span><span class="n">Object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Result object assembling different traces of misfit.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">processed_obs</span> <span class="o">=</span> <span class="n">Trace</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">optional</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">filtered_obs</span> <span class="o">=</span> <span class="n">Trace</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">optional</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">processed_syn</span> <span class="o">=</span> <span class="n">Trace</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">optional</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">filtered_syn</span> <span class="o">=</span> <span class="n">Trace</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">optional</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">processed_res</span> <span class="o">=</span> <span class="n">Trace</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">optional</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">arrival_taper</span> <span class="o">=</span> <span class="n">trace</span><span class="o">.</span><span class="n">Taper</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">optional</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">llk</span> <span class="o">=</span> <span class="n">Float</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">optional</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">taper</span> <span class="o">=</span> <span class="n">trace</span><span class="o">.</span><span class="n">Taper</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">optional</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Parameter"><a class="viewcode-back" href="../api.html#heart.Parameter">[docs]</a><span class="k">class</span> <span class="nc">Parameter</span><span class="p">(</span><span class="n">Object</span><span class="p">):</span>
@@ -555,6 +579,17 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">testvalue</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">lower</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
                     <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;the testvalue of parameter &quot;</span><span class="si">%s</span><span class="s1">&quot; has to be&#39;</span>
                         <span class="s1">&#39;within the upper and lower bounds&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Parameter.random"><a class="viewcode-back" href="../api.html#heart.Parameter.random">[docs]</a>    <span class="k">def</span> <span class="nf">random</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create random samples within the parameter bounds.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        :class:`numpy.ndarray` of size (n, m)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">upper</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">lower</span><span class="p">)</span> <span class="o">*</span> <span class="n">num</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dimension</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">lower</span></div>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">dimension</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -592,6 +627,8 @@
     <span class="n">utme</span> <span class="o">=</span> <span class="n">Array</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="kc">None</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">num</span><span class="o">.</span><span class="n">float</span><span class="p">,</span> <span class="n">optional</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">lats</span> <span class="o">=</span> <span class="n">Array</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="kc">None</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">num</span><span class="o">.</span><span class="n">float</span><span class="p">,</span> <span class="n">optional</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">lons</span> <span class="o">=</span> <span class="n">Array</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="kc">None</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">num</span><span class="o">.</span><span class="n">float</span><span class="p">,</span> <span class="n">optional</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">locx</span> <span class="o">=</span> <span class="n">Array</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="kc">None</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">num</span><span class="o">.</span><span class="n">float</span><span class="p">,</span> <span class="n">optional</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">locy</span> <span class="o">=</span> <span class="n">Array</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="kc">None</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">num</span><span class="o">.</span><span class="n">float</span><span class="p">,</span> <span class="n">optional</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">satellite</span> <span class="o">=</span> <span class="n">String</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="s1">&#39;Envisat&#39;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -623,7 +660,24 @@
         <span class="n">Se</span> <span class="o">=</span> <span class="o">-</span> <span class="n">num</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">num</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">incidence</span><span class="p">))</span> <span class="o">*</span> \
              <span class="n">num</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">num</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">heading</span> <span class="o">-</span> <span class="mi">270</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">los_vector</span> <span class="o">=</span> <span class="n">num</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">Sn</span><span class="p">,</span> <span class="n">Se</span><span class="p">,</span> <span class="n">Su</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">num</span><span class="o">.</span><span class="n">float</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">los_vector</span></div></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">los_vector</span></div>
+
+<div class="viewcode-block" id="IFG.update_local_coords"><a class="viewcode-back" href="../api.html#heart.IFG.update_local_coords">[docs]</a>    <span class="k">def</span> <span class="nf">update_local_coords</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">loc</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate local coordinates with respect to given Location.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        loc : :class:`pyrocko.gf.meta.Location`</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        :class:`numpy.ndarray` (n_points, 3)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">locy</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">locx</span> <span class="o">=</span> <span class="n">orthodrome</span><span class="o">.</span><span class="n">latlon_to_ne_numpy</span><span class="p">(</span>
+            <span class="n">loc</span><span class="o">.</span><span class="n">lat</span><span class="p">,</span> <span class="n">loc</span><span class="o">.</span><span class="n">lon</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lats</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lons</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">locy</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">locx</span></div></div>
 
 
 <div class="viewcode-block" id="DiffIFG"><a class="viewcode-back" href="../api.html#heart.DiffIFG">[docs]</a><span class="k">class</span> <span class="nc">DiffIFG</span><span class="p">(</span><span class="n">IFG</span><span class="p">):</span>
@@ -647,6 +701,16 @@
         <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Overlapping data weights, additional weight factor to the&#39;</span>
              <span class="s1">&#39;dataset for overlaps with other datasets&#39;</span><span class="p">,</span>
         <span class="n">optional</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GeodeticResult"><a class="viewcode-back" href="../api.html#heart.GeodeticResult">[docs]</a><span class="k">class</span> <span class="nc">GeodeticResult</span><span class="p">(</span><span class="n">Object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Result object assembling different geodetic data.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">processed_obs</span> <span class="o">=</span> <span class="n">GeodeticTarget</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">optional</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">processed_syn</span> <span class="o">=</span> <span class="n">GeodeticTarget</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">optional</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">processed_res</span> <span class="o">=</span> <span class="n">GeodeticTarget</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">optional</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">llk</span> <span class="o">=</span> <span class="n">Float</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">optional</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="init_targets"><a class="viewcode-back" href="../api.html#heart.init_targets">[docs]</a><span class="k">def</span> <span class="nf">init_targets</span><span class="p">(</span><span class="n">stations</span><span class="p">,</span> <span class="n">channels</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;T&#39;</span><span class="p">,</span> <span class="s1">&#39;Z&#39;</span><span class="p">],</span> <span class="n">sample_rate</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
@@ -1198,10 +1262,10 @@
 
     <span class="n">c</span> <span class="o">=</span> <span class="n">psgrn</span><span class="o">.</span><span class="n">PsGrnConfigFull</span><span class="p">()</span>
 
-    <span class="n">n_steps_depth</span> <span class="o">=</span> <span class="p">(</span><span class="n">source_depth_max</span> <span class="o">-</span> <span class="n">source_depth_min</span><span class="p">)</span> <span class="o">/</span> \
-        <span class="n">source_depth_spacing</span>
-    <span class="n">n_steps_distance</span> <span class="o">=</span> <span class="p">(</span><span class="n">source_distance_max</span> <span class="o">-</span> <span class="n">source_distance_min</span><span class="p">)</span> <span class="o">/</span> \
-        <span class="n">source_distance_spacing</span>
+    <span class="n">n_steps_depth</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">source_depth_max</span> <span class="o">-</span> <span class="n">source_depth_min</span><span class="p">)</span> <span class="o">/</span> \
+        <span class="n">source_depth_spacing</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="n">n_steps_distance</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">source_distance_max</span> <span class="o">-</span> <span class="n">source_distance_min</span><span class="p">)</span> <span class="o">/</span> \
+        <span class="n">source_distance_spacing</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
 
     <span class="n">c</span><span class="o">.</span><span class="n">distance_grid</span> <span class="o">=</span> <span class="n">psgrn</span><span class="o">.</span><span class="n">PsGrnSpatialSampling</span><span class="p">(</span>
         <span class="n">n_steps</span><span class="o">=</span><span class="n">n_steps_distance</span><span class="p">,</span>
@@ -1375,16 +1439,16 @@
 
     <span class="n">arrival_time</span> <span class="o">=</span> <span class="n">get_phase_arrival_time</span><span class="p">(</span><span class="n">engine</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
 
-    <span class="n">taperer</span> <span class="o">=</span> <span class="n">trace</span><span class="o">.</span><span class="n">CosTaper</span><span class="p">(</span><span class="n">arrival_time</span> <span class="o">+</span> <span class="n">arrival_taper</span><span class="o">.</span><span class="n">a</span><span class="p">,</span>
-                             <span class="n">arrival_time</span> <span class="o">+</span> <span class="n">arrival_taper</span><span class="o">.</span><span class="n">b</span><span class="p">,</span>
-                             <span class="n">arrival_time</span> <span class="o">+</span> <span class="n">arrival_taper</span><span class="o">.</span><span class="n">c</span><span class="p">,</span>
-                             <span class="n">arrival_time</span> <span class="o">+</span> <span class="n">arrival_taper</span><span class="o">.</span><span class="n">d</span><span class="p">)</span>
+    <span class="n">taperer</span> <span class="o">=</span> <span class="n">trace</span><span class="o">.</span><span class="n">CosTaper</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">arrival_time</span> <span class="o">+</span> <span class="n">arrival_taper</span><span class="o">.</span><span class="n">a</span><span class="p">),</span>
+                             <span class="nb">float</span><span class="p">(</span><span class="n">arrival_time</span> <span class="o">+</span> <span class="n">arrival_taper</span><span class="o">.</span><span class="n">b</span><span class="p">),</span>
+                             <span class="nb">float</span><span class="p">(</span><span class="n">arrival_time</span> <span class="o">+</span> <span class="n">arrival_taper</span><span class="o">.</span><span class="n">c</span><span class="p">),</span>
+                             <span class="nb">float</span><span class="p">(</span><span class="n">arrival_time</span> <span class="o">+</span> <span class="n">arrival_taper</span><span class="o">.</span><span class="n">d</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">taperer</span></div>
 
 
 <div class="viewcode-block" id="seis_synthetics"><a class="viewcode-back" href="../api.html#heart.seis_synthetics">[docs]</a><span class="k">def</span> <span class="nf">seis_synthetics</span><span class="p">(</span><span class="n">engine</span><span class="p">,</span> <span class="n">sources</span><span class="p">,</span> <span class="n">targets</span><span class="p">,</span> <span class="n">arrival_taper</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                     <span class="n">filterer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">reference_taperer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                    <span class="n">nprocs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">outmode</span><span class="o">=</span><span class="s1">&#39;array&#39;</span><span class="p">):</span>
+                    <span class="n">nprocs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">outmode</span><span class="o">=</span><span class="s1">&#39;array&#39;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">chop</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculate synthetic seismograms of combination of targets and sources,</span>
 <span class="sd">    filtering and tapering afterwards (filterer)</span>
@@ -1407,8 +1471,8 @@
 <span class="sd">    nprocs : int</span>
 <span class="sd">        number of processors to use for synthetics calculation</span>
 <span class="sd">    outmode : string</span>
-<span class="sd">        output format of synthetics can be &#39;array&#39;, &#39;traces&#39;,</span>
-<span class="sd">        &#39;data&#39; returns traces unstacked including post-processing</span>
+<span class="sd">        output format of synthetics can be &#39;array&#39;, &#39;stacked_traces&#39;,</span>
+<span class="sd">        &#39;full&#39; returns traces unstacked including post-processing</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -1432,7 +1496,7 @@
                 <span class="n">taperer</span> <span class="o">=</span> <span class="n">reference_taperer</span>
 
             <span class="c1"># cut traces</span>
-            <span class="n">tr</span><span class="o">.</span><span class="n">taper</span><span class="p">(</span><span class="n">taperer</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">chop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">tr</span><span class="o">.</span><span class="n">taper</span><span class="p">(</span><span class="n">taperer</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="n">inplace</span><span class="p">,</span> <span class="n">chop</span><span class="o">=</span><span class="n">chop</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">filterer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># filter traces</span>
@@ -1462,13 +1526,17 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">outstack</span> <span class="o">=</span> <span class="n">synths</span>
 
-    <span class="k">if</span> <span class="n">outmode</span> <span class="o">==</span> <span class="s1">&#39;traces&#39;</span><span class="p">:</span>
-        <span class="n">outtraces</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nt</span><span class="p">):</span>
-            <span class="n">synt_trcs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">ydata</span> <span class="o">=</span> <span class="n">outstack</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span>
-            <span class="n">outtraces</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">synt_trcs</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">outmode</span> <span class="o">==</span> <span class="s1">&#39;stacked_traces&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">arrival_taper</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">outtraces</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nt</span><span class="p">):</span>
+                <span class="n">synt_trcs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">ydata</span> <span class="o">=</span> <span class="n">outstack</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span>
+                <span class="n">outtraces</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">synt_trcs</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
 
-        <span class="k">return</span> <span class="n">outtraces</span><span class="p">,</span> <span class="n">tmins</span>
+            <span class="k">return</span> <span class="n">outtraces</span><span class="p">,</span> <span class="n">tmins</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+                <span class="s1">&#39;arrival taper has to be defined for </span><span class="si">%s</span><span class="s1"> type!&#39;</span> <span class="o">%</span> <span class="n">outmode</span><span class="p">)</span>
 
     <span class="k">elif</span> <span class="n">outmode</span> <span class="o">==</span> <span class="s1">&#39;data&#39;</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">synt_trcs</span><span class="p">,</span> <span class="n">tmins</span>
@@ -1480,8 +1548,8 @@
         <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Outmode </span><span class="si">%s</span><span class="s1"> not supported!&#39;</span> <span class="o">%</span> <span class="n">outmode</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="taper_filter_traces"><a class="viewcode-back" href="../api.html#heart.taper_filter_traces">[docs]</a><span class="k">def</span> <span class="nf">taper_filter_traces</span><span class="p">(</span><span class="n">data_traces</span><span class="p">,</span> <span class="n">arrival_taper</span><span class="p">,</span> <span class="n">filterer</span><span class="p">,</span> <span class="n">tmins</span><span class="p">,</span>
-                        <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="taper_filter_traces"><a class="viewcode-back" href="../api.html#heart.taper_filter_traces">[docs]</a><span class="k">def</span> <span class="nf">taper_filter_traces</span><span class="p">(</span><span class="n">data_traces</span><span class="p">,</span> <span class="n">arrival_taper</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">filterer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                        <span class="n">tmins</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">outmode</span><span class="o">=</span><span class="s1">&#39;array&#39;</span><span class="p">,</span> <span class="n">chop</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Taper and filter data_traces according to given taper and filterers.</span>
 <span class="sd">    Tapering will start at the given tmin.</span>
@@ -1492,9 +1560,11 @@
 <span class="sd">        containing :class:`pyrocko.trace.Trace` objects</span>
 <span class="sd">    arrival_taper : :class:`ArrivalTaper`</span>
 <span class="sd">    filterer : :class:`Filterer`</span>
-<span class="sd">    tmins : :class:`numpy.ndarray`</span>
-<span class="sd">        Array containing the start times [s] since 1st.January 1970 to start</span>
+<span class="sd">    tmins : list or:class:`numpy.ndarray`</span>
+<span class="sd">        containing the start times [s] since 1st.January 1970 to start</span>
 <span class="sd">        tapering</span>
+<span class="sd">    outmode : str</span>
+<span class="sd">        defines the output structure, options: &quot;traces&quot;, &quot;array&quot;</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -1515,7 +1585,7 @@
                 <span class="nb">float</span><span class="p">(</span><span class="n">tmins</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">arrival_taper</span><span class="o">.</span><span class="n">a</span> <span class="o">+</span> <span class="n">arrival_taper</span><span class="o">.</span><span class="n">d</span><span class="p">))</span>
 
             <span class="c1"># taper and cut traces</span>
-            <span class="n">cut_trace</span><span class="o">.</span><span class="n">taper</span><span class="p">(</span><span class="n">taperer</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">chop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">cut_trace</span><span class="o">.</span><span class="n">taper</span><span class="p">(</span><span class="n">taperer</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">chop</span><span class="o">=</span><span class="n">chop</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">filterer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># filter traces</span>
@@ -1528,7 +1598,14 @@
         <span class="k">if</span> <span class="n">plot</span><span class="p">:</span>
             <span class="n">trace</span><span class="o">.</span><span class="n">snuffle</span><span class="p">(</span><span class="n">cut_traces</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">num</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">cut_traces</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">ydata</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data_traces</span><span class="p">))])</span></div>
+    <span class="k">if</span> <span class="n">outmode</span> <span class="o">==</span> <span class="s1">&#39;array&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">arrival_taper</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">num</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">cut_traces</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">ydata</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data_traces</span><span class="p">))])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Cannot return array without tapering!&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">outmode</span> <span class="o">==</span> <span class="s1">&#39;traces&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">cut_traces</span></div>
 </pre></div>
 
            </div>
@@ -1562,7 +1639,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.1',
+            VERSION:'0.1alpha',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

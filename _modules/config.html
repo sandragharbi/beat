@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>config &mdash; beat 0.1 documentation</title>
+  <title>config &mdash; beat 0.1alpha documentation</title>
   
 
   
@@ -33,7 +33,7 @@
         <link rel="index" title="Index"
               href="../genindex.html"/>
         <link rel="search" title="Search" href="../search.html"/>
-    <link rel="top" title="beat 0.1 documentation" href="../index.html"/>
+    <link rel="top" title="beat 0.1alpha documentation" href="../index.html"/>
         <link rel="up" title="Module code" href="index.html"/> 
 
   
@@ -62,7 +62,7 @@
             
             
               <div class="version">
-                0.1
+                0.1a
               </div>
             
           
@@ -84,7 +84,9 @@
             
             
                 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../short_installation.html">Short Installation instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Detailed Installation instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Getting started with BEAT</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html">API Reference</a></li>
 </ul>
 
@@ -173,8 +175,8 @@
 
 <span class="n">kinematic_dist_vars</span> <span class="o">=</span> <span class="n">static_dist_vars</span> <span class="o">+</span> <span class="n">partial_kinematic_vars</span>
 
-<span class="n">hyper_pars</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Z&#39;</span><span class="p">:</span><span class="s1">&#39;seis_Z&#39;</span><span class="p">,</span> <span class="s1">&#39;T&#39;</span><span class="p">:</span><span class="s1">&#39;seis_T&#39;</span><span class="p">,</span>
-             <span class="s1">&#39;SAR&#39;</span><span class="p">:</span><span class="s1">&#39;geo_S&#39;</span><span class="p">,</span> <span class="s1">&#39;GPS&#39;</span><span class="p">:</span><span class="s1">&#39;geo_G&#39;</span><span class="p">}</span>
+<span class="n">hyper_pars</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Z&#39;</span><span class="p">:</span> <span class="s1">&#39;seis_Z&#39;</span><span class="p">,</span> <span class="s1">&#39;T&#39;</span><span class="p">:</span> <span class="s1">&#39;seis_T&#39;</span><span class="p">,</span>
+             <span class="s1">&#39;SAR&#39;</span><span class="p">:</span> <span class="s1">&#39;geo_S&#39;</span><span class="p">,</span> <span class="s1">&#39;GPS&#39;</span><span class="p">:</span> <span class="s1">&#39;geo_G&#39;</span><span class="p">}</span>
 
 <span class="n">default_bounds</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
     <span class="n">east_shift</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mf">10.</span><span class="p">,</span> <span class="mf">10.</span><span class="p">),</span>
@@ -198,8 +200,13 @@
     <span class="n">geo_S</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mf">20.</span><span class="p">,</span> <span class="mf">20.</span><span class="p">),</span>
     <span class="n">geo_G</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mf">20.</span><span class="p">,</span> <span class="mf">20.</span><span class="p">))</span>
 
+<span class="n">default_seis_std</span> <span class="o">=</span> <span class="mf">1.e-6</span>
+<span class="n">default_geo_std</span> <span class="o">=</span> <span class="mf">1.e-3</span>
+
 <span class="n">seismic_data_name</span> <span class="o">=</span> <span class="s1">&#39;seismic_data.pkl&#39;</span>
 <span class="n">geodetic_data_name</span> <span class="o">=</span> <span class="s1">&#39;geodetic_data.pkl&#39;</span>
+
+<span class="n">sample_p_outname</span> <span class="o">=</span> <span class="s1">&#39;sample.params&#39;</span>
 
 <span class="n">km</span> <span class="o">=</span> <span class="mf">1000.</span>
 
@@ -319,6 +326,10 @@
     <span class="n">types</span> <span class="o">=</span> <span class="n">List</span><span class="o">.</span><span class="n">T</span><span class="p">(</span>
         <span class="n">default</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;SAR&#39;</span><span class="p">],</span>
         <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Types of geodetic data, i.e. SAR, GPS, ...&#39;</span><span class="p">)</span>
+    <span class="n">calc_data_cov</span> <span class="o">=</span> <span class="n">Bool</span><span class="o">.</span><span class="n">T</span><span class="p">(</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Flag for calculating the data covariance matrix based on the&#39;</span>
+             <span class="s1">&#39; pre P arrival data trace noise.&#39;</span><span class="p">)</span>
     <span class="n">gf_config</span> <span class="o">=</span> <span class="n">GeodeticGFConfig</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="n">GeodeticGFConfig</span><span class="o">.</span><span class="n">D</span><span class="p">())</span></div>
 
 
@@ -336,6 +347,26 @@
     <span class="n">priors</span> <span class="o">=</span> <span class="n">List</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">Parameter</span><span class="o">.</span><span class="n">T</span><span class="p">())</span>
 
     <span class="k">def</span> <span class="nf">init_vars</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="n">variables</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">select_variables</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">priors</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">variable</span> <span class="ow">in</span> <span class="n">variables</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">priors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">Parameter</span><span class="p">(</span>
+                    <span class="n">name</span><span class="o">=</span><span class="n">variable</span><span class="p">,</span>
+                    <span class="n">lower</span><span class="o">=</span><span class="n">num</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_faults</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">num</span><span class="o">.</span><span class="n">float</span><span class="p">)</span> <span class="o">*</span> \
+                        <span class="n">default_bounds</span><span class="p">[</span><span class="n">variable</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span>
+                    <span class="n">upper</span><span class="o">=</span><span class="n">num</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_faults</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">num</span><span class="o">.</span><span class="n">float</span><span class="p">)</span> <span class="o">*</span> \
+                        <span class="n">default_bounds</span><span class="p">[</span><span class="n">variable</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span>
+                    <span class="n">testvalue</span><span class="o">=</span><span class="n">num</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_faults</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">num</span><span class="o">.</span><span class="n">float</span><span class="p">)</span> <span class="o">*</span> \
+                        <span class="n">num</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">default_bounds</span><span class="p">[</span><span class="n">variable</span><span class="p">]))</span>
+                               <span class="p">)</span>
+
+<div class="viewcode-block" id="ProblemConfig.select_variables"><a class="viewcode-back" href="../api.html#config.ProblemConfig.select_variables">[docs]</a>    <span class="k">def</span> <span class="nf">select_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return model variables depending on problem config.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">modes</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Problem mode </span><span class="si">%s</span><span class="s1"> not implemented&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span><span class="p">)</span>
@@ -357,18 +388,7 @@
                 <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Kinematic model not resolvable with only&#39;</span>
                                 <span class="s1">&#39;geodetic data!&#39;</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">priors</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">variable</span> <span class="ow">in</span> <span class="n">variables</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">priors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                <span class="n">Parameter</span><span class="p">(</span>
-                    <span class="n">name</span><span class="o">=</span><span class="n">variable</span><span class="p">,</span>
-                    <span class="n">lower</span><span class="o">=</span><span class="n">num</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_faults</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">num</span><span class="o">.</span><span class="n">float</span><span class="p">)</span> <span class="o">*</span> \
-                        <span class="n">default_bounds</span><span class="p">[</span><span class="n">variable</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span>
-                    <span class="n">upper</span><span class="o">=</span><span class="n">num</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_faults</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">num</span><span class="o">.</span><span class="n">float</span><span class="p">)</span> <span class="o">*</span> \
-                        <span class="n">default_bounds</span><span class="p">[</span><span class="n">variable</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span>
-                    <span class="n">testvalue</span><span class="o">=</span><span class="n">num</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_faults</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">num</span><span class="o">.</span><span class="n">float</span><span class="p">)</span> <span class="o">*</span> \
-                        <span class="n">num</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">default_bounds</span><span class="p">[</span><span class="n">variable</span><span class="p">]))</span>
-                               <span class="p">)</span>
+        <span class="k">return</span> <span class="n">variables</span></div>
 
 <div class="viewcode-block" id="ProblemConfig.validate_priors"><a class="viewcode-back" href="../api.html#config.ProblemConfig.validate_priors">[docs]</a>    <span class="k">def</span> <span class="nf">validate_priors</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -401,15 +421,39 @@
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Config for optimization parameters of the Adaptive Metropolis algorithm.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">n_steps</span> <span class="o">=</span> <span class="n">Int</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span>
-                    <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Number of steps for the MC chain.&#39;</span><span class="p">)</span>
-    <span class="n">tune_interval</span> <span class="o">=</span> <span class="n">Int</span><span class="o">.</span><span class="n">T</span><span class="p">(</span>
+    <span class="n">n_jobs</span> <span class="o">=</span> <span class="n">Int</span><span class="o">.</span><span class="n">T</span><span class="p">(</span>
+        <span class="n">default</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Number of processors to use, i.e. chains to sample in parallel.&#39;</span><span class="p">)</span>
+    <span class="n">n_stages</span> <span class="o">=</span> <span class="n">Int</span><span class="o">.</span><span class="n">T</span><span class="p">(</span>
         <span class="n">default</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Number of stages to sample/ or points in solution spacce for&#39;</span>
+             <span class="s1">&#39; hyperparameter estimation&#39;</span><span class="p">)</span>
+    <span class="n">n_steps</span> <span class="o">=</span> <span class="n">Int</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mi">25000</span><span class="p">,</span>
+                    <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Number of steps for the MC chain.&#39;</span><span class="p">)</span>
+    <span class="n">stage</span> <span class="o">=</span> <span class="n">String</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="s1">&#39;0&#39;</span><span class="p">,</span>
+                  <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Stage where to start/continue the sampling. Has to&#39;</span>
+                       <span class="s1">&#39; be int or &quot;final&quot;&#39;</span><span class="p">)</span>
+    <span class="n">tune_interval</span> <span class="o">=</span> <span class="n">Int</span><span class="o">.</span><span class="n">T</span><span class="p">(</span>
+        <span class="n">default</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
         <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Tune interval for adaptive tuning of Metropolis step size.&#39;</span><span class="p">)</span>
     <span class="n">proposal_dist</span> <span class="o">=</span> <span class="n">String</span><span class="o">.</span><span class="n">T</span><span class="p">(</span>
         <span class="n">default</span><span class="o">=</span><span class="s1">&#39;Normal&#39;</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Normal Proposal distribution, for Metropolis steps&#39;</span>
-             <span class="s1">&#39;alternatives: Cauchy, Laplace, Poisson, MultivariateNormal&#39;</span><span class="p">)</span></div>
+        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Normal Proposal distribution, for Metropolis steps;&#39;</span>
+             <span class="s1">&#39;Alternatives: Cauchy, Laplace, Poisson, MultivariateNormal&#39;</span><span class="p">)</span>
+    <span class="n">update_covariances</span> <span class="o">=</span> <span class="n">Bool</span><span class="o">.</span><span class="n">T</span><span class="p">(</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Update model prediction covariance matrixes in transition &#39;</span>
+             <span class="s1">&#39;stages.&#39;</span><span class="p">)</span>
+    <span class="n">thin</span> <span class="o">=</span> <span class="n">Int</span><span class="o">.</span><span class="n">T</span><span class="p">(</span>
+        <span class="n">default</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Thinning parameter of the sampled trace. Every &quot;thin&quot;th sample&#39;</span>
+             <span class="s1">&#39; is taken.&#39;</span><span class="p">)</span>
+    <span class="n">burn</span> <span class="o">=</span> <span class="n">Float</span><span class="o">.</span><span class="n">T</span><span class="p">(</span>
+        <span class="n">default</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Burn-in parameter between 0. and 1. to discard fraction of&#39;</span>
+             <span class="s1">&#39; samples from the beginning of the chain.&#39;</span><span class="p">)</span>
+    <span class="n">rm_flag</span> <span class="o">=</span> <span class="n">Bool</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                     <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Remove existing stage results prior to sampling.&#39;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="ATMCMCConfig"><a class="viewcode-back" href="../api.html#config.ATMCMCConfig">[docs]</a><span class="k">class</span> <span class="nc">ATMCMCConfig</span><span class="p">(</span><span class="n">SamplerParameters</span><span class="p">):</span>
@@ -448,10 +492,7 @@
         <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Update model prediction covariance matrixes in transition &#39;</span>
              <span class="s1">&#39;stages.&#39;</span><span class="p">)</span>
     <span class="n">rm_flag</span> <span class="o">=</span> <span class="n">Bool</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                     <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Remove existing stage results prior to sampling.&#39;</span><span class="p">)</span>
-    <span class="n">plot_flag</span> <span class="o">=</span> <span class="n">Bool</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                       <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Plot stage posteriors after sampling of&#39;</span>
-                            <span class="s1">&#39;each stage&#39;</span><span class="p">)</span></div>
+                     <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Remove existing stage results prior to sampling.&#39;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="SamplerConfig"><a class="viewcode-back" href="../api.html#config.SamplerConfig">[docs]</a><span class="k">class</span> <span class="nc">SamplerConfig</span><span class="p">(</span><span class="n">Object</span><span class="p">):</span>
@@ -498,6 +539,7 @@
     <span class="n">seismic_config</span> <span class="o">=</span> <span class="n">SeismicConfig</span><span class="o">.</span><span class="n">T</span><span class="p">(</span>
         <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">optional</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">sampler_config</span> <span class="o">=</span> <span class="n">SamplerConfig</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="n">SamplerConfig</span><span class="o">.</span><span class="n">D</span><span class="p">())</span>
+    <span class="n">hyper_sampler_config</span> <span class="o">=</span> <span class="n">SamplerConfig</span><span class="o">.</span><span class="n">T</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="n">SamplerConfig</span><span class="o">.</span><span class="n">D</span><span class="p">())</span>
 
 <div class="viewcode-block" id="BEATconfig.update_hypers"><a class="viewcode-back" href="../api.html#config.BEATconfig.update_hypers">[docs]</a>    <span class="k">def</span> <span class="nf">update_hypers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -527,13 +569,19 @@
                                         <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">problem_config</span><span class="o">.</span><span class="n">hyperparameters</span> <span class="o">=</span> <span class="n">hypers</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">problem_config</span><span class="o">.</span><span class="n">validate_hypers</span><span class="p">()</span></div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">problem_config</span><span class="o">.</span><span class="n">validate_hypers</span><span class="p">()</span>
+
+        <span class="n">n_hypers</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">hypers</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Number of hyperparameters! </span><span class="si">%i</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">n_hypers</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">n_hypers</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">hyper_sampler_config</span> <span class="o">=</span> <span class="kc">None</span></div></div>
 
 
 <div class="viewcode-block" id="init_config"><a class="viewcode-back" href="../api.html#config.init_config">[docs]</a><span class="k">def</span> <span class="nf">init_config</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">date</span><span class="p">,</span> <span class="n">min_magnitude</span><span class="o">=</span><span class="mf">6.0</span><span class="p">,</span> <span class="n">main_path</span><span class="o">=</span><span class="s1">&#39;./&#39;</span><span class="p">,</span>
                 <span class="n">datasets</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;geodetic&#39;</span><span class="p">],</span>
                 <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;geometry&#39;</span><span class="p">,</span> <span class="n">n_faults</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                <span class="n">sampler</span><span class="o">=</span><span class="s1">&#39;ATMCMC&#39;</span><span class="p">,</span> <span class="n">use_custom</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+                <span class="n">sampler</span><span class="o">=</span><span class="s1">&#39;ATMCMC&#39;</span><span class="p">,</span> <span class="n">hyper_sampler</span><span class="o">=</span><span class="s1">&#39;Metropolis&#39;</span><span class="p">,</span>
+                <span class="n">use_custom</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Initialise BEATconfig File and write it main_path/name .</span>
 <span class="sd">    Fine parameters have to be edited in the config file .yaml manually.</span>
@@ -601,6 +649,9 @@
     <span class="n">c</span><span class="o">.</span><span class="n">sampler_config</span> <span class="o">=</span> <span class="n">SamplerConfig</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">sampler</span><span class="p">)</span>
     <span class="n">c</span><span class="o">.</span><span class="n">sampler_config</span><span class="o">.</span><span class="n">set_parameters</span><span class="p">()</span>
 
+    <span class="n">c</span><span class="o">.</span><span class="n">sampler_config</span> <span class="o">=</span> <span class="n">SamplerConfig</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">hyper_sampler</span><span class="p">)</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">sampler_config</span><span class="o">.</span><span class="n">set_parameters</span><span class="p">()</span>
+
     <span class="n">c</span><span class="o">.</span><span class="n">update_hypers</span><span class="p">()</span>
 
     <span class="n">c</span><span class="o">.</span><span class="n">problem_config</span><span class="o">.</span><span class="n">validate_priors</span><span class="p">()</span>
@@ -637,7 +688,7 @@
     <span class="n">config</span> <span class="o">=</span> <span class="n">load</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">config_fn</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">problem_config</span><span class="o">.</span><span class="n">hyperparameters</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> \
-        <span class="nb">len</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">problem_config</span><span class="o">.</span><span class="n">hyperparameters</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="nb">len</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">problem_config</span><span class="o">.</span><span class="n">hyperparameters</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">config</span><span class="o">.</span><span class="n">update_hypers</span><span class="p">()</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Updated hyper parameters!&#39;</span><span class="p">)</span>
         <span class="n">dump</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="n">config_fn</span><span class="p">)</span>
@@ -676,7 +727,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.1',
+            VERSION:'0.1alpha',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

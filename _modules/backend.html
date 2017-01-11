@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>backend &mdash; beat 0.1 documentation</title>
+  <title>backend &mdash; beat 0.1alpha documentation</title>
   
 
   
@@ -33,7 +33,7 @@
         <link rel="index" title="Index"
               href="../genindex.html"/>
         <link rel="search" title="Search" href="../search.html"/>
-    <link rel="top" title="beat 0.1 documentation" href="../index.html"/>
+    <link rel="top" title="beat 0.1alpha documentation" href="../index.html"/>
         <link rel="up" title="Module code" href="index.html"/> 
 
   
@@ -62,7 +62,7 @@
             
             
               <div class="version">
-                0.1
+                0.1a
               </div>
             
           
@@ -84,7 +84,9 @@
             
             
                 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../short_installation.html">Short Installation instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Detailed Installation instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Getting started with BEAT</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html">API Reference</a></li>
 </ul>
 
@@ -152,6 +154,7 @@
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="kn">from</span> <span class="nn">glob</span> <span class="k">import</span> <span class="n">glob</span>
 
+<span class="kn">import</span> <span class="nn">copy</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">import</span> <span class="nn">logging</span>
@@ -162,7 +165,7 @@
 <span class="kn">from</span> <span class="nn">pymc3.backends</span> <span class="k">import</span> <span class="n">tracetab</span> <span class="k">as</span> <span class="n">ttab</span>
 <span class="kn">from</span> <span class="nn">pymc3.blocking</span> <span class="k">import</span> <span class="n">DictToArrayBijection</span><span class="p">,</span> <span class="n">ArrayOrdering</span>
 
-<span class="kn">from</span> <span class="nn">beat</span> <span class="k">import</span> <span class="n">utility</span>
+<span class="kn">from</span> <span class="nn">beat</span> <span class="k">import</span> <span class="n">utility</span><span class="p">,</span> <span class="n">config</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;backend&#39;</span><span class="p">)</span>
 
@@ -289,7 +292,6 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">flat_names</span> <span class="o">=</span> <span class="p">{</span><span class="n">v</span><span class="p">:</span> <span class="n">ttab</span><span class="o">.</span><span class="n">create_flat_names</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">shape</span><span class="p">)</span>
                            <span class="k">for</span> <span class="n">v</span><span class="p">,</span> <span class="n">shape</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_shapes</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
-
         <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">corrupted_flag</span> <span class="o">=</span> <span class="kc">False</span>
@@ -374,7 +376,7 @@
 <span class="sd">        varname : str</span>
 <span class="sd">            Variable name for which values are to be retrieved.</span>
 <span class="sd">        burn : int</span>
-<span class="sd">            Burn-in samples from trace. This is the number of samples to be </span>
+<span class="sd">            Burn-in samples from trace. This is the number of samples to be</span>
 <span class="sd">            thrown out from the start of the trace</span>
 <span class="sd">        thin : int</span>
 <span class="sd">            Nuber of thinning samples. Throw out every &#39;thin&#39; sample of the</span>
@@ -418,6 +420,36 @@
         <span class="k">return</span> <span class="n">pt</span></div></div>
 
 
+<div class="viewcode-block" id="get_highest_sampled_stage"><a class="viewcode-back" href="../api.html#backend.get_highest_sampled_stage">[docs]</a><span class="k">def</span> <span class="nf">get_highest_sampled_stage</span><span class="p">(</span><span class="n">homedir</span><span class="p">,</span> <span class="n">return_final</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return stage number of stage that has been sampled before the final stage.</span>
+
+<span class="sd">    Paramaeters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    homedir : str</span>
+<span class="sd">        Directory to the sampled stage results</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    stage number : int</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">stages</span> <span class="o">=</span> <span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">homedir</span><span class="p">,</span> <span class="s1">&#39;stage_*&#39;</span><span class="p">))</span>
+
+    <span class="n">stagenumbers</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">stages</span><span class="p">:</span>
+        <span class="n">stage_ending</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">s</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">stagenumbers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">stage_ending</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;string - Thats the final stage!&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">return_final</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">stage_ending</span>
+
+    <span class="n">stagenumbers</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">stagenumbers</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span></div>
+
+
 <div class="viewcode-block" id="check_multitrace"><a class="viewcode-back" href="../api.html#backend.check_multitrace">[docs]</a><span class="k">def</span> <span class="nf">check_multitrace</span><span class="p">(</span><span class="n">mtrace</span><span class="p">,</span> <span class="n">draws</span><span class="p">,</span> <span class="n">n_chains</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Check multitrace for incomplete sampling and return indexes from chains</span>
@@ -456,6 +488,26 @@
     <span class="k">return</span> <span class="n">corrupted_idx</span> <span class="o">+</span> <span class="n">not_sampled_idx</span></div>
 
 
+<div class="viewcode-block" id="load_sampler_params"><a class="viewcode-back" href="../api.html#backend.load_sampler_params">[docs]</a><span class="k">def</span> <span class="nf">load_sampler_params</span><span class="p">(</span><span class="n">project_dir</span><span class="p">,</span> <span class="n">stage_number</span><span class="p">,</span> <span class="n">mode</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Load saved parameters from given ATMIP stage.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    project_dir : str</span>
+<span class="sd">        absolute path to directory of BEAT project</span>
+<span class="sd">    stage number : string</span>
+<span class="sd">        of stage number or &#39;final&#39; for last stage</span>
+<span class="sd">    mode : str</span>
+<span class="sd">        problem mode that has been solved (&#39;geometry&#39;, &#39;static&#39;, &#39;kinematic&#39;)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">stage_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">project_dir</span><span class="p">,</span> <span class="n">mode</span><span class="p">,</span> <span class="s1">&#39;stage_</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">stage_number</span><span class="p">,</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">sample_p_outname</span><span class="p">)</span>
+    <span class="n">step</span><span class="p">,</span> <span class="n">update</span> <span class="o">=</span> <span class="n">utility</span><span class="o">.</span><span class="n">load_objects</span><span class="p">(</span><span class="n">stage_path</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">step</span><span class="p">,</span> <span class="n">update</span></div>
+
+
 <div class="viewcode-block" id="load"><a class="viewcode-back" href="../api.html#backend.load">[docs]</a><span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Load Text database.</span>
@@ -482,6 +534,29 @@
         <span class="n">strace</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="n">f</span>
         <span class="n">straces</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">strace</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">base</span><span class="o">.</span><span class="n">MultiTrace</span><span class="p">(</span><span class="n">straces</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="concatenate_traces"><a class="viewcode-back" href="../api.html#backend.concatenate_traces">[docs]</a><span class="k">def</span> <span class="nf">concatenate_traces</span><span class="p">(</span><span class="n">mtraces</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Concatenate a List of MultiTraces with same chain indexes.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">base_traces</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">mtraces</span><span class="p">)</span>
+    <span class="n">cat_trace</span> <span class="o">=</span> <span class="n">base_traces</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="n">cat_dfs</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">chain</span> <span class="ow">in</span> <span class="n">cat_trace</span><span class="o">.</span><span class="n">chains</span><span class="p">:</span>
+        <span class="n">cat_trace</span><span class="o">.</span><span class="n">_straces</span><span class="p">[</span><span class="n">chain</span><span class="p">]</span><span class="o">.</span><span class="n">_load_df</span><span class="p">()</span>
+        <span class="n">cat_dfs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cat_trace</span><span class="o">.</span><span class="n">_straces</span><span class="p">[</span><span class="n">chain</span><span class="p">]</span><span class="o">.</span><span class="n">df</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">mtrace</span> <span class="ow">in</span> <span class="n">base_traces</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">chain</span> <span class="ow">in</span> <span class="n">cat_trace</span><span class="o">.</span><span class="n">chains</span><span class="p">:</span>
+            <span class="n">mtrace</span><span class="o">.</span><span class="n">_straces</span><span class="p">[</span><span class="n">chain</span><span class="p">]</span><span class="o">.</span><span class="n">_load_df</span><span class="p">()</span>
+            <span class="n">cat_dfs</span><span class="p">[</span><span class="n">chain</span><span class="p">]</span> <span class="o">=</span> <span class="n">cat_dfs</span><span class="p">[</span><span class="n">chain</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mtrace</span><span class="o">.</span><span class="n">_straces</span><span class="p">[</span><span class="n">chain</span><span class="p">]</span><span class="o">.</span><span class="n">df</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">chain</span> <span class="ow">in</span> <span class="n">cat_trace</span><span class="o">.</span><span class="n">chains</span><span class="p">:</span>
+        <span class="n">cat_trace</span><span class="o">.</span><span class="n">_straces</span><span class="p">[</span><span class="n">chain</span><span class="p">]</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="n">cat_dfs</span><span class="p">[</span><span class="n">chain</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">cat_trace</span></div>
 
 
 <div class="viewcode-block" id="dump"><a class="viewcode-back" href="../api.html#backend.dump">[docs]</a><span class="k">def</span> <span class="nf">dump</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">trace</span><span class="p">,</span> <span class="n">chains</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -545,7 +620,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.1',
+            VERSION:'0.1alpha',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

@@ -9,7 +9,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Index &mdash; beat 0.1 documentation</title>
+  <title>Index &mdash; beat 0.1alpha documentation</title>
   
 
   
@@ -34,7 +34,7 @@
         <link rel="index" title="Index"
               href="#"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="beat 0.1 documentation" href="index.html"/> 
+    <link rel="top" title="beat 0.1alpha documentation" href="index.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -62,7 +62,7 @@
             
             
               <div class="version">
-                0.1
+                0.1a
               </div>
             
           
@@ -84,7 +84,9 @@
             
             
                 <ul>
-<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="short_installation.html">Short Installation instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Detailed Installation instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting started with BEAT</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
 </ul>
 
@@ -186,18 +188,32 @@
   <dt><a href="api.html#utility.apply_station_blacklist">apply_station_blacklist() (in module utility)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="api.html#backend.ArrayStepSharedLLK">ArrayStepSharedLLK (class in backend)</a>
   </dt>
 
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="api.html#config.SeismicConfig.arrival_taper">arrival_taper (config.SeismicConfig attribute)</a>
   </dt>
 
+      <dd><dl>
+        
+  <dt><a href="api.html#heart.SeismicResult.arrival_taper">(heart.SeismicResult attribute)</a>
+  </dt>
+
+      </dl></dd>
       
   <dt><a href="api.html#heart.ArrivalTaper">ArrivalTaper (class in heart)</a>
+  </dt>
+
+      
+  <dt><a href="api.html#models.GeometryOptimizer.assemble_geodetic_results">assemble_geodetic_results() (models.GeometryOptimizer method)</a>
+  </dt>
+
+      
+  <dt><a href="api.html#models.GeometryOptimizer.assemble_seismic_results">assemble_seismic_results() (models.GeometryOptimizer method)</a>
   </dt>
 
       
@@ -234,12 +250,12 @@
   <dt><a href="api.html#backend.BaseATMCMCTrace">BaseATMCMCTrace (class in backend)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="api.html#config.BEATconfig">BEATconfig (class in config)</a>
   </dt>
 
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="api.html#utility.biggest_common_divisor">biggest_common_divisor() (in module utility)</a>
   </dt>
@@ -249,7 +265,15 @@
   </dt>
 
       
+  <dt><a href="api.html#models.GeometryOptimizer.built_hyper_model">built_hyper_model() (models.GeometryOptimizer method)</a>
+  </dt>
+
+      
   <dt><a href="api.html#models.GeometryOptimizer.built_model">built_model() (models.GeometryOptimizer method)</a>
+  </dt>
+
+      
+  <dt><a href="api.html#config.MetropolisConfig.burn">burn (config.MetropolisConfig attribute)</a>
   </dt>
 
   </dl></td>
@@ -271,9 +295,15 @@
   </dt>
 
       
-  <dt><a href="api.html#config.SeismicConfig.calc_data_cov">calc_data_cov (config.SeismicConfig attribute)</a>
+  <dt><a href="api.html#config.GeodeticConfig.calc_data_cov">calc_data_cov (config.GeodeticConfig attribute)</a>
   </dt>
 
+      <dd><dl>
+        
+  <dt><a href="api.html#config.SeismicConfig.calc_data_cov">(config.SeismicConfig attribute)</a>
+  </dt>
+
+      </dl></dd>
       
   <dt><a href="api.html#heart.RectangularSource.center">center() (heart.RectangularSource static method)</a>
   </dt>
@@ -287,11 +317,11 @@
   </dt>
 
       
-  <dt><a href="api.html#backend.check_multitrace">check_multitrace() (in module backend)</a>
+  <dt><a href="api.html#utility.check_hyper_flag">check_hyper_flag() (in module utility)</a>
   </dt>
 
       
-  <dt><a href="api.html#models.choose_proposal">choose_proposal() (in module models)</a>
+  <dt><a href="api.html#backend.check_multitrace">check_multitrace() (in module backend)</a>
   </dt>
 
       
@@ -315,7 +345,19 @@
   </dt>
 
       
+  <dt><a href="api.html#backend.concatenate_traces">concatenate_traces() (in module backend)</a>
+  </dt>
+
+      
   <dt><a href="api.html#module-config">config (module)</a>
+  </dt>
+
+      
+  <dt><a href="api.html#plotting.correlation_plot">correlation_plot() (in module plotting)</a>
+  </dt>
+
+      
+  <dt><a href="api.html#plotting.correlation_plot_hist">correlation_plot_hist() (in module plotting)</a>
   </dt>
 
       
@@ -392,8 +434,6 @@
   <dt><a href="api.html#pscmp.PsCmpRectangularSource.dip">dip (pscmp.PsCmpRectangularSource attribute)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="api.html#heart.RectangularSource.dipvector">dipvector() (heart.RectangularSource static method)</a>
   </dt>
@@ -408,6 +448,8 @@
   </dt>
 
       </dl></dd>
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="api.html#pscmp.PsCmpConfigFull.displ_sw_output_types">displ_sw_output_types (pscmp.PsCmpConfigFull attribute)</a>
   </dt>
@@ -426,6 +468,18 @@
 
       
   <dt><a href="api.html#utility.downsample_traces">downsample_traces() (in module utility)</a>
+  </dt>
+
+      
+  <dt><a href="api.html#plotting.PlotOptions.dpi">dpi (plotting.PlotOptions attribute)</a>
+  </dt>
+
+      
+  <dt><a href="api.html#plotting.draw_correlation_hist">draw_correlation_hist() (in module plotting)</a>
+  </dt>
+
+      
+  <dt><a href="api.html#plotting.draw_posteriors">draw_posteriors() (in module plotting)</a>
   </dt>
 
       
@@ -497,17 +551,33 @@
   </dt>
 
       
+  <dt><a href="api.html#plotting.PlotOptions.figure_dir">figure_dir (plotting.PlotOptions attribute)</a>
+  </dt>
+
+      
   <dt><a href="api.html#heart.Filter">Filter (class in heart)</a>
   </dt>
 
       
-  <dt><a href="api.html#config.SeismicConfig.filterer">filterer (config.SeismicConfig attribute)</a>
+  <dt><a href="api.html#heart.SeismicResult.filtered_obs">filtered_obs (heart.SeismicResult attribute)</a>
+  </dt>
+
+      
+  <dt><a href="api.html#heart.SeismicResult.filtered_syn">filtered_syn (heart.SeismicResult attribute)</a>
   </dt>
 
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
+  <dt><a href="api.html#config.SeismicConfig.filterer">filterer (config.SeismicConfig attribute)</a>
+  </dt>
+
+      
   <dt><a href="api.html#utility.ListToArrayBijection.fmap">fmap() (utility.ListToArrayBijection method)</a>
+  </dt>
+
+      
+  <dt><a href="api.html#plotting.PlotOptions.force">force (plotting.PlotOptions attribute)</a>
   </dt>
 
       
@@ -525,6 +595,10 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
+  <dt><a href="api.html#utility.gather">gather() (in module utility)</a>
+  </dt>
+
+      
   <dt><a href="api.html#heart.geo_construct_gf">geo_construct_gf() (in module heart)</a>
   </dt>
 
@@ -537,11 +611,19 @@
   </dt>
 
       
+  <dt><a href="api.html#plotting.geodetic_fits">geodetic_fits() (in module plotting)</a>
+  </dt>
+
+      
   <dt><a href="api.html#config.GeodeticConfig">GeodeticConfig (class in config)</a>
   </dt>
 
       
   <dt><a href="api.html#config.GeodeticGFConfig">GeodeticGFConfig (class in config)</a>
+  </dt>
+
+      
+  <dt><a href="api.html#heart.GeodeticResult">GeodeticResult (class in heart)</a>
   </dt>
 
       
@@ -565,21 +647,17 @@
   </dt>
 
       
-  <dt><a href="api.html#covariance.get_geo_cov_velocity_models">get_geo_cov_velocity_models() (in module covariance)</a>
-  </dt>
-
-      
-  <dt><a href="api.html#heart.Covariance.get_inverse">get_inverse() (heart.Covariance method)</a>
-  </dt>
-
-      
-  <dt><a href="api.html#heart.Covariance.get_inverse_d">get_inverse_d() (heart.Covariance method)</a>
+  <dt><a href="api.html#plotting.get_fit_indexes">get_fit_indexes() (in module plotting)</a>
   </dt>
 
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="api.html#heart.Covariance.get_inverse_p">get_inverse_p() (heart.Covariance method)</a>
+  <dt><a href="api.html#covariance.get_geo_cov_velocity_models">get_geo_cov_velocity_models() (in module covariance)</a>
+  </dt>
+
+      
+  <dt><a href="api.html#backend.get_highest_sampled_stage">get_highest_sampled_stage() (in module backend)</a>
   </dt>
 
       
@@ -659,6 +737,10 @@
   </dt>
 
       
+  <dt><a href="api.html#config.BEATconfig.hyper_sampler_config">hyper_sampler_config (config.BEATconfig attribute)</a>
+  </dt>
+
+      
   <dt><a href="api.html#config.ProblemConfig.hyperparameters">hyperparameters (config.ProblemConfig attribute)</a>
   </dt>
 
@@ -676,18 +758,34 @@
   <dt><a href="api.html#heart.IFG.incidence">incidence (heart.IFG attribute)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="api.html#config.init_config">init_config() (in module config)</a>
   </dt>
 
+      
+  <dt><a href="api.html#atmcmc.init_stage">init_stage() (in module atmcmc)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="api.html#heart.init_targets">init_targets() (in module heart)</a>
   </dt>
 
       
   <dt><a href="api.html#module-inputf">inputf (module)</a>
+  </dt>
+
+      
+  <dt><a href="api.html#heart.Covariance.inverse">inverse (heart.Covariance attribute)</a>
+  </dt>
+
+      
+  <dt><a href="api.html#heart.Covariance.inverse_d">inverse_d (heart.Covariance attribute)</a>
+  </dt>
+
+      
+  <dt><a href="api.html#heart.Covariance.inverse_p">inverse_p (heart.Covariance attribute)</a>
   </dt>
 
   </dl></td>
@@ -739,15 +837,21 @@
   </dt>
 
       
+  <dt><a href="api.html#heart.GeodeticResult.llk">llk (heart.GeodeticResult attribute)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="api.html#heart.SeismicResult.llk">(heart.SeismicResult attribute)</a>
+  </dt>
+
+      </dl></dd>
+      
   <dt><a href="api.html#backend.load">load() (in module backend)</a>
   </dt>
 
       
   <dt><a href="api.html#inputf.load_and_blacklist_stations">load_and_blacklist_stations() (in module inputf)</a>
-  </dt>
-
-      
-  <dt><a href="api.html#utility.load_atmip_params">load_atmip_params() (in module utility)</a>
   </dt>
 
       
@@ -758,8 +862,6 @@
   <dt><a href="api.html#inputf.load_data_traces">load_data_traces() (in module inputf)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="api.html#models.load_model">load_model() (in module models)</a>
   </dt>
@@ -768,12 +870,30 @@
   <dt><a href="api.html#utility.load_objects">load_objects() (in module utility)</a>
   </dt>
 
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="api.html#backend.load_sampler_params">load_sampler_params() (in module backend)</a>
+  </dt>
+
       
   <dt><a href="api.html#inputf.load_SAR_data">load_SAR_data() (in module inputf)</a>
   </dt>
 
       
+  <dt><a href="api.html#plotting.PlotOptions.load_stage">load_stage (plotting.PlotOptions attribute)</a>
+  </dt>
+
+      
   <dt><a href="api.html#models.load_stage">load_stage() (in module models)</a>
+  </dt>
+
+      
+  <dt><a href="api.html#heart.IFG.locx">locx (heart.IFG attribute)</a>
+  </dt>
+
+      
+  <dt><a href="api.html#heart.IFG.locy">locy (heart.IFG attribute)</a>
   </dt>
 
       
@@ -786,6 +906,10 @@
 
       
   <dt><a href="api.html#atmcmc.logp_forw">logp_forw() (in module atmcmc)</a>
+  </dt>
+
+      
+  <dt><a href="api.html#utility.lonlat_to_utm">lonlat_to_utm() (in module utility)</a>
   </dt>
 
       
@@ -882,12 +1006,22 @@
   <dt><a href="api.html#config.ATMCMCConfig.n_jobs">n_jobs (config.ATMCMCConfig attribute)</a>
   </dt>
 
+      <dd><dl>
+        
+  <dt><a href="api.html#config.MetropolisConfig.n_jobs">(config.MetropolisConfig attribute)</a>
+  </dt>
+
+      </dl></dd>
       
   <dt><a href="api.html#plotting.n_model_plot">n_model_plot() (in module plotting)</a>
   </dt>
 
       
   <dt><a href="api.html#psgrn.PsGrnConfig.n_snapshots">n_snapshots (psgrn.PsGrnConfig attribute)</a>
+  </dt>
+
+      
+  <dt><a href="api.html#config.MetropolisConfig.n_stages">n_stages (config.MetropolisConfig attribute)</a>
   </dt>
 
       
@@ -978,6 +1112,10 @@
   <dt><a href="api.html#heart.Filter.order">order (heart.Filter attribute)</a>
   </dt>
 
+      
+  <dt><a href="api.html#plotting.PlotOptions.outformat">outformat (plotting.PlotOptions attribute)</a>
+  </dt>
+
   </dl></td>
 </tr></table>
 
@@ -997,23 +1135,19 @@
   </dt>
 
       
-  <dt><a href="api.html#heart.PickleableTrace">PickleableTrace (class in heart)</a>
-  </dt>
-
-      
   <dt><a href="api.html#plotting.plot">plot() (in module plotting)</a>
   </dt>
 
       
-  <dt><a href="api.html#plotting.plot_all_posteriors">plot_all_posteriors() (in module plotting)</a>
-  </dt>
-
-      
-  <dt><a href="api.html#config.ATMCMCConfig.plot_flag">plot_flag (config.ATMCMCConfig attribute)</a>
-  </dt>
-
-      
   <dt><a href="api.html#plotting.plot_matrix">plot_matrix() (in module plotting)</a>
+  </dt>
+
+      
+  <dt><a href="api.html#plotting.PlotOptions.plot_projection">plot_projection (plotting.PlotOptions attribute)</a>
+  </dt>
+
+      
+  <dt><a href="api.html#plotting.PlotOptions">PlotOptions (class in plotting)</a>
   </dt>
 
       
@@ -1030,6 +1164,10 @@
 
       
   <dt><a href="api.html#pscmp.PsCmpRectangularSource.pos_s">pos_s (pscmp.PsCmpRectangularSource attribute)</a>
+  </dt>
+
+      
+  <dt><a href="api.html#plotting.PlotOptions.post_llk">post_llk (plotting.PlotOptions attribute)</a>
   </dt>
 
       
@@ -1053,6 +1191,38 @@
   </dt>
 
       
+  <dt><a href="api.html#heart.GeodeticResult.processed_obs">processed_obs (heart.GeodeticResult attribute)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="api.html#heart.SeismicResult.processed_obs">(heart.SeismicResult attribute)</a>
+  </dt>
+
+      </dl></dd>
+      
+  <dt><a href="api.html#heart.GeodeticResult.processed_res">processed_res (heart.GeodeticResult attribute)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="api.html#heart.SeismicResult.processed_res">(heart.SeismicResult attribute)</a>
+  </dt>
+
+      </dl></dd>
+      
+  <dt><a href="api.html#heart.GeodeticResult.processed_syn">processed_syn (heart.GeodeticResult attribute)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="api.html#heart.SeismicResult.processed_syn">(heart.SeismicResult attribute)</a>
+  </dt>
+
+      </dl></dd>
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
   <dt><a href="api.html#config.BEATconfig.project_dir">project_dir (config.BEATconfig attribute)</a>
   </dt>
 
@@ -1066,8 +1236,6 @@
   </dt>
 
       </dl></dd>
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="api.html#module-pscmp">pscmp (module)</a>
   </dt>
@@ -1157,6 +1325,10 @@
   </dt>
 
       
+  <dt><a href="api.html#heart.Parameter.random">random() (heart.Parameter method)</a>
+  </dt>
+
+      
   <dt><a href="api.html#backend.Text.record">record() (backend.Text method)</a>
   </dt>
 
@@ -1169,15 +1341,19 @@
   </dt>
 
       
-  <dt><a href="api.html#heart.DiffIFG.reference_point">reference_point (heart.DiffIFG attribute)</a>
+  <dt><a href="api.html#plotting.PlotOptions.reference">reference (plotting.PlotOptions attribute)</a>
   </dt>
 
       
-  <dt><a href="api.html#heart.DiffIFG.reference_value">reference_value (heart.DiffIFG attribute)</a>
+  <dt><a href="api.html#heart.DiffIFG.reference_point">reference_point (heart.DiffIFG attribute)</a>
   </dt>
 
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="api.html#heart.DiffIFG.reference_value">reference_value (heart.DiffIFG attribute)</a>
+  </dt>
+
       
   <dt><a href="api.html#utility.repair_covariance">repair_covariance() (in module utility)</a>
   </dt>
@@ -1194,6 +1370,12 @@
   <dt><a href="api.html#config.ATMCMCConfig.rm_flag">rm_flag (config.ATMCMCConfig attribute)</a>
   </dt>
 
+      <dd><dl>
+        
+  <dt><a href="api.html#config.MetropolisConfig.rm_flag">(config.MetropolisConfig attribute)</a>
+  </dt>
+
+      </dl></dd>
       
   <dt><a href="api.html#config.SeismicGFConfig.rm_gfs">rm_gfs (config.SeismicGFConfig attribute)</a>
   </dt>
@@ -1259,6 +1441,10 @@
   </dt>
 
       
+  <dt><a href="api.html#plotting.seismic_fits">seismic_fits() (in module plotting)</a>
+  </dt>
+
+      
   <dt><a href="api.html#config.SeismicConfig">SeismicConfig (class in config)</a>
   </dt>
 
@@ -1267,11 +1453,27 @@
   </dt>
 
       
+  <dt><a href="api.html#heart.SeismicResult">SeismicResult (class in heart)</a>
+  </dt>
+
+      
   <dt><a href="api.html#theanof.SeisSynthesizer">SeisSynthesizer (class in theanof)</a>
   </dt>
 
       
   <dt><a href="api.html#atmcmc.ATMCMC.select_end_points">select_end_points() (atmcmc.ATMCMC method)</a>
+  </dt>
+
+      
+  <dt><a href="api.html#plotting.select_metropolis_chains">select_metropolis_chains() (in module plotting)</a>
+  </dt>
+
+      
+  <dt><a href="api.html#plotting.select_transform">select_transform() (in module plotting)</a>
+  </dt>
+
+      
+  <dt><a href="api.html#config.ProblemConfig.select_variables">select_variables() (config.ProblemConfig method)</a>
   </dt>
 
       
@@ -1320,12 +1522,12 @@
   </dt>
 
       </dl></dd>
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="api.html#pscmp.PsCmpConfigFull.snapshot_basefilename">snapshot_basefilename (pscmp.PsCmpConfigFull attribute)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="api.html#config.GFConfig.source_depth_max">source_depth_max (config.GFConfig attribute)</a>
   </dt>
@@ -1376,10 +1578,12 @@
   <dt><a href="api.html#config.ATMCMCConfig.stage">stage (config.ATMCMCConfig attribute)</a>
   </dt>
 
-      
-  <dt><a href="api.html#plotting.stage_posteriors">stage_posteriors() (in module plotting)</a>
+      <dd><dl>
+        
+  <dt><a href="api.html#config.MetropolisConfig.stage">(config.MetropolisConfig attribute)</a>
   </dt>
 
+      </dl></dd>
       
   <dt><a href="api.html#pscmp.PsCmpProfile.start_distance">start_distance (pscmp.PsCmpProfile attribute)</a>
   </dt>
@@ -1400,6 +1604,14 @@
 
       
   <dt><a href="api.html#config.GFConfig.store_superdir">store_superdir (config.GFConfig attribute)</a>
+  </dt>
+
+      
+  <dt><a href="api.html#plotting.str_dist">str_dist() (in module plotting)</a>
+  </dt>
+
+      
+  <dt><a href="api.html#plotting.str_duration">str_duration() (in module plotting)</a>
   </dt>
 
       
@@ -1451,6 +1663,10 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
+  <dt><a href="api.html#heart.SeismicResult.taper">taper (heart.SeismicResult attribute)</a>
+  </dt>
+
+      
   <dt><a href="api.html#heart.taper_filter_traces">taper_filter_traces() (in module heart)</a>
   </dt>
 
@@ -1475,6 +1691,10 @@
   </dt>
 
       
+  <dt><a href="api.html#config.MetropolisConfig.thin">thin (config.MetropolisConfig attribute)</a>
+  </dt>
+
+      
   <dt><a href="api.html#pscmp.PsCmpConfigFull.tilt_filenames">tilt_filenames (pscmp.PsCmpConfigFull attribute)</a>
   </dt>
 
@@ -1488,18 +1708,22 @@
   <dt><a href="api.html#pscmp.PsCmpConfigFull.tilt_sw_output_types">tilt_sw_output_types (pscmp.PsCmpConfigFull attribute)</a>
   </dt>
 
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="api.html#pscmp.PsCmpConfig.times_snapshots">times_snapshots (pscmp.PsCmpConfig attribute)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="api.html#heart.RectangularSource.top_depth">top_depth() (heart.RectangularSource static method)</a>
   </dt>
 
       
   <dt><a href="api.html#pscmp.PsCmpRectangularSource.torigin">torigin (pscmp.PsCmpRectangularSource attribute)</a>
+  </dt>
+
+      
+  <dt><a href="api.html#heart.Trace">Trace (class in heart)</a>
   </dt>
 
       
@@ -1554,8 +1778,22 @@
   <dt><a href="api.html#config.ATMCMCConfig.update_covariances">update_covariances (config.ATMCMCConfig attribute)</a>
   </dt>
 
+      <dd><dl>
+        
+  <dt><a href="api.html#config.MetropolisConfig.update_covariances">(config.MetropolisConfig attribute)</a>
+  </dt>
+
+      </dl></dd>
       
   <dt><a href="api.html#config.BEATconfig.update_hypers">update_hypers() (config.BEATconfig method)</a>
+  </dt>
+
+      
+  <dt><a href="api.html#models.GeometryOptimizer.update_llks">update_llks() (models.GeometryOptimizer method)</a>
+  </dt>
+
+      
+  <dt><a href="api.html#heart.IFG.update_local_coords">update_local_coords() (heart.IFG method)</a>
   </dt>
 
       
@@ -1566,12 +1804,12 @@
   <dt><a href="api.html#utility.update_source">update_source() (in module utility)</a>
   </dt>
 
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="api.html#models.GeometryOptimizer.update_weights">update_weights() (models.GeometryOptimizer method)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="api.html#heart.Parameter.upper">upper (heart.Parameter attribute)</a>
   </dt>
@@ -1594,6 +1832,10 @@
 
       
   <dt><a href="api.html#utility.utm_to_lonlat">utm_to_lonlat() (in module utility)</a>
+  </dt>
+
+      
+  <dt><a href="api.html#plotting.PlotOptions.utm_zone">utm_zone (plotting.PlotOptions attribute)</a>
   </dt>
 
       
@@ -1694,7 +1936,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'0.1',
+            VERSION:'0.1alpha',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

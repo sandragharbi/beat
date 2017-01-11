@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>utility &mdash; beat 0.1 documentation</title>
+  <title>utility &mdash; beat 0.1alpha documentation</title>
   
 
   
@@ -33,7 +33,7 @@
         <link rel="index" title="Index"
               href="../genindex.html"/>
         <link rel="search" title="Search" href="../search.html"/>
-    <link rel="top" title="beat 0.1 documentation" href="../index.html"/>
+    <link rel="top" title="beat 0.1alpha documentation" href="../index.html"/>
         <link rel="up" title="Module code" href="index.html"/> 
 
   
@@ -62,7 +62,7 @@
             
             
               <div class="version">
-                0.1
+                0.1a
               </div>
             
           
@@ -84,7 +84,9 @@
             
             
                 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../short_installation.html">Short Installation instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Detailed Installation instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Getting started with BEAT</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api.html">API Reference</a></li>
 </ul>
 
@@ -511,7 +513,7 @@
 <div class="viewcode-block" id="split_point"><a class="viewcode-back" href="../api.html#utility.split_point">[docs]</a><span class="k">def</span> <span class="nf">split_point</span><span class="p">(</span><span class="n">point</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Split point in solution space into List of dictionaries with source</span>
-<span class="sd">    parameters for each source. Does a deepcopy of each parameter.</span>
+<span class="sd">    parameters for each source.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -590,6 +592,34 @@
     <span class="k">return</span> <span class="n">locx</span><span class="p">,</span> <span class="n">locy</span></div>
 
 
+<div class="viewcode-block" id="lonlat_to_utm"><a class="viewcode-back" href="../api.html#utility.lonlat_to_utm">[docs]</a><span class="k">def</span> <span class="nf">lonlat_to_utm</span><span class="p">(</span><span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">zone</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert UTM[m] to local coordinates with reference to the</span>
+<span class="sd">    :class:`pyrocko.model.Event`</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    utmx : :class:`numpy.ndarray`</span>
+<span class="sd">        with UTM easting</span>
+<span class="sd">    utmy : :class:`numpy.ndarray`</span>
+<span class="sd">        with UTM northing</span>
+<span class="sd">    zone : int</span>
+<span class="sd">        number with utm zone</span>
+<span class="sd">    event : :class:`pyrocko.model.Event`</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    utme : :class:`numpy.ndarray`</span>
+<span class="sd">        Local coordinates [m] for x direction (East)</span>
+<span class="sd">    utmn : :class:`numpy.ndarray`</span>
+<span class="sd">        Local coordinates [m] for y direction (North)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">p</span> <span class="o">=</span> <span class="n">Proj</span><span class="p">(</span><span class="n">proj</span><span class="o">=</span><span class="s1">&#39;utm&#39;</span><span class="p">,</span> <span class="n">zone</span><span class="o">=</span><span class="n">zone</span><span class="p">,</span> <span class="n">ellps</span><span class="o">=</span><span class="s1">&#39;WGS84&#39;</span><span class="p">)</span>
+    <span class="n">utme</span><span class="p">,</span> <span class="n">utmn</span> <span class="o">=</span> <span class="n">p</span><span class="p">(</span><span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">utme</span><span class="p">,</span> <span class="n">utmn</span></div>
+
+
 <div class="viewcode-block" id="utm_to_lonlat"><a class="viewcode-back" href="../api.html#utility.utm_to_lonlat">[docs]</a><span class="k">def</span> <span class="nf">utm_to_lonlat</span><span class="p">(</span><span class="n">utmx</span><span class="p">,</span> <span class="n">utmy</span><span class="p">,</span> <span class="n">zone</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Convert UTM[m] to Latitude and Longitude coordinates.</span>
@@ -647,26 +677,6 @@
     <span class="n">console</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">formatter</span><span class="p">)</span>
 
     <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">console</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="load_atmip_params"><a class="viewcode-back" href="../api.html#utility.load_atmip_params">[docs]</a><span class="k">def</span> <span class="nf">load_atmip_params</span><span class="p">(</span><span class="n">project_dir</span><span class="p">,</span> <span class="n">stage_number</span><span class="p">,</span> <span class="n">mode</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Load saved parameters from given ATMIP stage.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    project_dir : str</span>
-<span class="sd">        absolute path to directory of BEAT project</span>
-<span class="sd">    stage number : string</span>
-<span class="sd">        of stage number or &#39;final&#39; for last stage</span>
-<span class="sd">    mode : str</span>
-<span class="sd">        problem mode that has been solved (&#39;geometry&#39;, &#39;static&#39;, &#39;kinematic&#39;)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="n">stage_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">project_dir</span><span class="p">,</span> <span class="n">mode</span><span class="p">,</span> <span class="s1">&#39;stage_</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">stage_number</span><span class="p">,</span>
-        <span class="s1">&#39;atmip.params&#39;</span><span class="p">)</span>
-    <span class="n">step</span><span class="p">,</span> <span class="n">update</span> <span class="o">=</span> <span class="n">load_objects</span><span class="p">(</span><span class="n">stage_path</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">step</span><span class="p">,</span> <span class="n">update</span></div>
 
 
 <div class="viewcode-block" id="search_catalog"><a class="viewcode-back" href="../api.html#utility.search_catalog">[docs]</a><span class="k">def</span> <span class="nf">search_catalog</span><span class="p">(</span><span class="n">date</span><span class="p">,</span> <span class="n">min_magnitude</span><span class="p">,</span> <span class="n">dayrange</span><span class="o">=</span><span class="mf">1.</span><span class="p">):</span>
@@ -953,6 +963,47 @@
         <span class="n">b</span> <span class="o">=</span> <span class="n">rest</span>
 
     <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">a</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="gather"><a class="viewcode-back" href="../api.html#utility.gather">[docs]</a><span class="k">def</span> <span class="nf">gather</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="nb">filter</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return dictionary of input l grouped by key.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">l</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">filter</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">filter</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+            <span class="k">continue</span>
+
+        <span class="n">k</span> <span class="o">=</span> <span class="n">key</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">d</span><span class="p">:</span>
+            <span class="n">d</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">d</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">sort</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">tervalues</span><span class="p">():</span>
+            <span class="n">v</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">sort</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">d</span></div>
+
+
+<div class="viewcode-block" id="check_hyper_flag"><a class="viewcode-back" href="../api.html#utility.check_hyper_flag">[docs]</a><span class="k">def</span> <span class="nf">check_hyper_flag</span><span class="p">(</span><span class="n">problem</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check problem setup for type of model standard/hyperparameters.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    :class:`models.Problem`</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    flag : boolean</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">problem</span><span class="o">.</span><span class="n">outfolder</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;hypers&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
 </pre></div>
 
            </div>
@@ -986,7 +1037,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.1',
+            VERSION:'0.1alpha',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

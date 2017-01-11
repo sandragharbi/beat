@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>pyrocko.guts &mdash; beat 0.1 documentation</title>
+  <title>pyrocko.guts &mdash; beat 0.1alpha documentation</title>
   
 
   
@@ -33,7 +33,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="beat 0.1 documentation" href="../../index.html"/>
+    <link rel="top" title="beat 0.1alpha documentation" href="../../index.html"/>
         <link rel="up" title="Module code" href="../index.html"/> 
 
   
@@ -62,7 +62,7 @@
             
             
               <div class="version">
-                0.1
+                0.1a
               </div>
             
           
@@ -84,7 +84,9 @@
             
             
                 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../short_installation.html">Short Installation instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Detailed Installation instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../getting_started.html">Getting started with BEAT</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api.html">API Reference</a></li>
 </ul>
 
@@ -168,6 +170,7 @@
 
 <span class="k">def</span> <span class="nf">us_to_cc</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">us_to_cc_regex</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="k">lambda</span> <span class="n">pat</span><span class="p">:</span> <span class="n">pat</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">+</span><span class="n">pat</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span> <span class="n">s</span><span class="p">)</span>
+
 
 <span class="n">cc_to_us_regex1</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">r&#39;([a-z])([A-Z]+)([a-z]|$)&#39;</span><span class="p">)</span>
 <span class="n">cc_to_us_regex2</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">r&#39;([A-Z])([A-Z][a-z])&#39;</span><span class="p">)</span>
@@ -865,6 +868,7 @@
 <span class="k">class</span> <span class="nc">Unicode</span><span class="p">(</span><span class="n">Object</span><span class="p">):</span>
     <span class="n">dummy_for</span> <span class="o">=</span> <span class="n">unicode</span>
 
+
 <span class="n">guts_plain_dummy_types</span> <span class="o">=</span> <span class="p">(</span><span class="n">String</span><span class="p">,</span> <span class="n">Unicode</span><span class="p">,</span> <span class="n">Int</span><span class="p">,</span> <span class="n">Float</span><span class="p">,</span> <span class="n">Complex</span><span class="p">,</span> <span class="n">Bool</span><span class="p">)</span>
 
 
@@ -1366,6 +1370,7 @@
     <span class="k">return</span> <span class="n">dumper</span><span class="o">.</span><span class="n">represent_mapping</span><span class="p">(</span>
         <span class="s1">&#39;tag:yaml.org,2002:map&#39;</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">flow_style</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
+
 <span class="n">yaml</span><span class="o">.</span><span class="n">add_multi_representer</span><span class="p">(</span><span class="n">Object</span><span class="p">,</span> <span class="n">multi_representer</span><span class="p">,</span> <span class="n">Dumper</span><span class="o">=</span><span class="n">SafeDumper</span><span class="p">)</span>
 <span class="n">yaml</span><span class="o">.</span><span class="n">add_multi_constructor</span><span class="p">(</span><span class="s1">&#39;!&#39;</span><span class="p">,</span> <span class="n">multi_constructor</span><span class="p">,</span> <span class="n">Loader</span><span class="o">=</span><span class="n">SafeLoader</span><span class="p">)</span>
 <span class="n">yaml</span><span class="o">.</span><span class="n">add_representer</span><span class="p">(</span><span class="nb">dict</span><span class="p">,</span> <span class="n">dict_noflow_representer</span><span class="p">,</span> <span class="n">Dumper</span><span class="o">=</span><span class="n">SafeDumper</span><span class="p">)</span>
@@ -1703,7 +1708,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'0.1',
+            VERSION:'0.1alpha',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true
