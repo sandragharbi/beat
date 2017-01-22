@@ -7,6 +7,7 @@ the course of sampling the chain.
 import os
 import pymc3 as pm
 import logging
+import shutil
 
 import numpy as num
 
@@ -40,9 +41,13 @@ def get_final_stage(homepath, n_stages, model):
     ctrace = backend.concatenate_traces(mtraces)
     outname = os.path.join(homepath, 'stage_final')
 
-    if not os.path.exists(outname):
-        util.ensuredir(outname)
-        pm.backends.text.dump(name=outname, trace=ctrace)
+    if os.path.exists(outname):
+        logger.info('Removing existing previous final stage!')
+        shutil.rmtree(outname)
+
+    util.ensuredir(outname)
+    logger.info('Creating final Metropolis stage!')
+    pm.backends.text.dump(name=outname, trace=ctrace)
 
 
 def Metropolis_sample(n_stages=10, n_steps=10000, trace=None, start=None,
@@ -151,7 +156,7 @@ def Metropolis_sample(n_stages=10, n_steps=10000, trace=None, start=None,
                 trans_stage_path = os.path.join(
                     homepath, 'trans_stage_%i' % s)
                 logger.info('in %s' % trans_stage_path)
-                
+
                 chains = None
 
                 sample_args = {
@@ -177,6 +182,8 @@ def Metropolis_sample(n_stages=10, n_steps=10000, trace=None, start=None,
             utility.dump_objects(outpath, outparam_list)
 
         get_final_stage(homepath, n_stages, model=model)
+        outpath = os.path.join(homepath, 'stage_final', sample_p_outname)
+        utility.dump_objects(outpath, outparam_list)
 
 
 def get_trace_stats(mtrace, step, burn=0.5, thin=2):
