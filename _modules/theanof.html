@@ -211,16 +211,24 @@
 
 
 <div class="viewcode-block" id="GeoLayerSynthesizerStatic"><a class="viewcode-back" href="../api.html#theanof.GeoLayerSynthesizerStatic">[docs]</a><span class="k">class</span> <span class="nc">GeoLayerSynthesizerStatic</span><span class="p">(</span><span class="n">theano</span><span class="o">.</span><span class="n">Op</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;</span>
+    <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Theano wrapper for a geodetic forward model for static observation</span>
 <span class="sd">    points.</span>
+<span class="sd">    Input order does not matter anymore! Did in previous version.</span>
 
-<span class="sd">    Inputs have to be in order!</span>
-<span class="sd">    Type Numpy arrays:</span>
-<span class="sd">                    Source parameters (RectangularSource)</span>
-<span class="sd">    east_shifts, north_shifts, top_depths, strikes, dips, rakes,</span>
-<span class="sd">    lengths, widths, slips</span>
-<span class="sd">    &#39;&#39;&#39;</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    lats : n x 1 :class:`numpy.ndarray`</span>
+<span class="sd">        with latitudes of observation points</span>
+<span class="sd">    lons : n x 1 :class:`numpy.ndarray`</span>
+<span class="sd">        with longitudes of observation points</span>
+<span class="sd">    store_superdir : str</span>
+<span class="sd">        with absolute path to the GF store super directory</span>
+<span class="sd">    crust_ind : int</span>
+<span class="sd">        with the index to the GF store</span>
+<span class="sd">    sources : :class:`pscmp.RectangularSource`</span>
+<span class="sd">        to be used in generating the synthetic displacements</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">__props__</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;lats&#39;</span><span class="p">,</span> <span class="s1">&#39;lons&#39;</span><span class="p">,</span> <span class="s1">&#39;store_superdir&#39;</span><span class="p">,</span> <span class="s1">&#39;crust_ind&#39;</span><span class="p">,</span> <span class="s1">&#39;sources&#39;</span><span class="p">)</span>
 
@@ -237,21 +245,42 @@
     <span class="k">def</span> <span class="nf">__setstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">make_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">inputs</span><span class="p">):</span>
+<div class="viewcode-block" id="GeoLayerSynthesizerStatic.make_node"><a class="viewcode-back" href="../api.html#theanof.GeoLayerSynthesizerStatic.make_node">[docs]</a>    <span class="k">def</span> <span class="nf">make_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Transforms theano tensors to node and allocates variables accordingly.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        inputs : dict</span>
+<span class="sd">            keys being strings of source attributes of the</span>
+<span class="sd">            :class:`pscmp.RectangularSource` that was used to initialise</span>
+<span class="sd">            the Operator</span>
+<span class="sd">            values are :class:`theano.tensor.Tensor`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">inlist</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">inputs</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">varnames</span> <span class="o">=</span> <span class="n">inputs</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">inputs</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
             <span class="n">inlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tt</span><span class="o">.</span><span class="n">as_tensor_variable</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
 
         <span class="n">out</span> <span class="o">=</span> <span class="n">tt</span><span class="o">.</span><span class="n">as_tensor_variable</span><span class="p">(</span><span class="n">num</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)))</span>
         <span class="n">outlist</span> <span class="o">=</span> <span class="p">[</span><span class="n">out</span><span class="o">.</span><span class="n">type</span><span class="p">()]</span>
-        <span class="k">return</span> <span class="n">theano</span><span class="o">.</span><span class="n">Apply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inlist</span><span class="p">,</span> <span class="n">outlist</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">theano</span><span class="o">.</span><span class="n">Apply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inlist</span><span class="p">,</span> <span class="n">outlist</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">perform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">output</span><span class="p">):</span>
+<div class="viewcode-block" id="GeoLayerSynthesizerStatic.perform"><a class="viewcode-back" href="../api.html#theanof.GeoLayerSynthesizerStatic.perform">[docs]</a>    <span class="k">def</span> <span class="nf">perform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">output</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Perform method of the Operator to calculate synthetic displacements.</span>
 
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        inputs : list</span>
+<span class="sd">            of :class:`numpy.ndarray`</span>
+<span class="sd">        output : list</span>
+<span class="sd">            of synthetic displacements of :class:`numpy.ndarray` (n x 1)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">z</span> <span class="o">=</span> <span class="n">output</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
-        <span class="n">point</span> <span class="o">=</span> <span class="p">{</span><span class="n">var</span><span class="p">:</span> <span class="n">inp</span> <span class="k">for</span> <span class="n">var</span><span class="p">,</span> <span class="n">inp</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
-                    <span class="n">config</span><span class="o">.</span><span class="n">geo_vars_geometry</span><span class="p">,</span> <span class="n">inputs</span><span class="p">)}</span>
+        <span class="n">point</span> <span class="o">=</span> <span class="p">{</span><span class="n">vname</span><span class="p">:</span> <span class="n">i</span> <span class="k">for</span> <span class="n">vname</span><span class="p">,</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">varnames</span><span class="p">,</span> <span class="n">inputs</span><span class="p">)}</span>
 
         <span class="n">point</span> <span class="o">=</span> <span class="n">utility</span><span class="o">.</span><span class="n">adjust_point_units</span><span class="p">(</span><span class="n">point</span><span class="p">)</span>
 
@@ -266,21 +295,28 @@
             <span class="n">crust_ind</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">crust_ind</span><span class="p">,</span>
             <span class="n">lons</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lons</span><span class="p">,</span>
             <span class="n">lats</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lats</span><span class="p">,</span>
-            <span class="n">sources</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sources</span><span class="p">)</span>
+            <span class="n">sources</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sources</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">infer_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">input_shapes</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">[(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lats</span><span class="p">),</span> <span class="mi">3</span><span class="p">)]</span></div>
 
 
 <div class="viewcode-block" id="SeisSynthesizer"><a class="viewcode-back" href="../api.html#theanof.SeisSynthesizer">[docs]</a><span class="k">class</span> <span class="nc">SeisSynthesizer</span><span class="p">(</span><span class="n">theano</span><span class="o">.</span><span class="n">Op</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">    Theano wrapper for a seismic forward model for given source, targets</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Theano wrapper for a seismic forward model with synthetic waveforms.</span>
+<span class="sd">    Input order does not matter anymore! Did in previous version.</span>
 
-<span class="sd">    Inputs Type: Numpy arrays:</span>
-<span class="sd">                    Source parameters (RectangularSource)</span>
-<span class="sd">    east_shifts, north_shifts, top_depths, strikes, dips, rakes,</span>
-<span class="sd">    lengths, widths, slips</span>
-<span class="sd">    &#39;&#39;&#39;</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    engine : :class:`pyrocko.gf.seismosizer.LocalEngine`</span>
+<span class="sd">    sources : List</span>
+<span class="sd">        containing :class:`pyrocko.gf.seismosizer.Source` Objects</span>
+<span class="sd">    targets : List</span>
+<span class="sd">        containing :class:`pyrocko.gf.seismosizer.Target` Objects</span>
+
+<span class="sd">    arrival_taper : :class:`heart.ArrivalTaper`</span>
+<span class="sd">    filterer : :class:`heart.Filterer`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">__props__</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;engine&#39;</span><span class="p">,</span> <span class="s1">&#39;sources&#39;</span><span class="p">,</span> <span class="s1">&#39;targets&#39;</span><span class="p">,</span> <span class="s1">&#39;event&#39;</span><span class="p">,</span>
                  <span class="s1">&#39;arrival_taper&#39;</span><span class="p">,</span> <span class="s1">&#39;filterer&#39;</span><span class="p">)</span>
@@ -300,23 +336,49 @@
     <span class="k">def</span> <span class="nf">__setstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">make_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">inputs</span><span class="p">):</span>
+<div class="viewcode-block" id="SeisSynthesizer.make_node"><a class="viewcode-back" href="../api.html#theanof.SeisSynthesizer.make_node">[docs]</a>    <span class="k">def</span> <span class="nf">make_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Transforms theano tensors to node and allocates variables accordingly.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        inputs : dict</span>
+<span class="sd">            keys being strings of source attributes of the</span>
+<span class="sd">            :class:`pscmp.RectangularSource` that was used to initialise</span>
+<span class="sd">            the Operator</span>
+<span class="sd">            values are :class:`theano.tensor.Tensor`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">inlist</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">inputs</span><span class="p">:</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">varnames</span> <span class="o">=</span> <span class="n">inputs</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">inputs</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
             <span class="n">inlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tt</span><span class="o">.</span><span class="n">as_tensor_variable</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
 
         <span class="n">outm</span> <span class="o">=</span> <span class="n">tt</span><span class="o">.</span><span class="n">as_tensor_variable</span><span class="p">(</span><span class="n">num</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)))</span>
         <span class="n">outv</span> <span class="o">=</span> <span class="n">tt</span><span class="o">.</span><span class="n">as_tensor_variable</span><span class="p">(</span><span class="n">num</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2</span><span class="p">)))</span>
         <span class="n">outlist</span> <span class="o">=</span> <span class="p">[</span><span class="n">outm</span><span class="o">.</span><span class="n">type</span><span class="p">(),</span> <span class="n">outv</span><span class="o">.</span><span class="n">type</span><span class="p">()]</span>
-        <span class="k">return</span> <span class="n">theano</span><span class="o">.</span><span class="n">Apply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inlist</span><span class="p">,</span> <span class="n">outlist</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">theano</span><span class="o">.</span><span class="n">Apply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inlist</span><span class="p">,</span> <span class="n">outlist</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">perform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">output</span><span class="p">):</span>
+<div class="viewcode-block" id="SeisSynthesizer.perform"><a class="viewcode-back" href="../api.html#theanof.SeisSynthesizer.perform">[docs]</a>    <span class="k">def</span> <span class="nf">perform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">output</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Perform method of the Operator to calculate synthetic displacements.</span>
 
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        inputs : list</span>
+<span class="sd">            of :class:`numpy.ndarray`</span>
+<span class="sd">        output : list</span>
+<span class="sd">            1) of synthetic waveforms of :class:`numpy.ndarray`</span>
+<span class="sd">               (n x nsamples)</span>
+<span class="sd">            2) of start times of the first waveform samples </span>
+<span class="sd">               :class:`numpy.ndarray` (n x 1)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">synths</span> <span class="o">=</span> <span class="n">output</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">tmins</span> <span class="o">=</span> <span class="n">output</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
 
-        <span class="n">point</span> <span class="o">=</span> <span class="p">{</span><span class="n">var</span><span class="p">:</span> <span class="n">inp</span> <span class="k">for</span> <span class="n">var</span><span class="p">,</span> <span class="n">inp</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
-                    <span class="n">config</span><span class="o">.</span><span class="n">joint_vars_geometry</span><span class="p">,</span> <span class="n">inputs</span><span class="p">)}</span>
+        <span class="n">point</span> <span class="o">=</span> <span class="p">{</span><span class="n">vname</span><span class="p">:</span> <span class="n">i</span> <span class="k">for</span> <span class="n">vname</span><span class="p">,</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">varnames</span><span class="p">,</span> <span class="n">inputs</span><span class="p">)}</span>
 
         <span class="n">mpoint</span> <span class="o">=</span> <span class="n">utility</span><span class="o">.</span><span class="n">adjust_point_units</span><span class="p">(</span><span class="n">point</span><span class="p">)</span>
 
@@ -331,7 +393,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sources</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">targets</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">arrival_taper</span><span class="p">,</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">filterer</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">filterer</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">infer_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">input_shapes</span><span class="p">):</span>
         <span class="n">nrow</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">targets</span><span class="p">)</span>

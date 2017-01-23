@@ -148,9 +148,19 @@
 <div class="viewcode-block" id="sub_data_covariance"><a class="viewcode-back" href="../api.html#covariance.sub_data_covariance">[docs]</a><span class="k">def</span> <span class="nf">sub_data_covariance</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">tzero</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    Calculate sub-covariance matrix without variance.</span>
-<span class="sd">    :param: n - length of trace/ samples of quadratic Covariance matrix</span>
-<span class="sd">    :param: dt - time step of samples</span>
-<span class="sd">    :param: tzero - shortest period of waves in trace</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    n : int</span>
+<span class="sd">        length of trace/ samples of quadratic Covariance matrix</span>
+<span class="sd">    dt : float</span>
+<span class="sd">        time step of samples, sampling interval</span>
+<span class="sd">    tzero : float</span>
+<span class="sd">        shortest period of waves in trace</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    :class:`numpy.ndarray`</span>
 <span class="sd">    &#39;&#39;&#39;</span>
     <span class="k">return</span> <span class="n">num</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span> <span class="n">num</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">num</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span><span class="p">)[:,</span> <span class="n">num</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span> <span class="o">-</span> \
                               <span class="n">num</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span><span class="p">)[</span><span class="n">num</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:])</span> <span class="o">*</span> <span class="n">dt</span> <span class="o">/</span> <span class="n">tzero</span><span class="p">)</span></div>
@@ -163,6 +173,29 @@
 <span class="sd">    Duputel et al. 2012 GJI</span>
 <span class="sd">    &quot;Uncertainty estimations for seismic source inversions&quot; p. 5</span>
 
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data_traces : list</span>
+<span class="sd">        of :class:`pyrocko.trace.Trace` containing observed data</span>
+<span class="sd">    engine : :class:`pyrocko.gf.seismosizer.LocalEngine`</span>
+<span class="sd">        processing object for synthetics calculation</span>
+<span class="sd">    filterer : :class:`heart.Filter`</span>
+<span class="sd">        determines the bandpass-filtering corner frequencies</span>
+<span class="sd">    sample_rate : float</span>
+<span class="sd">        sampling rate of data_traces and GreensFunction stores</span>
+<span class="sd">    arrival_taper : :class: `heart.ArrivalTaper`</span>
+<span class="sd">        determines tapering around phase Arrival</span>
+<span class="sd">    event : :class:`pyrocko.meta.Event`</span>
+<span class="sd">        reference event from catalog</span>
+<span class="sd">    targets : list</span>
+<span class="sd">        of :class:`pyrocko.gf.seismosizer.Targets`</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    :class:`numpy.ndarray`</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
 <span class="sd">    Cd(i,j) = (Variance of trace)*exp(-abs(ti-tj)/</span>
 <span class="sd">                                     (shortest period T0 of waves))</span>
 
@@ -323,10 +356,27 @@
     <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    Calculate model prediction uncertainty matrix with respect to uncertainties</span>
 <span class="sd">    in the velocity model for station and channel.</span>
-<span class="sd">    Input:</span>
-<span class="sd">    :py:class:`gf.Engine` - contains synthetics generation machine</span>
-<span class="sd">    :py:class:`gf.Targets` - targets to be processed</span>
-<span class="sd">    :py:class: `heart.ArrivalTaper` - Determines Tapering around Phase Arrival</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    engine : :class:`pyrocko.gf.seismosizer.LocalEngine`</span>
+<span class="sd">        contains synthetics generation machine</span>
+<span class="sd">    sources : list</span>
+<span class="sd">        of :class:`pyrocko.gf.seismosizer.Source`</span>
+<span class="sd">    targets : list</span>
+<span class="sd">        of :class:`pyrocko.gf.seismosizer.Targets`</span>
+<span class="sd">    arrival_taper : :class: `heart.ArrivalTaper`</span>
+<span class="sd">        determines tapering around phase Arrival</span>
+<span class="sd">    filterer : :class:`heart.Filter`</span>
+<span class="sd">        determines the bandpass-filtering corner frequencies</span>
+<span class="sd">    plot : boolean</span>
+<span class="sd">        open snuffler and browse traces if True</span>
+<span class="sd">    n_jobs : int</span>
+<span class="sd">        number of processors to be used for calculation</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    :class:`numpy.ndarray` with Covariance due to velocity model uncertainties</span>
 <span class="sd">    &#39;&#39;&#39;</span>
 
     <span class="n">ref_target</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">targets</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
@@ -346,29 +396,40 @@
     <span class="k">return</span> <span class="n">num</span><span class="o">.</span><span class="n">cov</span><span class="p">(</span><span class="n">synths</span><span class="p">,</span> <span class="n">rowvar</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="get_geo_cov_velocity_models"><a class="viewcode-back" href="../api.html#covariance.get_geo_cov_velocity_models">[docs]</a><span class="k">def</span> <span class="nf">get_geo_cov_velocity_models</span><span class="p">(</span><span class="n">store_superdir</span><span class="p">,</span> <span class="n">crust_inds</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">sources</span><span class="p">):</span>
+<div class="viewcode-block" id="get_geo_cov_velocity_models"><a class="viewcode-back" href="../api.html#covariance.get_geo_cov_velocity_models">[docs]</a><span class="k">def</span> <span class="nf">get_geo_cov_velocity_models</span><span class="p">(</span><span class="n">store_superdir</span><span class="p">,</span> <span class="n">crust_inds</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">sources</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    Calculate model prediction uncertainty matrix with respect to uncertainties</span>
-<span class="sd">    in the velocity model for geodetic dateset.</span>
-<span class="sd">    Input:</span>
-<span class="sd">    store_superdir - geodetic GF directory</span>
-<span class="sd">    crust_inds - List of indices for respective GF stores</span>
-<span class="sd">    dataset - :py:class:`IFG`/`DiffIFG`</span>
-<span class="sd">    sources - List of :py:class:`PsCmpRectangularSource`</span>
+<span class="sd">    in the velocity model for geodetic targets.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    store_superdir : str</span>
+<span class="sd">        Absolute path to the geodetic GreensFunction directory</span>
+<span class="sd">    crust_inds : list</span>
+<span class="sd">        of int of indices for respective GreensFunction store indexes</span>
+<span class="sd">    target : :class:`heart.GeodeticTarget`</span>
+<span class="sd">        dataset and observation points to calculate covariance for</span>
+<span class="sd">    sources : list</span>
+<span class="sd">        of :py:class:`pscmp.PsCmpRectangularSource` determines the covariance</span>
+<span class="sd">        matrix</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    :class:`numpy.ndarray` with Covariance due to velocity model uncertainties</span>
 <span class="sd">    &#39;&#39;&#39;</span>
 
-    <span class="n">synths</span> <span class="o">=</span> <span class="n">num</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">crust_inds</span><span class="p">),</span> <span class="n">dataset</span><span class="o">.</span><span class="n">lons</span><span class="o">.</span><span class="n">size</span><span class="p">))</span>
+    <span class="n">synths</span> <span class="o">=</span> <span class="n">num</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">crust_inds</span><span class="p">),</span> <span class="n">target</span><span class="o">.</span><span class="n">samples</span><span class="p">))</span>
     <span class="k">for</span> <span class="n">crust_ind</span> <span class="ow">in</span> <span class="n">crust_inds</span><span class="p">:</span>
         <span class="n">disp</span> <span class="o">=</span> <span class="n">heart</span><span class="o">.</span><span class="n">geo_layer_synthetics</span><span class="p">(</span>
             <span class="n">store_superdir</span><span class="p">,</span> <span class="n">crust_ind</span><span class="p">,</span>
-            <span class="n">lons</span><span class="o">=</span><span class="n">dataset</span><span class="o">.</span><span class="n">lons</span><span class="p">,</span>
-            <span class="n">lats</span><span class="o">=</span><span class="n">dataset</span><span class="o">.</span><span class="n">lats</span><span class="p">,</span>
+            <span class="n">lons</span><span class="o">=</span><span class="n">target</span><span class="o">.</span><span class="n">lons</span><span class="p">,</span>
+            <span class="n">lats</span><span class="o">=</span><span class="n">target</span><span class="o">.</span><span class="n">lats</span><span class="p">,</span>
             <span class="n">sources</span><span class="o">=</span><span class="n">sources</span><span class="p">)</span>
         <span class="n">synths</span><span class="p">[</span><span class="n">crust_ind</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="n">disp</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">dataset</span><span class="o">.</span><span class="n">los_vector</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> \
-            <span class="n">disp</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">dataset</span><span class="o">.</span><span class="n">los_vector</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> \
-            <span class="n">disp</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">dataset</span><span class="o">.</span><span class="n">los_vector</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">])</span> <span class="o">*</span> \
-                <span class="n">dataset</span><span class="o">.</span><span class="n">odw</span>
+            <span class="n">disp</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">target</span><span class="o">.</span><span class="n">los_vector</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> \
+            <span class="n">disp</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">target</span><span class="o">.</span><span class="n">los_vector</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> \
+            <span class="n">disp</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">target</span><span class="o">.</span><span class="n">los_vector</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">])</span> <span class="o">*</span> \
+                <span class="n">target</span><span class="o">.</span><span class="n">odw</span>
 
     <span class="k">return</span> <span class="n">num</span><span class="o">.</span><span class="n">cov</span><span class="p">(</span><span class="n">synths</span><span class="p">,</span> <span class="n">rowvar</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
 </pre></div>
