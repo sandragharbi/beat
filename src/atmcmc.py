@@ -292,7 +292,7 @@ class ATMCMC(backend.ArrayStepSharedLLK):
                     q_new = pm.metropolis.metrop_select(
                         self.beta * (l[self._llk_index] - l0[self._llk_index]),
                         q, q0)
-                    
+
                     if q_new is q:
                         self.accepted += 1
                         l_new = l
@@ -563,7 +563,7 @@ def init_stage(homepath, step, stage, model, n_jobs=1,
 
             step.stage += 1
 
-            stage_path = os.path.join(homepath, 'stage_%i' % step.stage)
+            stage_path = os.path.join(homepath, 'stage_%i' % stage)
             draws = step.n_steps
 
         if rm_flag:
