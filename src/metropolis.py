@@ -228,7 +228,7 @@ def get_trace_stats(mtrace, step, burn=0.5, thin=2):
 
     point = step.bij.rmap(array_population.mean(axis=0))
     avar = array_population.var(axis=0)
-    if astd.sum() == 0.:
+    if avar.sum() == 0.:
         logger.warn('Trace std not valid not enough samples! Use 1.')
         avar = 1.
     cov = num.eye(step.ordering.dimensions) * avar
