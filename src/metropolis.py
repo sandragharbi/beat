@@ -146,7 +146,7 @@ def Metropolis_sample(n_stages=10, n_steps=10000, trace=None, start=None,
                 step.proposal_dist = choose_proposal(
                     step.proposal_name, scale=step.covariance)
 
-            if update is not None and s != 0:
+            if update is not None:
                 logger.info('Updating Covariances ...')
                 update.update_weights(mean_pt, n_jobs=n_jobs)
 
