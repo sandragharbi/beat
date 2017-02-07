@@ -192,7 +192,7 @@ def correlation_plot(mtrace, varnames=None,
 
 def correlation_plot_hist(mtrace, varnames=None,
         transform=lambda x: x, figsize=None, hist_color='orange', cmap=None,
-        grid=200, chains=None, point=None,
+        grid=100, chains=None, point=None,
         point_style='.', point_color='red', point_size='8', alpha=0.35):
     """
     Plot 2d marginals (with kernel density estimation) showing the correlations
@@ -995,21 +995,28 @@ def histplot_op(ax, data, reference=None, alpha=.35, color=None, bins=None):
             mind = num.minimum(mind, reference)
             maxd = num.maximum(maxd, reference)
 
-        tstd = 2 * num.std(d)
+        tstd = num.std(d)
         step = (maxd - mind) / 40.
 
         if bins is None:
             bins = int(num.ceil((maxd - mind) / step))
 
-        ax.hist(d, bins=bins, alpha=alpha, align='left', color=color)
+        ax.hist(d, bins=bins, normed=True, stacked=True, alpha=alpha, align='left', color=color,
+            edgecolor=color)
 
         leftb = mind - tstd
         rightb = maxd + tstd
 
-        digits = choose_round_digit(tstd)
+        l, r = ax.get_xlim()
+        if l != 0.0 and r != 1.0:
+            leftb = num.minimum(leftb, l)
+            rightb = num.maximum(rightb, r)
+
+        ntickmarks = 5
+        digits = choose_round_digit((rightb - leftb) / ntickmarks)
 
         xticklabels = num.round(
-            num.linspace(leftb, rightb, 5), digits).tolist()
+            num.linspace(leftb, rightb, ntickmarks), digits).tolist()
 
         ax.set_xlim(leftb, rightb)
 #        ax.get_yaxis().set_ticklabels([])
@@ -1020,9 +1027,9 @@ def histplot_op(ax, data, reference=None, alpha=.35, color=None, bins=None):
 
 def traceplot(trace, varnames=None, transform=lambda x: x, figsize=None,
               lines=None, chains=None, combined=False, grid=False,
-              varbins=None, nbins=40,
+              varbins=None, nbins=40, color=None,
               alpha=0.35, priors=None, prior_alpha=1, prior_style='--',
-              axs=None, posterior=None):
+              axs=None, posterior=None, fig=None):
     """
     Plots posterior pdfs as histograms from multiple mtrace objects.
 
@@ -1056,10 +1063,14 @@ def traceplot(trace, varnames=None, transform=lambda x: x, figsize=None,
         be created.
     nbins : int
         Number of bins for each histogram
+    color : tuple
+        mpl color tuple
     alpha : float
         Alpha value for plot line. Defaults to 0.35.
     axs : axes
         Matplotlib axes. Defaults to None.
+    fig : figure
+        Matplotlib figure. Defaults to None.
 
     Returns
     -------
@@ -1148,9 +1159,12 @@ def traceplot(trace, varnames=None, transform=lambda x: x, figsize=None,
                 else:
                     reference = None
 
+                if color is None:
+                    color = scolor('aluminium3')
+
                 histplot_op(
                     axs[rowi, coli], d, reference=reference,
-                    bins=varbin, alpha=alpha, color=scolor('aluminium3'))
+                    bins=varbin, alpha=alpha, color=color)
 
                 axs[rowi, coli].set_title(str(v) + ' ' + plot_units[v])
                 axs[rowi, coli].grid(grid)
@@ -1160,18 +1174,19 @@ def traceplot(trace, varnames=None, transform=lambda x: x, figsize=None,
 
                 if lines:
                     try:
-                        axs[rowi, coli].axvline(x=lines[v], color="k", lw=1.5)
+                        axs[rowi, coli].axvline(x=lines[v], color="k", lw=0.5)
                     except KeyError:
                         pass
 
-                if posterior == 'all':
-                    for k, idx in posterior_idxs.iteritems():
+                if posterior:
+                    if posterior == 'all':
+                        for k, idx in posterior_idxs.iteritems():
+                            axs[rowi, coli].axvline(
+                                x=d[idx], color=colors[k], lw=0.5)
+                    else:
+                        idx = posterior_idxs[posterior]
                         axs[rowi, coli].axvline(
-                            x=d[idx], color=colors[k], lw=1.5)
-                else:
-                    idx = posterior_idxs[posterior]
-                    axs[rowi, coli].axvline(
-                        x=d[idx], color=colors[posterior], lw=1.5)
+                            x=d[idx], color=colors[posterior], lw=0.5)
 
     fig.tight_layout()
     return fig, axs, varbins
@@ -1217,7 +1232,7 @@ def select_transform(sc, n_steps):
         return burn_sample
 
 
-def select_metropolis_chains(problem, mtrace, po):
+def select_metropolis_chains(problem, mtrace, post_llk):
     """
     Select chains from Multitrace
     """
@@ -1227,7 +1242,7 @@ def select_metropolis_chains(problem, mtrace, po):
         draws - 1, chain)[
             problem._like_name] for chain in mtrace.chains])
     chain_idxs = get_fit_indexes(llks)
-    return chain_idxs[po.post_llk]
+    return chain_idxs[post_llk]
 
 
 def draw_posteriors(problem, plot_options):
@@ -1285,7 +1300,7 @@ def draw_posteriors(problem, plot_options):
             mtrace = backend.load(stage_path, model=problem.model)
 
             if sc.name == 'Metropolis' and po.post_llk != 'all':
-                chains = select_metropolis_chains(problem, mtrace, po)
+                chains = select_metropolis_chains(problem, mtrace, po.post_llk)
                 logger.info('plotting result: %s of Metropolis chain %i' % (
                     po.post_llk, chains))
             else:
@@ -1344,7 +1359,7 @@ def draw_correlation_hist(problem, plot_options):
     stage = load_stage(problem, po.load_stage, load='trace')
 
     if sc.name == 'Metropolis' and po.post_llk != 'all':
-        chains = select_metropolis_chains(problem, stage.mtrace, po)
+        chains = select_metropolis_chains(problem, stage.mtrace, po.post_llk)
         logger.info('plotting result: %s of Metropolis chain %i' % (
             po.post_llk, chains))
     else:
