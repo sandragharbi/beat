@@ -979,7 +979,6 @@ def seismic_fits(problem, stage, plot_options):
 def draw_seismic_fits(problem, po):
 
     assert problem._seismic_flag
-    assert po.sampler == 'ATMCMC'
 
     stage = load_stage(problem, stage_number=po.load_stage, load='full')
 
