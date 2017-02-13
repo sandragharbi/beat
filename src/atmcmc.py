@@ -612,7 +612,8 @@ def init_stage(homepath, step, stage, model, n_jobs=1,
     return chains, step, update
 
 
-def update_last_samples(homepath, step, progressbar, model, n_jobs):
+def update_last_samples(homepath, step,
+        progressbar=False, model=None, n_jobs=1, rm_flag=False):
     """
     Resampling the last stage samples with the updated covariances and
     accept the new sample.
@@ -629,6 +630,9 @@ def update_last_samples(homepath, step, progressbar, model, n_jobs):
     trans_stage_path = os.path.join(
         homepath, 'trans_stage_%i' % tmp_stage)
     logger.info('in %s' % trans_stage_path)
+
+    if os.path.exists(trans_stage_path) and rm_flag:
+        shutil.rmtree(trans_stage_path)
 
     chains = None
     # reset resampling indexes
@@ -804,7 +808,7 @@ def ATMIP_sample(n_steps, step=None, start=None, trace=None, chain=0,
                 mean_pt = step.mean_end_points()
                 update.update_weights(mean_pt, n_jobs=n_jobs)
                 mtrace = update_last_samples(
-                    homepath, step, progressbar, model, n_jobs)
+                    homepath, step, progressbar, model, n_jobs, rm_flag)
                 step.population, step.array_population, step.likelihoods = \
                                     step.select_end_points(mtrace)
 

@@ -152,7 +152,7 @@ def Metropolis_sample(n_stages=10, n_steps=10000, trace=None, start=None,
                 update.update_weights(mean_pt, n_jobs=n_jobs)
 
                 mtrace = update_last_samples(
-                    homepath, step, progressbar, model, n_jobs)
+                    homepath, step, progressbar, model, n_jobs, rm_flag)
 
             elif update is not None and stage == 0 and update._seismic_flag:
                 update.engine.close_cashed_stores()
