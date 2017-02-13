@@ -36,7 +36,7 @@ from numpy.random import normal, standard_cauchy, standard_exponential, \
 __all__ = [
     'ATMCMC',
     'ATMIP_sample',
-    'update_last_sample',
+    'update_last_samples',
     'init_stage',
     'logp_forw',
     '_iter_parallel_chains']
@@ -282,8 +282,7 @@ class ATMCMC(backend.ArrayStepSharedLLK):
             else:
                 q = q0 + delta
 
-            l0 = self.chain_previous_lpoint[
-                            self.resampling_indexes[self.chain_index]]
+            l0 = self.chain_previous_lpoint[self.chain_index]
 
             if self.check_bnd:
                 varlogp = self.check_bnd(q)
@@ -297,8 +296,7 @@ class ATMCMC(backend.ArrayStepSharedLLK):
                     if q_new is q:
                         self.accepted += 1
                         l_new = l
-                        self.chain_previous_lpoint[
-                            self.resampling_indexes[self.chain_index]] = l_new
+                        self.chain_previous_lpoint[self.chain_index] = l_new
                     else:
                         l_new = l0
                 else:
@@ -314,8 +312,7 @@ class ATMCMC(backend.ArrayStepSharedLLK):
                 if q_new is q:
                     self.accepted += 1
                     l_new = l
-                    self.chain_previous_lpoint[
-                        self.resampling_indexes[self.chain_index]] = l_new
+                    self.chain_previous_lpoint[self.chain_index] = l_new
                 else:
                     l_new = l0
 
@@ -466,9 +463,10 @@ class ATMCMC(backend.ArrayStepSharedLLK):
 
         chain_previous_lpoint = []
 
-        # map end array_endpoints to list lpoints
-        for i in range(self.n_chains):
-            chain_previous_lpoint.append(self.lij.rmap(array_population[i, :]))
+        # map end array_endpoints to list lpoints and appyl resampling
+        for r_idx in self.resampling_indexes:
+            chain_previous_lpoint.append(
+                self.lij.rmap(array_population[r_idx, :]))
 
         return chain_previous_lpoint
 
@@ -633,6 +631,8 @@ def update_last_samples(homepath, step, progressbar, model, n_jobs):
     logger.info('in %s' % trans_stage_path)
 
     chains = None
+    # reset resampling indexes
+    step.resampling_indexes = np.arange(step.n_chains)
 
     sample_args = {
         'draws': draws,
@@ -808,8 +808,6 @@ def ATMIP_sample(n_steps, step=None, start=None, trace=None, chain=0,
 
             step.beta, step.old_beta, step.weights = step.calc_beta()
 
-            step.chain_previous_lpoint = step.get_chain_previous_lpoint(mtrace)
-
             if step.beta > 1.:
                 logger.info('Beta > 1.: %f' % step.beta)
                 step.beta = 1.
@@ -826,6 +824,7 @@ def ATMIP_sample(n_steps, step=None, start=None, trace=None, chain=0,
             step.proposal_dist = choose_proposal(
                 step.proposal_name, scale=step.covariance)
             step.resampling_indexes = step.resample()
+            step.chain_previous_lpoint = step.get_chain_previous_lpoint(mtrace)
 
             outpath = os.path.join(stage_path, sample_p_outname)
             outparam_list = [step, update]
@@ -845,6 +844,7 @@ def ATMIP_sample(n_steps, step=None, start=None, trace=None, chain=0,
         step.proposal_dist = choose_proposal(
             step.proposal_name, scale=step.covariance)
         step.resampling_indexes = step.resample()
+        step.chain_previous_lpoint = step.get_chain_previous_lpoint(mtrace)
 
         sample_args['step'] = step
         sample_args['stage_path'] = stage_path
