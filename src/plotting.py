@@ -1175,7 +1175,8 @@ def traceplot(trace, varnames=None, transform=lambda x: x, figsize=None,
                 if lines:
                     if v in config.hyper_pars.values():
                         reference = None
-
+                        if v in lines.keys():
+                            lines.pop(v)
                     else:
                         reference = lines[v]
                 else:
