@@ -275,13 +275,15 @@ def correlation_plot_hist(mtrace, varnames=None,
                 var, chains=chains, combine=True, squeeze=True))
 
     for k in range(nvar):
-        a = d[varnames[k]]
+        v_namea = varnames[k]
+        a = d[v_namea]
 
         for l in range(k, nvar):
-            logger.debug('%s, %s' % (varnames[k], varnames[l]))
+            v_nameb = varnames[l]
+            logger.debug('%s, %s' % (v_namea, v_nameb))
             if l == k:
                 if point is not None:
-                    reference = point[varnames[k]]
+                    reference = point[v_namea]
                     axs[l, k].axvline(
                         x=reference, color=point_color,
                         lw=int(point_size) / 4.)
@@ -295,7 +297,7 @@ def correlation_plot_hist(mtrace, varnames=None,
 
                 xticks = axs[l, k].get_xticks()
             else:
-                b = d[varnames[l]]
+                b = d[v_nameb]
 
                 pmp.kde2plot(
                     a, b, grid=grid, ax=axs[l, k], cmap=cmap, aspect='auto')
@@ -304,12 +306,12 @@ def correlation_plot_hist(mtrace, varnames=None,
                 bmax = b.max()
 
                 if point is not None:
-                    axs[l, k].plot(point[varnames[k]], point[varnames[l]],
+                    axs[l, k].plot(point[v_namea], point[v_nameb],
                         color=point_color, marker=point_style,
                         markersize=point_size)
 
-                    bmin = num.minimum(bmin, point[varnames[l]])
-                    bmax = num.maximum(bmax, point[varnames[l]])
+                    bmin = num.minimum(bmin, point[v_nameb])
+                    bmax = num.maximum(bmax, point[v_nameb])
 
                 ytickmarks = get_tickmarks(bmin, bmax, ntickmarks=ntickmarks)
                 axs[l, k].set_xticks(xticks)
@@ -319,13 +321,13 @@ def correlation_plot_hist(mtrace, varnames=None,
                 axs[l, k].get_xaxis().set_ticklabels([])
 
             if k == 0:
-                axs[l, k].set_ylabel(varnames[l])
+                axs[l, k].set_ylabel(v_nameb + '\n ' + plot_units[v_nameb])
             else:
                 axs[l, k].get_yaxis().set_ticklabels([])
 
             axs[l, k].tick_params(direction='in')
 
-        axs[l, k].set_xlabel(varnames[k])
+        axs[l, k].set_xlabel(v_namea + '\n ' + plot_units[v_namea])
 
     for k in range(nvar):
         for l in range(k):
@@ -1177,6 +1179,9 @@ def traceplot(trace, varnames=None, transform=lambda x: x, figsize=None,
                 if lines:
                     if v in config.hyper_pars.values():
                         reference = None
+                        if v in lines.keys():
+                            lines.pop(v)
+
                     else:
                         reference = lines[v]
                 else:
