@@ -305,7 +305,7 @@ def correlation_plot_hist(mtrace, varnames=None,
                     reference = None
 
                 histplot_op(
-                    axs[l, k], pmp.make_2d(a), alpha=alpha, color='orange',
+                    axs[l, k], pmp.utils.make_2d(a), alpha=alpha, color='orange',
                     tstd=0., reference=reference, ntickmarks=ntickmarks)
                 axs[l, k].get_yaxis().set_visible(False)
 
@@ -1150,7 +1150,7 @@ def traceplot(trace, varnames=None, transform=lambda x: x, figsize=None,
         llk = trace.get_values(
             'like', combine=combined, chains=chains, squeeze=False)
         llk = num.squeeze(transform(llk[0]))
-        llk = pmp.make_2d(llk)
+        llk = pmp.utils.make_2d(llk)
 
         posterior_idxs = utility.get_fit_indexes(llk)
 
@@ -1195,7 +1195,7 @@ def traceplot(trace, varnames=None, transform=lambda x: x, figsize=None,
             for d in trace.get_values(
                     v, combine=combined, chains=chains, squeeze=False):
                 d = num.squeeze(transform(d))
-                d = pmp.make_2d(d)
+                d = pmp.utils.make_2d(d)
 
                 if make_bins_flag:
                     varbin = make_bins(d, nbins=nbins)
