@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Detailed Installation instructions &mdash; beat 0.1alpha documentation</title>
+  <title>Detailed Installation instructions &mdash; beat 1.0beta documentation</title>
   
 
   
@@ -33,7 +33,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="beat 0.1alpha documentation" href="index.html"/>
+    <link rel="top" title="beat 1.0beta documentation" href="index.html"/>
         <link rel="next" title="API Reference" href="api.html"/>
         <link rel="prev" title="Short Installation instructions" href="short_installation.html"/> 
 
@@ -63,7 +63,7 @@
             
             
               <div class="version">
-                0.1a
+                1.0b
               </div>
             
           
@@ -503,43 +503,23 @@ these codes are required and need to be compiled manually.
 The original codes are packaged for windows and can be found
 <a class="reference external" href="http://www.gfz-potsdam.de/en/section/physics-of-earthquakes-and-volcanoes/data-products-services/downloads-software/">here</a>.</p>
 <p>For Unix systems the codes had to be repackaged.</p>
+<p>The packages below are also github repositories and you may want to use &#8220;git clone&#8221; to download:</p>
+<blockquote>
+<div>git clone &lt;url&gt;</div></blockquote>
+<p>This also enables easy updating for potential future changes.</p>
+<p>For configuration and compilation please follow the descriptions provided in each repository respectively.</p>
 <div class="section" id="seismic-synthetics">
 <h4>Seismic synthetics<a class="headerlink" href="#seismic-synthetics" title="Permalink to this headline">¶</a></h4>
 <ul class="simple">
-<li><a class="reference external" href="http://kinherd.org/fomosto-qseis-2006a.tar.gz">QSEIS</a></li>
-<li><a class="reference external" href="http://kinherd.org/fomosto-qssp-2010.tar.gz">QSSP</a></li>
+<li><a class="reference external" href="https://github.com/pyrocko/fomosto-qseis">QSEIS</a></li>
+<li><a class="reference external" href="https://github.com/pyrocko/fomosto-qssp">QSSP</a></li>
 </ul>
-<p>After unpacking each package, within each folder run:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">autoreconf</span> <span class="o">-</span><span class="n">i</span>   <span class="c1"># only if &#39;configure&#39; script is missing</span>
-<span class="n">F77</span><span class="o">=</span><span class="n">gfortran</span> <span class="o">./</span><span class="n">configure</span>
-<span class="n">make</span>
-<span class="n">sudo</span> <span class="n">make</span> <span class="n">install</span>
-</pre></div>
-</div>
 </div>
 <div class="section" id="geodetic-synthetics">
 <h4>Geodetic synthetics<a class="headerlink" href="#geodetic-synthetics" title="Permalink to this headline">¶</a></h4>
 <ul class="simple">
-<li>PSGRN and PSCMP</li>
+<li><a class="reference external" href="https://github.com/pyrocko/fomosto-psgrn-pscmp">PSGRN_PSCMP</a></li>
 </ul>
-<p>These codes are so far included in the beat repository, but will be a part of the pyrocko framework in the future.
-In the BEAT folder:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">tar</span> <span class="o">-</span><span class="n">xvzf</span> <span class="n">fomosto</span><span class="o">-</span><span class="n">psgrn</span><span class="o">-</span><span class="n">pscmp</span><span class="o">.</span><span class="n">tar</span><span class="o">.</span><span class="n">gz</span>
-<span class="n">cd</span> <span class="n">fomosto</span><span class="o">-</span><span class="n">psgrn</span><span class="o">-</span><span class="n">pscmp</span>
-<span class="n">autoreconf</span> <span class="o">-</span><span class="n">i</span>   <span class="c1"># only if &#39;configure&#39; script is missing</span>
-<span class="o">./</span><span class="n">configure</span>
-</pre></div>
-</div>
-<p>If the number of modelled points is large the FFLAGS flag has to be changed to
-FFLAGS=-mcmodel=large, this will result in a long compilation time.:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">FFLAGS</span><span class="o">=-</span><span class="n">mcmodel</span><span class="o">=</span><span class="n">large</span> <span class="o">./</span><span class="n">configure</span>
-</pre></div>
-</div>
-<p>After configuration:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">make</span>
-<span class="n">sudo</span> <span class="n">make</span> <span class="n">install</span>
-</pre></div>
-</div>
 </div>
 </div>
 </div>
@@ -586,7 +566,7 @@ FFLAGS=-mcmodel=large, this will result in a long compilation time.:</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'0.1alpha',
+            VERSION:'1.0beta',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

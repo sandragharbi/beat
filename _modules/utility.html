@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>utility &mdash; beat 0.1alpha documentation</title>
+  <title>utility &mdash; beat 1.0beta documentation</title>
   
 
   
@@ -33,7 +33,7 @@
         <link rel="index" title="Index"
               href="../genindex.html"/>
         <link rel="search" title="Search" href="../search.html"/>
-    <link rel="top" title="beat 0.1alpha documentation" href="../index.html"/>
+    <link rel="top" title="beat 1.0beta documentation" href="../index.html"/>
         <link rel="up" title="Module code" href="index.html"/> 
 
   
@@ -62,7 +62,7 @@
             
             
               <div class="version">
-                0.1a
+                1.0b
               </div>
             
           
@@ -133,16 +133,30 @@
            <div itemprop="articleBody">
             
   <h1>Source code for utility</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">logging</span>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module provides a namespace for various functions:</span>
+<span class="sd">coordinate transformations,</span>
+<span class="sd">loading and storing objects,</span>
+<span class="sd">book-keeping of indexes in arrays that relate to defined variable names,</span>
+<span class="sd">manipulation of various pyrocko objects</span>
+<span class="sd">and many more ...</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">re</span>
 <span class="kn">import</span> <span class="nn">collections</span>
 <span class="kn">import</span> <span class="nn">copy</span>
 <span class="kn">import</span> <span class="nn">cPickle</span> <span class="k">as</span> <span class="nn">pickle</span>
 
 <span class="kn">from</span> <span class="nn">pyrocko</span> <span class="k">import</span> <span class="n">util</span><span class="p">,</span> <span class="n">orthodrome</span><span class="p">,</span> <span class="n">catalog</span>
-<span class="kn">from</span> <span class="nn">pyrocko.cake</span> <span class="k">import</span> <span class="n">m2d</span>
+<span class="kn">from</span> <span class="nn">pyrocko.cake</span> <span class="k">import</span> <span class="n">m2d</span><span class="p">,</span> <span class="n">LayeredModel</span><span class="p">,</span> <span class="n">read_nd_model_str</span>
+
+<span class="kn">from</span> <span class="nn">pyrocko.gf.seismosizer</span> <span class="k">import</span> <span class="n">RectangularSource</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">num</span>
+<span class="kn">from</span> <span class="nn">theano</span> <span class="k">import</span> <span class="n">config</span> <span class="k">as</span> <span class="n">tconfig</span>
 
 <span class="kn">from</span> <span class="nn">pyproj</span> <span class="k">import</span> <span class="n">Proj</span>
 
@@ -150,15 +164,48 @@
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;utility&#39;</span><span class="p">)</span>
 
 <span class="n">DataMap</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;DataMap&#39;</span><span class="p">,</span> <span class="s1">&#39;list_ind, slc, shp, dtype&#39;</span><span class="p">)</span>
+<span class="n">PatchMap</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">namedtuple</span><span class="p">(</span>
+    <span class="s1">&#39;PatchMap&#39;</span><span class="p">,</span> <span class="s1">&#39;count, slc, shp, npatches&#39;</span><span class="p">)</span>
 
-<span class="n">kmtypes</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="s1">&#39;east_shift&#39;</span><span class="p">,</span> <span class="s1">&#39;north_shift&#39;</span><span class="p">,</span> <span class="s1">&#39;length&#39;</span><span class="p">,</span> <span class="s1">&#39;width&#39;</span><span class="p">,</span> <span class="s1">&#39;depth&#39;</span><span class="p">])</span>
+<span class="n">kmtypes</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="s1">&#39;east_shift&#39;</span><span class="p">,</span> <span class="s1">&#39;north_shift&#39;</span><span class="p">,</span> <span class="s1">&#39;length&#39;</span><span class="p">,</span> <span class="s1">&#39;width&#39;</span><span class="p">,</span> <span class="s1">&#39;depth&#39;</span><span class="p">,</span>
+               <span class="s1">&#39;distance&#39;</span><span class="p">,</span> <span class="s1">&#39;delta_depth&#39;</span><span class="p">])</span>
 
 <span class="n">seconds_str</span> <span class="o">=</span> <span class="s1">&#39;00:00:00&#39;</span>
 
 <span class="n">sphr</span> <span class="o">=</span> <span class="mf">3600.</span>
 <span class="n">hrpd</span> <span class="o">=</span> <span class="mf">24.</span>
 
+<span class="n">d2r</span> <span class="o">=</span> <span class="n">num</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mf">180.</span>
 <span class="n">km</span> <span class="o">=</span> <span class="mf">1000.</span>
+
+
+<div class="viewcode-block" id="FaultOrdering"><a class="viewcode-back" href="../api.html#utility.FaultOrdering">[docs]</a><span class="k">class</span> <span class="nc">FaultOrdering</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A mapping of source patches to the arrays of optimization results.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    npls : list</span>
+<span class="sd">        of number of patches in strike-direction</span>
+<span class="sd">    npws : list</span>
+<span class="sd">        of number of patches in dip-direction</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">npls</span><span class="p">,</span> <span class="n">npws</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">vmap</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">dim</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">for</span> <span class="n">npl</span><span class="p">,</span> <span class="n">npw</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">npls</span><span class="p">,</span> <span class="n">npws</span><span class="p">):</span>
+            <span class="n">npatches</span> <span class="o">=</span> <span class="n">npl</span> <span class="o">*</span> <span class="n">npw</span>
+            <span class="n">slc</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">dim</span> <span class="o">+</span> <span class="n">npatches</span><span class="p">)</span>
+            <span class="n">shp</span> <span class="o">=</span> <span class="p">(</span><span class="n">npw</span><span class="p">,</span> <span class="n">npl</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">vmap</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">PatchMap</span><span class="p">(</span><span class="n">count</span><span class="p">,</span> <span class="n">slc</span><span class="p">,</span> <span class="n">shp</span><span class="p">,</span> <span class="n">npatches</span><span class="p">))</span>
+            <span class="n">dim</span> <span class="o">+=</span> <span class="n">npatches</span>
+            <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">npatches</span> <span class="o">=</span> <span class="n">dim</span></div>
 
 
 <div class="viewcode-block" id="ListArrayOrdering"><a class="viewcode-back" href="../api.html#utility.ListArrayOrdering">[docs]</a><span class="k">class</span> <span class="nc">ListArrayOrdering</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -294,7 +341,7 @@
         <span class="k">return</span> <span class="n">a_list</span></div></div>
 
 
-<div class="viewcode-block" id="weed_input_rvs"><a class="viewcode-back" href="../api.html#utility.weed_input_rvs">[docs]</a><span class="k">def</span> <span class="nf">weed_input_rvs</span><span class="p">(</span><span class="n">input_rvs</span><span class="p">,</span> <span class="n">mode</span><span class="p">,</span> <span class="n">dataset</span><span class="p">):</span>
+<div class="viewcode-block" id="weed_input_rvs"><a class="viewcode-back" href="../api.html#utility.weed_input_rvs">[docs]</a><span class="k">def</span> <span class="nf">weed_input_rvs</span><span class="p">(</span><span class="n">input_rvs</span><span class="p">,</span> <span class="n">mode</span><span class="p">,</span> <span class="n">datatype</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Throw out random variables (RV)s from input list that are not included by</span>
 <span class="sd">    the respective synthetics generating functions.</span>
@@ -303,9 +350,12 @@
 <span class="sd">    ----------</span>
 <span class="sd">    input_rvs : dict</span>
 <span class="sd">        of :class:`pymc3.Distribution`</span>
+<span class="sd">        or set</span>
+<span class="sd">            of variable names</span>
 <span class="sd">    mode : str</span>
-<span class="sd">        &#39;geometry&#39;, &#39;static, &#39;kinematic&#39; determining the discarded RVs</span>
-<span class="sd">    dataset : str</span>
+<span class="sd">        &#39;geometry&#39;, &#39;static, &#39;kinematic&#39;, &#39;interseismic&#39; determining the</span>
+<span class="sd">        discarded RVs</span>
+<span class="sd">    datatype : str</span>
 <span class="sd">        &#39;seismic&#39; or &#39;geodetic&#39; determining the discarded RVs</span>
 
 <span class="sd">    Returns</span>
@@ -316,15 +366,35 @@
 
     <span class="n">weeded_input_rvs</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">input_rvs</span><span class="p">)</span>
 
+    <span class="n">burian</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;</span>
+<span class="s1">        lat lon name stf stf1 stf2 stf_mode magnitude anchor nucleation_x sign</span>
+<span class="s1">        nucleation_y velocity interpolation decimation_factor npointsources</span>
+<span class="s1">        &#39;&#39;&#39;</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+
     <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;geometry&#39;</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">dataset</span> <span class="o">==</span> <span class="s1">&#39;geodetic&#39;</span><span class="p">:</span>
-            <span class="n">tobeweeded</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">,</span> <span class="s1">&#39;duration&#39;</span><span class="p">]</span>
-        <span class="k">elif</span> <span class="n">dataset</span> <span class="o">==</span> <span class="s1">&#39;seismic&#39;</span><span class="p">:</span>
-            <span class="n">tobeweeded</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;opening&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;geodetic&#39;</span><span class="p">:</span>
+            <span class="n">tobeweeded</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">,</span> <span class="s1">&#39;duration&#39;</span><span class="p">,</span> <span class="s1">&#39;delta_time&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">burian</span>
+        <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;seismic&#39;</span><span class="p">:</span>
+            <span class="n">tobeweeded</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;opening&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">burian</span>
+
+    <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;interseismic&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;geodetic&#39;</span><span class="p">:</span>
+            <span class="n">tobeweeded</span> <span class="o">=</span> <span class="n">burian</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">tobeweeded</span> <span class="o">=</span> <span class="p">[]</span>
 
     <span class="k">for</span> <span class="n">weed</span> <span class="ow">in</span> <span class="n">tobeweeded</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">weed</span> <span class="ow">in</span> <span class="n">weeded_input_rvs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-            <span class="n">weeded_input_rvs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">weed</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">weeded_input_rvs</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">weed</span> <span class="ow">in</span> <span class="n">weeded_input_rvs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">weeded_input_rvs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">weed</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">weeded_input_rvs</span><span class="p">,</span> <span class="nb">set</span><span class="p">):</span>
+            <span class="n">weeded_input_rvs</span><span class="o">.</span><span class="n">discard</span><span class="p">(</span><span class="n">weed</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Variables are not of proper format: </span><span class="si">%s</span><span class="s1"> !&#39;</span> <span class="o">%</span> \
+                <span class="n">weeded_input_rvs</span><span class="o">.</span><span class="n">__class__</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">weeded_input_rvs</span></div>
 
@@ -445,7 +515,7 @@
     <span class="k">return</span> <span class="n">weeded_stations</span></div>
 
 
-<div class="viewcode-block" id="transform_sources"><a class="viewcode-back" href="../api.html#utility.transform_sources">[docs]</a><span class="k">def</span> <span class="nf">transform_sources</span><span class="p">(</span><span class="n">sources</span><span class="p">,</span> <span class="n">datasets</span><span class="p">):</span>
+<div class="viewcode-block" id="transform_sources"><a class="viewcode-back" href="../api.html#utility.transform_sources">[docs]</a><span class="k">def</span> <span class="nf">transform_sources</span><span class="p">(</span><span class="n">sources</span><span class="p">,</span> <span class="n">datatypes</span><span class="p">,</span> <span class="n">decimation_factors</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Transforms a list of :py:class:`heart.RectangularSource` to a dictionary of</span>
 <span class="sd">    sources :py:class:`pscmp.PsCmpRectangularSource` for geodetic data and</span>
@@ -455,28 +525,35 @@
 <span class="sd">    ----------</span>
 <span class="sd">    sources : list</span>
 <span class="sd">        :class:`heart.RectangularSource`</span>
-<span class="sd">    datasets : list</span>
-<span class="sd">        of strings with the datasets to be included &#39;geodetic&#39; or &#39;seismic&#39;</span>
+<span class="sd">    datatypes : list</span>
+<span class="sd">        of strings with the datatypes to be included &#39;geodetic&#39; or &#39;seismic&#39;</span>
+<span class="sd">    decimation_factors : dict</span>
+<span class="sd">        of datatypes and their respective decimation factor</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    d : dict</span>
-<span class="sd">        of transformed sources with datasets as keys</span>
+<span class="sd">        of transformed sources with datatypes as keys</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">d</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 
-    <span class="k">for</span> <span class="n">dataset</span> <span class="ow">in</span> <span class="n">datasets</span><span class="p">:</span>
-        <span class="n">sub_sources</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">datatype</span> <span class="ow">in</span> <span class="n">datatypes</span><span class="p">:</span>
+        <span class="n">transformed_sources</span> <span class="o">=</span> <span class="p">[]</span>
 
         <span class="k">for</span> <span class="n">source</span> <span class="ow">in</span> <span class="n">sources</span><span class="p">:</span>
-            <span class="n">sub_sources</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">source</span><span class="o">.</span><span class="n">patches</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dataset</span><span class="p">))</span>
+            <span class="n">transformed_source</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>
 
-        <span class="c1"># concatenate list of lists to single list</span>
-        <span class="n">transformed_sources</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="nb">map</span><span class="p">(</span><span class="n">transformed_sources</span><span class="o">.</span><span class="n">extend</span><span class="p">,</span> <span class="n">sub_sources</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">decimation_factors</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">transformed_source</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                    <span class="n">decimation_factor</span><span class="o">=</span><span class="n">decimation_factors</span><span class="p">[</span><span class="n">datatype</span><span class="p">])</span>
 
-        <span class="n">d</span><span class="p">[</span><span class="n">dataset</span><span class="p">]</span> <span class="o">=</span> <span class="n">transformed_sources</span>
+            <span class="k">if</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s1">&#39;geodetic&#39;</span><span class="p">:</span>
+                <span class="n">transformed_source</span><span class="o">.</span><span class="n">stf</span> <span class="o">=</span> <span class="kc">None</span>
+
+            <span class="n">transformed_sources</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">transformed_source</span><span class="p">)</span>
+
+        <span class="n">d</span><span class="p">[</span><span class="n">datatype</span><span class="p">]</span> <span class="o">=</span> <span class="n">transformed_sources</span>
 
     <span class="k">return</span> <span class="n">d</span></div>
 
@@ -521,8 +598,11 @@
 <span class="sd">    source_points : list</span>
 <span class="sd">        of :func:`pymc3.model.Point`</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="n">n_sources</span> <span class="o">=</span> <span class="n">point</span><span class="p">[</span><span class="n">point</span><span class="o">.</span><span class="n">keys</span><span class="p">()[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">params</span> <span class="o">=</span> <span class="n">point</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">params</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">n_sources</span> <span class="o">=</span> <span class="n">point</span><span class="p">[</span><span class="n">params</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">n_sources</span> <span class="o">=</span> <span class="mi">0</span>
 
     <span class="n">source_points</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_sources</span><span class="p">):</span>
@@ -555,7 +635,10 @@
                 <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Please set a STF before updating its&#39;</span>
                                     <span class="s1">&#39; parameters.&#39;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">source</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span></div>
+            <span class="n">source</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">RectangularSource</span><span class="p">):</span>
+        <span class="n">adjust_fault_reference</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">input_depth</span><span class="o">=</span><span class="s1">&#39;top&#39;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="utm_to_loc"><a class="viewcode-back" href="../api.html#utility.utm_to_loc">[docs]</a><span class="k">def</span> <span class="nf">utm_to_loc</span><span class="p">(</span><span class="n">utmx</span><span class="p">,</span> <span class="n">utmy</span><span class="p">,</span> <span class="n">zone</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
@@ -724,6 +807,105 @@
     <span class="k">return</span> <span class="n">event</span></div>
 
 
+<div class="viewcode-block" id="RS_dipvector"><a class="viewcode-back" href="../api.html#utility.RS_dipvector">[docs]</a><span class="k">def</span> <span class="nf">RS_dipvector</span><span class="p">(</span><span class="n">source</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get 3 dimensional dip-vector of a planar fault.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    source : RectangularSource</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    :class:`numpy.ndarray`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="n">num</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+        <span class="p">[</span><span class="n">num</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">source</span><span class="o">.</span><span class="n">dip</span> <span class="o">*</span> <span class="n">d2r</span><span class="p">)</span> <span class="o">*</span> <span class="n">num</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">source</span><span class="o">.</span><span class="n">strike</span> <span class="o">*</span> <span class="n">d2r</span><span class="p">),</span>
+         <span class="o">-</span><span class="n">num</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">source</span><span class="o">.</span><span class="n">dip</span> <span class="o">*</span> <span class="n">d2r</span><span class="p">)</span> <span class="o">*</span> <span class="n">num</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">source</span><span class="o">.</span><span class="n">strike</span> <span class="o">*</span> <span class="n">d2r</span><span class="p">),</span>
+          <span class="n">num</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">source</span><span class="o">.</span><span class="n">dip</span> <span class="o">*</span> <span class="n">d2r</span><span class="p">)])</span></div>
+
+
+<span class="k">def</span> <span class="nf">strike_vector</span><span class="p">(</span><span class="n">strike</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;ENZ&#39;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">order</span> <span class="o">==</span> <span class="s1">&#39;ENZ&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">num</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">num</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">strike</span> <span class="o">*</span> <span class="n">d2r</span><span class="p">),</span>
+             <span class="n">num</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">strike</span> <span class="o">*</span> <span class="n">d2r</span><span class="p">),</span>
+             <span class="mf">0.</span><span class="p">])</span>
+    <span class="k">elif</span> <span class="n">order</span> <span class="o">==</span> <span class="s1">&#39;NEZ&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">num</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">num</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">strike</span> <span class="o">*</span> <span class="n">d2r</span><span class="p">),</span>
+             <span class="n">num</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">strike</span> <span class="o">*</span> <span class="n">d2r</span><span class="p">),</span>
+             <span class="mf">0.</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Order </span><span class="si">%s</span><span class="s1"> not implemented!&#39;</span> <span class="o">%</span> <span class="n">order</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="RS_strikevector"><a class="viewcode-back" href="../api.html#utility.RS_strikevector">[docs]</a><span class="k">def</span> <span class="nf">RS_strikevector</span><span class="p">(</span><span class="n">source</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get 3 dimensional strike-vector of a planar fault.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    source : RedctangularSource</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    :class:`numpy.ndarray`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="n">strike_vector</span><span class="p">(</span><span class="n">source</span><span class="o">.</span><span class="n">strike</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="RS_center"><a class="viewcode-back" href="../api.html#utility.RS_center">[docs]</a><span class="k">def</span> <span class="nf">RS_center</span><span class="p">(</span><span class="n">source</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get 3d fault center coordinates. Depth attribute is top depth!</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    source : RedctangularSource</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    :class:`numpy.ndarray` with x, y, z coordinates of the center of the</span>
+<span class="sd">    fault</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="n">num</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">source</span><span class="o">.</span><span class="n">east_shift</span><span class="p">,</span> <span class="n">source</span><span class="o">.</span><span class="n">north_shift</span><span class="p">,</span> <span class="n">source</span><span class="o">.</span><span class="n">depth</span><span class="p">])</span> <span class="o">+</span> \
+        <span class="mf">0.5</span> <span class="o">*</span> <span class="n">source</span><span class="o">.</span><span class="n">width</span> <span class="o">*</span> <span class="n">RS_dipvector</span><span class="p">(</span><span class="n">source</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="adjust_fault_reference"><a class="viewcode-back" href="../api.html#utility.adjust_fault_reference">[docs]</a><span class="k">def</span> <span class="nf">adjust_fault_reference</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">input_depth</span><span class="o">=</span><span class="s1">&#39;top&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Adjusts source depth and east/north-shifts variables of fault according to</span>
+<span class="sd">    input_depth mode &#39;top/center&#39;.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    source : :class:`RectangularSource` or :class:`pscmp.RectangularSource` or</span>
+<span class="sd">        :class:`pyrocko.gf.seismosizer.RectangularSource`</span>
+<span class="sd">    input_depth : string</span>
+<span class="sd">        if &#39;top&#39; the depth in the source is interpreted as top depth</span>
+<span class="sd">        if &#39;center&#39; the depth in the source is interpreted as center depth</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Updated input source object</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">input_depth</span> <span class="o">==</span> <span class="s1">&#39;top&#39;</span><span class="p">:</span>
+        <span class="n">center</span> <span class="o">=</span> <span class="n">RS_center</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">input_depth</span> <span class="o">==</span> <span class="s1">&#39;center&#39;</span><span class="p">:</span>
+        <span class="n">center</span> <span class="o">=</span> <span class="n">num</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">source</span><span class="o">.</span><span class="n">east_shift</span><span class="p">,</span> <span class="n">source</span><span class="o">.</span><span class="n">north_shift</span><span class="p">,</span> <span class="n">source</span><span class="o">.</span><span class="n">depth</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;input_depth </span><span class="si">%s</span><span class="s1"> not supported!&#39;</span> <span class="o">%</span> <span class="n">input_depth</span><span class="p">)</span>
+
+    <span class="n">source</span><span class="o">.</span><span class="n">east_shift</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">center</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">source</span><span class="o">.</span><span class="n">north_shift</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">center</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">source</span><span class="o">.</span><span class="n">depth</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">center</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span></div>
+
+
 <div class="viewcode-block" id="dump_objects"><a class="viewcode-back" href="../api.html#utility.dump_objects">[docs]</a><span class="k">def</span> <span class="nf">dump_objects</span><span class="p">(</span><span class="n">outpath</span><span class="p">,</span> <span class="n">outlist</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Dump objects in outlist into pickle file.</span>
@@ -758,7 +940,7 @@
         <span class="n">objects</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">loadpath</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">))</span>
     <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
-            <span class="s1">&#39;File </span><span class="si">%s</span><span class="s1"> does not exist! Data already imported?&#39;</span> <span class="o">%</span> <span class="n">loadpath</span><span class="p">)</span>
+            <span class="s1">&#39;File </span><span class="si">%s</span><span class="s1"> does not exist!&#39;</span> <span class="o">%</span> <span class="n">loadpath</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">objects</span></div>
 
 
@@ -1041,6 +1223,134 @@
         <span class="k">return</span> <span class="kc">True</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">False</span></div>
+
+
+<span class="k">def</span> <span class="nf">scalar2floatX</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">floatX</span><span class="o">=</span><span class="n">tconfig</span><span class="o">.</span><span class="n">floatX</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">floatX</span> <span class="o">==</span> <span class="s1">&#39;float32&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">num</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">floatX</span> <span class="o">==</span> <span class="s1">&#39;float64&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">num</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="PsGrnArray2LayeredModel"><a class="viewcode-back" href="../api.html#utility.PsGrnArray2LayeredModel">[docs]</a><span class="k">def</span> <span class="nf">PsGrnArray2LayeredModel</span><span class="p">(</span><span class="n">psgrn_input_path</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Read PsGrn Input file and return velocity model.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    psgrn_input_path : str</span>
+<span class="sd">        Absolute path to the psgrn input file.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    :class:`LayeredModel`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">num</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">psgrn_input_path</span><span class="p">,</span> <span class="n">skiprows</span><span class="o">=</span><span class="mi">136</span><span class="p">)</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">a</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">b</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">/=</span> <span class="mf">1000.</span>
+    <span class="k">return</span> <span class="n">LayeredModel</span><span class="o">.</span><span class="n">from_scanlines</span><span class="p">(</span>
+        <span class="n">read_nd_model_str</span><span class="p">(</span>
+            <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s1">&#39;[\[\]]&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">num</span><span class="o">.</span><span class="n">array2string</span><span class="p">(</span>
+                <span class="n">b</span><span class="p">,</span> <span class="n">precision</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+                    <span class="n">formatter</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;float_kind&#39;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="s2">&quot;</span><span class="si">%.3f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">x</span><span class="p">}))))</span></div>
+
+
+<div class="viewcode-block" id="list_to_str"><a class="viewcode-back" href="../api.html#utility.list_to_str">[docs]</a><span class="k">def</span> <span class="nf">list_to_str</span><span class="p">(</span><span class="n">l</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Transform entries of a list or 1-d array to one single string.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%f</span><span class="s1"> &#39;</span> <span class="o">%</span> <span class="n">entry</span> <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">l</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="swap_columns"><a class="viewcode-back" href="../api.html#utility.swap_columns">[docs]</a><span class="k">def</span> <span class="nf">swap_columns</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">index1</span><span class="p">,</span> <span class="n">index2</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Swaps the column of the input array based on the given indexes.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">array</span><span class="p">[:,</span> <span class="n">index1</span><span class="p">],</span> <span class="n">array</span><span class="p">[:,</span> <span class="n">index2</span><span class="p">]</span> <span class="o">=</span> \
+        <span class="n">array</span><span class="p">[:,</span> <span class="n">index2</span><span class="p">],</span> <span class="n">array</span><span class="p">[:,</span> <span class="n">index1</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">array</span></div>
+
+
+<div class="viewcode-block" id="line_intersect"><a class="viewcode-back" href="../api.html#utility.line_intersect">[docs]</a><span class="k">def</span> <span class="nf">line_intersect</span><span class="p">(</span><span class="n">e1</span><span class="p">,</span> <span class="n">e2</span><span class="p">,</span> <span class="n">n1</span><span class="p">,</span> <span class="n">n2</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get intersection point of n-lines.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    end points of each line in (n x 2) arrays</span>
+<span class="sd">    e1 : :class:`numpy.array` (n x 2)</span>
+<span class="sd">        east coordinates of first line</span>
+<span class="sd">    e2 : :class:`numpy.array` (n x 2)</span>
+<span class="sd">        east coordinates of second line</span>
+<span class="sd">    n1 : :class:`numpy.array` (n x 2)</span>
+<span class="sd">        north coordinates of first line</span>
+<span class="sd">    n2 : :class:`numpy.array` (n x 2)</span>
+<span class="sd">        east coordinates of second line</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    :class:`numpy.array` (n x 2) of intersection points (easts, norths)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">perp</span> <span class="o">=</span> <span class="n">num</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]])</span>
+    <span class="n">de</span> <span class="o">=</span> <span class="n">num</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">e2</span> <span class="o">-</span> <span class="n">e1</span><span class="p">)</span>
+    <span class="n">dn</span> <span class="o">=</span> <span class="n">num</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">n2</span> <span class="o">-</span> <span class="n">n1</span><span class="p">)</span>
+    <span class="n">dp</span> <span class="o">=</span> <span class="n">num</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">e1</span> <span class="o">-</span> <span class="n">n1</span><span class="p">)</span>
+    <span class="n">dep</span> <span class="o">=</span> <span class="n">num</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">de</span><span class="p">,</span> <span class="n">perp</span><span class="p">)</span>
+    <span class="n">denom</span> <span class="o">=</span> <span class="n">num</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dep</span> <span class="o">*</span> <span class="n">dn</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">denom</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Lines are parallel! No intersection point!&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="n">tmp</span> <span class="o">=</span> <span class="n">num</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dep</span> <span class="o">*</span> <span class="n">dp</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">num</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">tmp</span> <span class="o">/</span> <span class="n">denom</span><span class="p">)</span><span class="o">.</span><span class="n">T</span> <span class="o">*</span> <span class="n">dn</span> <span class="o">+</span> <span class="n">n1</span></div>
+
+
+<div class="viewcode-block" id="get_rotation_matrix"><a class="viewcode-back" href="../api.html#utility.get_rotation_matrix">[docs]</a><span class="k">def</span> <span class="nf">get_rotation_matrix</span><span class="p">(</span><span class="n">axis</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return a function for 3-d rotation matrix for a specified axis.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    axis : str or list of str</span>
+<span class="sd">        x, y or z for the axis</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    func that takes an angle</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">rotx</span><span class="p">(</span><span class="n">angle</span><span class="p">):</span>
+        <span class="n">angle</span> <span class="o">*=</span> <span class="n">num</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mf">180.</span>
+        <span class="k">return</span> <span class="n">num</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+            <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+             <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">num</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">angle</span><span class="p">),</span> <span class="o">-</span><span class="n">num</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">angle</span><span class="p">)],</span>
+             <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">num</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">angle</span><span class="p">),</span> <span class="o">-</span><span class="n">num</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">angle</span><span class="p">)]])</span>
+
+    <span class="k">def</span> <span class="nf">roty</span><span class="p">(</span><span class="n">angle</span><span class="p">):</span>
+        <span class="n">angle</span> <span class="o">*=</span> <span class="n">num</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mf">180.</span>
+        <span class="k">return</span> <span class="n">num</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+            <span class="p">[[</span><span class="n">num</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">angle</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="n">num</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">angle</span><span class="p">)],</span>
+             <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+             <span class="p">[</span><span class="o">-</span><span class="n">num</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">angle</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="n">num</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">angle</span><span class="p">)]])</span>
+
+    <span class="k">def</span> <span class="nf">rotz</span><span class="p">(</span><span class="n">angle</span><span class="p">):</span>
+        <span class="n">angle</span> <span class="o">*=</span> <span class="n">num</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mf">180.</span>
+        <span class="k">return</span> <span class="n">num</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+            <span class="p">[[</span><span class="n">num</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">angle</span><span class="p">),</span> <span class="o">-</span><span class="n">num</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">angle</span><span class="p">),</span> <span class="mi">0</span><span class="p">],</span>
+             <span class="p">[</span><span class="n">num</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">angle</span><span class="p">),</span> <span class="n">num</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">angle</span><span class="p">),</span> <span class="mi">0</span><span class="p">],</span>
+             <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
+
+    <span class="n">R</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="n">rotx</span><span class="p">,</span>
+         <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="n">roty</span><span class="p">,</span>
+         <span class="s1">&#39;z&#39;</span><span class="p">:</span> <span class="n">rotz</span><span class="p">}</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">axis</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">R</span><span class="p">[</span><span class="n">a</span><span class="p">]</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">axis</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">axis</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">R</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;axis has to be either string or list of strings!&#39;</span><span class="p">)</span></div>
 </pre></div>
 
            </div>
@@ -1074,7 +1384,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.1alpha',
+            VERSION:'1.0beta',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>covariance &mdash; beat 0.1alpha documentation</title>
+  <title>covariance &mdash; beat 1.0beta documentation</title>
   
 
   
@@ -33,7 +33,7 @@
         <link rel="index" title="Index"
               href="../genindex.html"/>
         <link rel="search" title="Search" href="../search.html"/>
-    <link rel="top" title="beat 0.1alpha documentation" href="../index.html"/>
+    <link rel="top" title="beat 1.0beta documentation" href="../index.html"/>
         <link rel="up" title="Module code" href="index.html"/> 
 
   
@@ -62,7 +62,7 @@
             
             
               <div class="version">
-                0.1a
+                1.0b
               </div>
             
           
@@ -135,6 +135,7 @@
   <h1>Source code for covariance</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">pyrocko</span> <span class="k">import</span> <span class="n">gf</span><span class="p">,</span> <span class="n">trace</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">num</span>
+<span class="kn">from</span> <span class="nn">time</span> <span class="k">import</span> <span class="n">time</span>
 
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">copy</span>
@@ -145,7 +146,14 @@
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;covariance&#39;</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="sub_data_covariance"><a class="viewcode-back" href="../api.html#covariance.sub_data_covariance">[docs]</a><span class="k">def</span> <span class="nf">sub_data_covariance</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">tzero</span><span class="p">):</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;geo_cov_velocity_models&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;geo_cov_velocity_models_pscmp&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;seis_cov_velocity_models&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;seis_data_covariance&#39;</span><span class="p">]</span>
+
+
+<span class="k">def</span> <span class="nf">sub_data_covariance</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">tzero</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    Calculate sub-covariance matrix without variance.</span>
 
@@ -163,10 +171,10 @@
 <span class="sd">    :class:`numpy.ndarray`</span>
 <span class="sd">    &#39;&#39;&#39;</span>
     <span class="k">return</span> <span class="n">num</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span> <span class="n">num</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">num</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span><span class="p">)[:,</span> <span class="n">num</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span> <span class="o">-</span> \
-                              <span class="n">num</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span><span class="p">)[</span><span class="n">num</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:])</span> <span class="o">*</span> <span class="n">dt</span> <span class="o">/</span> <span class="n">tzero</span><span class="p">)</span></div>
+                              <span class="n">num</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span><span class="p">)[</span><span class="n">num</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:])</span> <span class="o">*</span> <span class="n">dt</span> <span class="o">/</span> <span class="n">tzero</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="get_seismic_data_covariances"><a class="viewcode-back" href="../api.html#covariance.get_seismic_data_covariances">[docs]</a><span class="k">def</span> <span class="nf">get_seismic_data_covariances</span><span class="p">(</span><span class="n">data_traces</span><span class="p">,</span> <span class="n">engine</span><span class="p">,</span> <span class="n">filterer</span><span class="p">,</span> <span class="n">sample_rate</span><span class="p">,</span>
+<div class="viewcode-block" id="seis_data_covariance"><a class="viewcode-back" href="../api.html#covariance.seis_data_covariance">[docs]</a><span class="k">def</span> <span class="nf">seis_data_covariance</span><span class="p">(</span><span class="n">data_traces</span><span class="p">,</span> <span class="n">engine</span><span class="p">,</span> <span class="n">filterer</span><span class="p">,</span> <span class="n">sample_rate</span><span class="p">,</span>
                                  <span class="n">arrival_taper</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">targets</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    Calculate SubCovariance Matrix of trace object following</span>
@@ -229,7 +237,7 @@
     <span class="k">return</span> <span class="n">cov_ds</span></div>
 
 
-<div class="viewcode-block" id="get_model_prediction_sensitivity"><a class="viewcode-back" href="../api.html#covariance.get_model_prediction_sensitivity">[docs]</a><span class="k">def</span> <span class="nf">get_model_prediction_sensitivity</span><span class="p">(</span><span class="n">engine</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">model_prediction_sensitivity</span><span class="p">(</span><span class="n">engine</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    Calculate the model prediction Covariance Sensitivity Kernel.</span>
 <span class="sd">    (numerical derivation with respect to the input source parameter(s))</span>
@@ -348,10 +356,10 @@
 
         <span class="n">par_count</span> <span class="o">=</span> <span class="n">par_count</span> <span class="o">+</span> <span class="mi">1</span>
 
-    <span class="k">return</span> <span class="n">sensitivity_param_trcs</span></div>
+    <span class="k">return</span> <span class="n">sensitivity_param_trcs</span>
 
 
-<div class="viewcode-block" id="get_seis_cov_velocity_models"><a class="viewcode-back" href="../api.html#covariance.get_seis_cov_velocity_models">[docs]</a><span class="k">def</span> <span class="nf">get_seis_cov_velocity_models</span><span class="p">(</span><span class="n">engine</span><span class="p">,</span> <span class="n">sources</span><span class="p">,</span> <span class="n">targets</span><span class="p">,</span>
+<div class="viewcode-block" id="seis_cov_velocity_models"><a class="viewcode-back" href="../api.html#covariance.seis_cov_velocity_models">[docs]</a><span class="k">def</span> <span class="nf">seis_cov_velocity_models</span><span class="p">(</span><span class="n">engine</span><span class="p">,</span> <span class="n">sources</span><span class="p">,</span> <span class="n">targets</span><span class="p">,</span>
                               <span class="n">arrival_taper</span><span class="p">,</span> <span class="n">filterer</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    Calculate model prediction uncertainty matrix with respect to uncertainties</span>
@@ -387,19 +395,65 @@
         <span class="n">ref_target</span><span class="p">,</span>
         <span class="n">arrival_taper</span><span class="p">)</span>
 
+    <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
     <span class="n">synths</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">heart</span><span class="o">.</span><span class="n">seis_synthetics</span><span class="p">(</span>
         <span class="n">engine</span><span class="p">,</span> <span class="n">sources</span><span class="p">,</span> <span class="n">targets</span><span class="p">,</span>
         <span class="n">arrival_taper</span><span class="p">,</span>
         <span class="n">filterer</span><span class="p">,</span> <span class="n">nprocs</span><span class="o">=</span><span class="n">n_jobs</span><span class="p">,</span>
-        <span class="n">reference_taperer</span><span class="o">=</span><span class="n">reference_taperer</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="n">plot</span><span class="p">)</span>
+        <span class="n">reference_taperer</span><span class="o">=</span><span class="n">reference_taperer</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="n">plot</span><span class="p">,</span>
+        <span class="n">pre_stack_cut</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">t1</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Trace generation time </span><span class="si">%f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">t1</span> <span class="o">-</span> <span class="n">t0</span><span class="p">))</span>
 
     <span class="k">return</span> <span class="n">num</span><span class="o">.</span><span class="n">cov</span><span class="p">(</span><span class="n">synths</span><span class="p">,</span> <span class="n">rowvar</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="get_geo_cov_velocity_models"><a class="viewcode-back" href="../api.html#covariance.get_geo_cov_velocity_models">[docs]</a><span class="k">def</span> <span class="nf">get_geo_cov_velocity_models</span><span class="p">(</span><span class="n">store_superdir</span><span class="p">,</span> <span class="n">crust_inds</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">sources</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;</span>
+<div class="viewcode-block" id="geo_cov_velocity_models"><a class="viewcode-back" href="../api.html#covariance.geo_cov_velocity_models">[docs]</a><span class="k">def</span> <span class="nf">geo_cov_velocity_models</span><span class="p">(</span>
+    <span class="n">engine</span><span class="p">,</span> <span class="n">sources</span><span class="p">,</span> <span class="n">targets</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculate model prediction uncertainty matrix with respect to uncertainties</span>
-<span class="sd">    in the velocity model for geodetic targets.</span>
+<span class="sd">    in the velocity model for geodetic targets using fomosto GF stores.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    engine : :class:`pyrocko.gf.seismosizer.LocalEngine`</span>
+<span class="sd">        contains synthetics generation machine</span>
+<span class="sd">    target : :class:`pyrocko.gf.targets.StaticTarget`</span>
+<span class="sd">        dataset and observation points to calculate covariance for</span>
+<span class="sd">    sources : list</span>
+<span class="sd">        of :py:class:`pyrocko.gf.seismosizer.Source` determines the covariance</span>
+<span class="sd">        matrix</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    :class:`numpy.ndarray` with Covariance due to velocity model uncertainties</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
+    <span class="n">displacements</span> <span class="o">=</span> <span class="n">heart</span><span class="o">.</span><span class="n">geo_synthetics</span><span class="p">(</span>
+        <span class="n">engine</span><span class="o">=</span><span class="n">engine</span><span class="p">,</span>
+        <span class="n">targets</span><span class="o">=</span><span class="n">targets</span><span class="p">,</span>
+        <span class="n">sources</span><span class="o">=</span><span class="n">sources</span><span class="p">,</span>
+        <span class="n">plot</span><span class="o">=</span><span class="n">plot</span><span class="p">,</span>
+        <span class="n">outmode</span><span class="o">=</span><span class="s1">&#39;stacked_arrays&#39;</span><span class="p">)</span>
+    <span class="n">t1</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Synthetics generation time </span><span class="si">%f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">t1</span> <span class="o">-</span> <span class="n">t0</span><span class="p">))</span>
+
+    <span class="n">synths</span> <span class="o">=</span> <span class="n">num</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">targets</span><span class="p">),</span> <span class="n">dataset</span><span class="o">.</span><span class="n">samples</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">disp</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">displacements</span><span class="p">):</span>
+        <span class="n">synths</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">disp</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">dataset</span><span class="o">.</span><span class="n">los_vector</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> \
+            <span class="n">disp</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">dataset</span><span class="o">.</span><span class="n">los_vector</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> \
+            <span class="n">disp</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">dataset</span><span class="o">.</span><span class="n">los_vector</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">])</span> <span class="o">*</span> <span class="n">dataset</span><span class="o">.</span><span class="n">odw</span>
+
+    <span class="k">return</span> <span class="n">num</span><span class="o">.</span><span class="n">cov</span><span class="p">(</span><span class="n">synths</span><span class="p">,</span> <span class="n">rowvar</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="geo_cov_velocity_models_pscmp"><a class="viewcode-back" href="../api.html#covariance.geo_cov_velocity_models_pscmp">[docs]</a><span class="k">def</span> <span class="nf">geo_cov_velocity_models_pscmp</span><span class="p">(</span>
+    <span class="n">store_superdir</span><span class="p">,</span> <span class="n">crust_inds</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">sources</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate model prediction uncertainty matrix with respect to uncertainties</span>
+<span class="sd">    in the velocity model for geodetic targets based on pscmp.</span>
+<span class="sd">    Deprecated!!!</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -407,7 +461,7 @@
 <span class="sd">        Absolute path to the geodetic GreensFunction directory</span>
 <span class="sd">    crust_inds : list</span>
 <span class="sd">        of int of indices for respective GreensFunction store indexes</span>
-<span class="sd">    target : :class:`heart.GeodeticTarget`</span>
+<span class="sd">    target : :class:`heart.GeodeticDataset`</span>
 <span class="sd">        dataset and observation points to calculate covariance for</span>
 <span class="sd">    sources : list</span>
 <span class="sd">        of :py:class:`pscmp.PsCmpRectangularSource` determines the covariance</span>
@@ -416,7 +470,7 @@
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    :class:`numpy.ndarray` with Covariance due to velocity model uncertainties</span>
-<span class="sd">    &#39;&#39;&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">synths</span> <span class="o">=</span> <span class="n">num</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">crust_inds</span><span class="p">),</span> <span class="n">target</span><span class="o">.</span><span class="n">samples</span><span class="p">))</span>
     <span class="k">for</span> <span class="n">crust_ind</span> <span class="ow">in</span> <span class="n">crust_inds</span><span class="p">:</span>
@@ -465,7 +519,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.1alpha',
+            VERSION:'1.0beta',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true
