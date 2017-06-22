@@ -398,7 +398,7 @@ class GeodeticConfig(Object):
     gf_config = GFConfig.T(default=GeodeticGFConfig.D())
 
     def get_hypernames(self):
-        return '_'.join(('h', self.types))
+        return ['_'.join(('h', dtyp)) for dtyp in self.types]
 
 
 class ProblemConfig(Object):

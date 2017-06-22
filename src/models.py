@@ -1553,6 +1553,7 @@ class Problem(object):
             with respect to velocity model uncertainties are calculated
         """
         for composite in self.composites.values():
+            print 'problem composite p2s', composite.name, composite.__class__
             self.composites[composite.name].point2sources(point)
 
     def update_weights(self, point, n_jobs=1, plot=False):
@@ -1666,6 +1667,7 @@ class GeometryOptimizer(SourceOptimizer):
             pc.decimation_factors)
 
         for datatype in pc.datatypes:
+            print 'problem init', datatype
             self.composites[datatype] = geometry_composite_catalog[datatype](
                 config[datatype + '_config'],
                 config.project_dir,

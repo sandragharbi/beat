@@ -1,5 +1,5 @@
 import unittest
-from beat import heart, models
+from beat import heart, models, config
 
 import numpy as num
 from numpy.testing import assert_allclose
@@ -12,7 +12,7 @@ from pyrocko import util, trace
 from pyrocko import plot, orthodrome
 
 
-logger = logging.getLogger('test_heart')
+logger = logging.getLogger('test_seis_composites')
 km = 1000.
 
 
@@ -33,7 +33,18 @@ def get_run_directory():
 def load_problem(dirname, mode):
     beat_dir = get_run_directory()
     project_dir = os.path.join(beat_dir, 'data/examples', dirname)
-    return models.load_model(project_dir, mode=mode)
+
+    c = config.load_config(project_dir, mode, update=False)
+    c.project_dir = project_dir
+    print project_dir
+
+    pc = c.problem_config
+
+    if pc.mode in models.problem_catalog.keys():
+        problem = models.problem_catalog[pc.mode](c, False)
+
+    problem.built_model()
+    return problem
 
 
 def _get_mt_source_params():
@@ -54,72 +65,32 @@ def _get_mt_source_params():
     return {k:num.atleast_1d(num.asarray(v)) for k, v in source_point.iteritems()}
 
 
-class TestSeisComposite(unittest.TestCase):
-
-    def __init__(self, *args, **kwargs):
-        unittest.TestCase.__init__(self, *args, **kwargs)
-        self.dirname = 'FullMT'
-        self.mode = 'geometry'
-
-    @classmethod
-    def setUpClass(cls):
-        dirname = 'FullMT'
-        mode = 'geometry'
-        cls.problem = load_problem(dirname, mode)
-        cls.sc = cls.problem.composites['seismic']
-
-    def test_synths(self):
-        logger.info('Test synth')
-        synths, obs = self.sc.get_synthetics(
-            self.problem.model.test_point, outmode='data')
-
-        for st, ot in zip(synths, obs):
-            assert_allclose(st.ydata, ot.ydata, rtol=1e-05, atol=0)
-
-    def test_results(self):
-        logger.info('Test results')
-        results = self.sc.assemble_results(self.problem.model.test_point)
-
-        for result in results:
-            assert_allclose(result.processed_obs.ydata,
-                            result.processed_syn.ydata, rtol=1e-05, atol=0)
-            assert_allclose(result.filtered_obs.ydata,
-                            result.filtered_syn.ydata, rtol=1e-05, atol=0)
-
-    def test_weights(self):
-        logger.info('Test weights')
-        for wmap in self.sc.wavemaps:
-            for w, d in zip(wmap.weights, wmap.datasets):
-                assert_allclose(
-                    w.get_value(), d.covariance.chol_inverse,
-                    rtol=1e-08, atol=0)
-
-
 class TestGeoComposite(unittest.TestCase):
-
-    def __init__(self, *args, **kwargs):
-        unittest.TestCase.__init__(self, *args, **kwargs)
-        self.dirname = 'Mogi'
-        self.mode = 'geometry'
 
     @classmethod
     def setUpClass(cls):
         dirname = 'Mogi'
         mode = 'geometry'
         cls.problem = load_problem(dirname, mode)
-        cls.sc = cls.problem.composites['geodetic']
+        cls.gc = cls.problem.composites['geodetic']
+
+    @classmethod
+    def tearDownClass(slc):
+        cls.problem = None
+        cls.gc = None
+        dirname = None
 
     def test_synths(self):
         logger.info('Test synth')
-        synths = self.sc.get_synthetics(
+        synths = self.gc.get_synthetics(
             self.problem.model.test_point, outmode='stacked_arrays')
 
-        for st, ds in zip(synths, sc.datasets):
+        for st, ds in zip(synths, self.gc.datasets):
             assert_allclose(st, ds, rtol=1e-03, atol=0)
 
     def test_results(self):
         logger.info('Test results')
-        results = self.sc.assemble_results(self.problem.model.test_point)
+        results = self.gc.assemble_results(self.problem.model.test_point)
 
         for result in results:
             assert_allclose(result.processed_obs,
@@ -127,10 +98,46 @@ class TestGeoComposite(unittest.TestCase):
 
     def test_weights(self):
         logger.info('Test weights')
-        for w, d in zip(sc.weights, sc.datasets):
+        for w, d in zip(self.gc.weights, self.gc.datasets):
             assert_allclose(
                 w.get_value(), d.covariance.chol_inverse,
                 rtol=1e-08, atol=0)
+
+
+#class TestSeisComposite(unittest.TestCase):
+
+#    @classmethod
+#    def setUpClass(cls):
+#        dirname = 'FullMT'
+#        mode = 'geometry'
+#        cls.problem = load_problem(dirname, mode)
+#        cls.sc = cls.problem.composites['seismic']
+
+#    def test_synths(self):
+#        logger.info('Test synth')
+#        synths, obs = self.sc.get_synthetics(
+#            self.problem.model.test_point, outmode='data')
+
+#        for st, ot in zip(synths, obs):
+#            assert_allclose(st.ydata, ot.ydata, rtol=1e-05, atol=0)
+
+#    def test_results(self):
+#        logger.info('Test results')
+#        results = self.sc.assemble_results(self.problem.model.test_point)
+
+#        for result in results:
+#            assert_allclose(result.processed_obs.ydata,
+#                            result.processed_syn.ydata, rtol=1e-05, atol=0)
+#            assert_allclose(result.filtered_obs.ydata,
+#                            result.filtered_syn.ydata, rtol=1e-05, atol=0)
+
+#    def test_weights(self):
+#        logger.info('Test weights')
+#        for wmap in self.sc.wavemaps:
+#            for w, d in zip(wmap.weights, wmap.datasets):
+#                assert_allclose(
+#                    w.get_value(), d.covariance.chol_inverse,
+#                    rtol=1e-08, atol=0)
 
 
 if __name__ == "__main__":
