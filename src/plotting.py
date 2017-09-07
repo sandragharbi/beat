@@ -22,6 +22,7 @@ from scipy.stats import kde
 import numpy as num
 from pyrocko.guts import Object, String, Dict, List, Bool, Int, load
 from pyrocko import util, trace
+from pyrocko.automap import Map
 from pyrocko.cake_plot import str_to_mpl_color as scolor
 from pyrocko.cake_plot import light
 
@@ -1805,7 +1806,7 @@ def draw_static_dist(problem, po):
     datatype = 'geodetic'
 
     if datatype not in problem.composites.keys():
-        raise Exception('No geodetic composite defined for this problem!')
+        raise Exception('No %s composite defined for this problem!' % datatype)
 
     gc = problem.composites[datatype]
 
@@ -1841,6 +1842,56 @@ def draw_static_dist(problem, po):
             fig.savefig(outpath, format=po.outformat, dpi=po.dpi)
 
 
+def station_plot(
+    stations, event, station_color='red', station_size='6', filename='station_plot', format='pdf'):
+    """
+    Station plot in global equidistant azimuthal projection.
+    """
+
+    m = Map(
+        lat=event.lat,
+        lon=event.lon,
+        radius=math.exp(rand(math.log(500*km), math.log(3000*km))),
+        width=17.,
+        height=17.,
+        projection='E',
+        show_grid=True,
+        show_topo=True,
+        illuminate=True,
+        illuminate_factor_ocean=0.15,
+        show_rivers=False,
+        show_plates=True)
+
+    lats = [s.lat for s in stations]
+    lons = [s.lon for s in stations]
+ 
+    map.gmt.psxy(
+        in_columns=(lons, lats),
+        S='t8p',
+        G=station_color,
+        *map.jxyr)
+
+    outname = filename + '.' + format 
+
+    map.save(outname)
+
+
+def draw_stations(problem, po):
+
+    datatype = 'seismic'
+
+    if datatype not in problem.composites.keys():
+        raise Exception('No %s composite defined for this problem!' % datatype)
+
+    sc = composites[datatype]
+
+    station_plot(sc.stations, sc.event,
+        station_color='red', station_size='6',
+        filename='station_plot',
+        format=po.format) 
+
+
+
 plots_catalog = {
     'correlation_hist': draw_correlation_hist,
     'stage_posteriors': draw_posteriors,
@@ -1848,6 +1899,7 @@ plots_catalog = {
     'scene_fits': draw_geodetic_fits,
     'velocity_models': draw_earthmodels,
     'static_slip_dist': draw_static_dist,
+    'station_plot': draw_stations,
                 }
 
 
