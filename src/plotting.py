@@ -1851,7 +1851,7 @@ def station_plot(
     m = Map(
         lat=event.lat,
         lon=event.lon,
-        radius=math.exp(rand(math.log(500*km), math.log(3000*km))),
+        radius=10000 * km,
         width=17.,
         height=17.,
         projection='E',
@@ -1860,20 +1860,24 @@ def station_plot(
         illuminate=True,
         illuminate_factor_ocean=0.15,
         show_rivers=False,
-        show_plates=True)
+        show_plates=False)
 
     lats = [s.lat for s in stations]
     lons = [s.lon for s in stations]
  
-    map.gmt.psxy(
+    m.gmt.psxy(
         in_columns=(lons, lats),
-        S='t8p',
+        S='t' + station_size + 'p',
         G=station_color,
-        *map.jxyr)
+        *m.jxyr)
+
+
+    for s in stations:
+        m.add_label(s.lat, s.lon, '%s.%s' % (s.network, s.station))
 
     outname = filename + '.' + format 
 
-    map.save(outname)
+    m.save(outname)
 
 
 def draw_stations(problem, po):
@@ -1883,13 +1887,12 @@ def draw_stations(problem, po):
     if datatype not in problem.composites.keys():
         raise Exception('No %s composite defined for this problem!' % datatype)
 
-    sc = composites[datatype]
+    sc = problem.composites[datatype]
 
-    station_plot(sc.stations, sc.event,
+    station_plot(sc.get_unique_stations(), sc.event,
         station_color='red', station_size='6',
         filename='station_plot',
-        format=po.format) 
-
+        format=po.outformat) 
 
 
 plots_catalog = {

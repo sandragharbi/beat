@@ -781,10 +781,16 @@ class SeismicComposite(Composite):
         super(SeismicComposite, self).__init__(hypers=hypers)
 
     def get_unique_stations(self):
-        sl = [wmap.stations for wmap in self.wavemaps]
-        us = []
-        map(us.extend, sl)
-        return list(set(us))
+        outlist = []
+        checkids = []
+        for wmap in self.wavemaps:
+            for s in wmap.stations:
+                nsl = s.nsl_string()
+                if nsl not in checkids:
+                    outlist.append(s)
+                    checkids.append(nsl)
+
+        return outlist
 
     @property
     def n_t(self):
