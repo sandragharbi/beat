@@ -148,10 +148,10 @@
 
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="s1">&#39;geo_cov_velocity_models&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;geo_cov_velocity_models_pscmp&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;seis_cov_velocity_models&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;seis_data_covariance&#39;</span><span class="p">]</span>
+    <span class="s1">&#39;geodetic_cov_velocity_models&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;geodetic_cov_velocity_models_pscmp&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;seismic_cov_velocity_models&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;seismic_data_covariance&#39;</span><span class="p">]</span>
 
 
 <span class="k">def</span> <span class="nf">sub_data_covariance</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">tzero</span><span class="p">):</span>
@@ -175,7 +175,7 @@
                               <span class="n">num</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span><span class="p">)[</span><span class="n">num</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:])</span> <span class="o">*</span> <span class="n">dt</span> <span class="o">/</span> <span class="n">tzero</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="seis_data_covariance"><a class="viewcode-back" href="../api.html#covariance.seis_data_covariance">[docs]</a><span class="k">def</span> <span class="nf">seis_data_covariance</span><span class="p">(</span><span class="n">data_traces</span><span class="p">,</span> <span class="n">engine</span><span class="p">,</span> <span class="n">filterer</span><span class="p">,</span> <span class="n">sample_rate</span><span class="p">,</span>
+<div class="viewcode-block" id="seismic_data_covariance"><a class="viewcode-back" href="../api.html#covariance.seismic_data_covariance">[docs]</a><span class="k">def</span> <span class="nf">seismic_data_covariance</span><span class="p">(</span><span class="n">data_traces</span><span class="p">,</span> <span class="n">engine</span><span class="p">,</span> <span class="n">filterer</span><span class="p">,</span> <span class="n">sample_rate</span><span class="p">,</span>
                                  <span class="n">arrival_taper</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">targets</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    Calculate SubCovariance Matrix of trace object following</span>
@@ -210,7 +210,7 @@
 
 <span class="sd">       i,j are samples of the seismic trace</span>
 <span class="sd">    &#39;&#39;&#39;</span>
-
+    <span class="n">wavename</span> <span class="o">=</span> <span class="s1">&#39;any_P&#39;</span>   <span class="c1"># hardcode here, want always pre P time</span>
     <span class="n">tzero</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="n">filterer</span><span class="o">.</span><span class="n">upper_corner</span>
     <span class="n">dt</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="n">sample_rate</span>
     <span class="n">ataper</span> <span class="o">=</span> <span class="n">arrival_taper</span>
@@ -219,14 +219,10 @@
     <span class="n">csub</span> <span class="o">=</span> <span class="n">sub_data_covariance</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">tzero</span><span class="p">)</span>
 
     <span class="n">cov_ds</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">tr</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">data_traces</span><span class="p">):</span>
-        <span class="c1"># assure getting P-wave arrival time</span>
-        <span class="n">tmp_target</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">targets</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
-
-        <span class="n">tmp_target</span><span class="o">.</span><span class="n">codes</span> <span class="o">=</span> <span class="p">(</span><span class="n">tmp_target</span><span class="o">.</span><span class="n">codes</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="s1">&#39;Z&#39;</span><span class="p">,))</span>
-
+    <span class="k">for</span> <span class="n">tr</span><span class="p">,</span> <span class="n">target</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">data_traces</span><span class="p">,</span> <span class="n">targets</span><span class="p">):</span>
         <span class="n">arrival_time</span> <span class="o">=</span> <span class="n">heart</span><span class="o">.</span><span class="n">get_phase_arrival_time</span><span class="p">(</span>
-            <span class="n">engine</span><span class="o">=</span><span class="n">engine</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="n">event</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">tmp_target</span><span class="p">)</span>
+            <span class="n">engine</span><span class="o">=</span><span class="n">engine</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="n">event</span><span class="p">,</span>
+            <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span> <span class="n">wavename</span><span class="o">=</span><span class="n">wavename</span><span class="p">)</span>
 
         <span class="n">ctrace</span> <span class="o">=</span> <span class="n">tr</span><span class="o">.</span><span class="n">chop</span><span class="p">(</span>
             <span class="n">tmin</span><span class="o">=</span><span class="n">tr</span><span class="o">.</span><span class="n">tmin</span><span class="p">,</span>
@@ -360,8 +356,8 @@
     <span class="k">return</span> <span class="n">sensitivity_param_trcs</span>
 
 
-<div class="viewcode-block" id="seis_cov_velocity_models"><a class="viewcode-back" href="../api.html#covariance.seis_cov_velocity_models">[docs]</a><span class="k">def</span> <span class="nf">seis_cov_velocity_models</span><span class="p">(</span><span class="n">engine</span><span class="p">,</span> <span class="n">sources</span><span class="p">,</span> <span class="n">targets</span><span class="p">,</span>
-                              <span class="n">arrival_taper</span><span class="p">,</span> <span class="n">filterer</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<div class="viewcode-block" id="seismic_cov_velocity_models"><a class="viewcode-back" href="../api.html#covariance.seismic_cov_velocity_models">[docs]</a><span class="k">def</span> <span class="nf">seismic_cov_velocity_models</span><span class="p">(</span><span class="n">engine</span><span class="p">,</span> <span class="n">sources</span><span class="p">,</span> <span class="n">targets</span><span class="p">,</span>
+                  <span class="n">arrival_taper</span><span class="p">,</span> <span class="n">wavename</span><span class="p">,</span> <span class="n">filterer</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    Calculate model prediction uncertainty matrix with respect to uncertainties</span>
 <span class="sd">    in the velocity model for station and channel.</span>
@@ -393,23 +389,24 @@
     <span class="n">reference_taperer</span> <span class="o">=</span> <span class="n">heart</span><span class="o">.</span><span class="n">get_phase_taperer</span><span class="p">(</span>
         <span class="n">engine</span><span class="p">,</span>
         <span class="n">sources</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-        <span class="n">ref_target</span><span class="p">,</span>
-        <span class="n">arrival_taper</span><span class="p">)</span>
+        <span class="n">wavename</span><span class="o">=</span><span class="n">wavename</span><span class="p">,</span>
+        <span class="n">target</span><span class="o">=</span><span class="n">ref_target</span><span class="p">,</span>
+        <span class="n">arrival_taper</span><span class="o">=</span><span class="n">arrival_taper</span><span class="p">)</span>
 
     <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
     <span class="n">synths</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">heart</span><span class="o">.</span><span class="n">seis_synthetics</span><span class="p">(</span>
-        <span class="n">engine</span><span class="p">,</span> <span class="n">sources</span><span class="p">,</span> <span class="n">targets</span><span class="p">,</span>
-        <span class="n">arrival_taper</span><span class="p">,</span>
-        <span class="n">filterer</span><span class="p">,</span> <span class="n">nprocs</span><span class="o">=</span><span class="n">n_jobs</span><span class="p">,</span>
+        <span class="n">engine</span><span class="o">=</span><span class="n">engine</span><span class="p">,</span> <span class="n">sources</span><span class="o">=</span><span class="n">sources</span><span class="p">,</span> <span class="n">targets</span><span class="o">=</span><span class="n">targets</span><span class="p">,</span>
+        <span class="n">arrival_taper</span><span class="o">=</span><span class="n">arrival_taper</span><span class="p">,</span> <span class="n">wavename</span><span class="o">=</span><span class="n">wavename</span><span class="p">,</span>
+        <span class="n">filterer</span><span class="o">=</span><span class="n">filterer</span><span class="p">,</span> <span class="n">nprocs</span><span class="o">=</span><span class="n">n_jobs</span><span class="p">,</span>
         <span class="n">reference_taperer</span><span class="o">=</span><span class="n">reference_taperer</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="n">plot</span><span class="p">,</span>
-        <span class="n">pre_stack_cut</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">pre_stack_cut</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">outmode</span><span class="o">=</span><span class="s1">&#39;stacked_traces&#39;</span><span class="p">)</span>
     <span class="n">t1</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Trace generation time </span><span class="si">%f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">t1</span> <span class="o">-</span> <span class="n">t0</span><span class="p">))</span>
 
     <span class="k">return</span> <span class="n">num</span><span class="o">.</span><span class="n">cov</span><span class="p">(</span><span class="n">synths</span><span class="p">,</span> <span class="n">rowvar</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="geo_cov_velocity_models"><a class="viewcode-back" href="../api.html#covariance.geo_cov_velocity_models">[docs]</a><span class="k">def</span> <span class="nf">geo_cov_velocity_models</span><span class="p">(</span>
+<div class="viewcode-block" id="geodetic_cov_velocity_models"><a class="viewcode-back" href="../api.html#covariance.geodetic_cov_velocity_models">[docs]</a><span class="k">def</span> <span class="nf">geodetic_cov_velocity_models</span><span class="p">(</span>
     <span class="n">engine</span><span class="p">,</span> <span class="n">sources</span><span class="p">,</span> <span class="n">targets</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculate model prediction uncertainty matrix with respect to uncertainties</span>
@@ -449,7 +446,7 @@
     <span class="k">return</span> <span class="n">num</span><span class="o">.</span><span class="n">cov</span><span class="p">(</span><span class="n">synths</span><span class="p">,</span> <span class="n">rowvar</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="geo_cov_velocity_models_pscmp"><a class="viewcode-back" href="../api.html#covariance.geo_cov_velocity_models_pscmp">[docs]</a><span class="k">def</span> <span class="nf">geo_cov_velocity_models_pscmp</span><span class="p">(</span>
+<div class="viewcode-block" id="geodetic_cov_velocity_models_pscmp"><a class="viewcode-back" href="../api.html#covariance.geodetic_cov_velocity_models_pscmp">[docs]</a><span class="k">def</span> <span class="nf">geodetic_cov_velocity_models_pscmp</span><span class="p">(</span>
     <span class="n">store_superdir</span><span class="p">,</span> <span class="n">crust_inds</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">sources</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculate model prediction uncertainty matrix with respect to uncertainties</span>

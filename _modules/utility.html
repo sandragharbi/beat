@@ -143,8 +143,8 @@
 <span class="sd">and many more ...</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-
 <span class="kn">import</span> <span class="nn">logging</span>
+
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">re</span>
 <span class="kn">import</span> <span class="nn">collections</span>
@@ -155,6 +155,7 @@
 <span class="kn">from</span> <span class="nn">pyrocko.cake</span> <span class="k">import</span> <span class="n">m2d</span><span class="p">,</span> <span class="n">LayeredModel</span><span class="p">,</span> <span class="n">read_nd_model_str</span>
 
 <span class="kn">from</span> <span class="nn">pyrocko.gf.seismosizer</span> <span class="k">import</span> <span class="n">RectangularSource</span>
+<span class="kn">from</span> <span class="nn">beat.sources</span> <span class="k">import</span> <span class="n">MTSourceWithMagnitude</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">num</span>
 <span class="kn">from</span> <span class="nn">theano</span> <span class="k">import</span> <span class="n">config</span> <span class="k">as</span> <span class="n">tconfig</span>
@@ -164,7 +165,7 @@
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;utility&#39;</span><span class="p">)</span>
 
-<span class="n">DataMap</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;DataMap&#39;</span><span class="p">,</span> <span class="s1">&#39;list_ind, slc, shp, dtype&#39;</span><span class="p">)</span>
+<span class="n">DataMap</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;DataMap&#39;</span><span class="p">,</span> <span class="s1">&#39;list_ind, slc, shp, dtype, name&#39;</span><span class="p">)</span>
 <span class="n">PatchMap</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">namedtuple</span><span class="p">(</span>
     <span class="s1">&#39;PatchMap&#39;</span><span class="p">,</span> <span class="s1">&#39;count, slc, shp, npatches&#39;</span><span class="p">)</span>
 
@@ -229,17 +230,18 @@
         <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">for</span> <span class="n">array</span> <span class="ow">in</span> <span class="n">list_arrays</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">intype</span> <span class="o">==</span> <span class="s1">&#39;tensor&#39;</span><span class="p">:</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="n">array</span><span class="o">.</span><span class="n">name</span>
                 <span class="n">array</span> <span class="o">=</span> <span class="n">array</span><span class="o">.</span><span class="n">tag</span><span class="o">.</span><span class="n">test_value</span>
             <span class="k">elif</span> <span class="n">intype</span> <span class="o">==</span> <span class="s1">&#39;numpy&#39;</span><span class="p">:</span>
-                <span class="k">pass</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;numpy&#39;</span>
 
             <span class="n">slc</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">dim</span> <span class="o">+</span> <span class="n">array</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">vmap</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">DataMap</span><span class="p">(</span>
-                <span class="n">count</span><span class="p">,</span> <span class="n">slc</span><span class="p">,</span> <span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">array</span><span class="o">.</span><span class="n">dtype</span><span class="p">))</span>
+                <span class="n">count</span><span class="p">,</span> <span class="n">slc</span><span class="p">,</span> <span class="n">array</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">array</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">name</span><span class="p">))</span>
             <span class="n">dim</span> <span class="o">+=</span> <span class="n">array</span><span class="o">.</span><span class="n">size</span>
             <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">dimensions</span> <span class="o">=</span> <span class="n">dim</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">=</span> <span class="n">dim</span></div>
 
 
 <div class="viewcode-block" id="ListToArrayBijection"><a class="viewcode-back" href="../api.html#utility.ListToArrayBijection">[docs]</a><span class="k">class</span> <span class="nc">ListToArrayBijection</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -257,6 +259,46 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">ordering</span> <span class="o">=</span> <span class="n">ordering</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">list_arrays</span> <span class="o">=</span> <span class="n">list_arrays</span>
 
+<div class="viewcode-block" id="ListToArrayBijection.dmap"><a class="viewcode-back" href="../api.html#utility.ListToArrayBijection.dmap">[docs]</a>    <span class="k">def</span> <span class="nf">dmap</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dpt</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Maps values from dict space to List space</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        dpt : list</span>
+<span class="sd">            of :class:`numpy.ndarray`</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        point</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">a_list</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">list_arrays</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">list_ind</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ordering</span><span class="o">.</span><span class="n">vmap</span><span class="p">:</span>
+            <span class="n">a_list</span><span class="p">[</span><span class="n">list_ind</span><span class="p">]</span> <span class="o">=</span> <span class="n">dpt</span><span class="p">[</span><span class="n">var</span><span class="p">]</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">a_list</span></div>
+
+<div class="viewcode-block" id="ListToArrayBijection.drmap"><a class="viewcode-back" href="../api.html#utility.ListToArrayBijection.drmap">[docs]</a>    <span class="k">def</span> <span class="nf">drmap</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a_list</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Maps values from List space to dict space</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        list_arrays : list</span>
+<span class="sd">            of :class:`numpy.ndarray`</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        point</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">point</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">for</span> <span class="n">list_ind</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ordering</span><span class="o">.</span><span class="n">vmap</span><span class="p">:</span>
+            <span class="n">point</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">a_list</span><span class="p">[</span><span class="n">list_ind</span><span class="p">]</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">point</span></div>
+
 <div class="viewcode-block" id="ListToArrayBijection.fmap"><a class="viewcode-back" href="../api.html#utility.ListToArrayBijection.fmap">[docs]</a>    <span class="k">def</span> <span class="nf">fmap</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">list_arrays</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Maps values from List space to array space</span>
@@ -272,8 +314,8 @@
 <span class="sd">            single array comprising all the input arrays</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="n">array</span> <span class="o">=</span> <span class="n">num</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ordering</span><span class="o">.</span><span class="n">dimensions</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">list_ind</span><span class="p">,</span> <span class="n">slc</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ordering</span><span class="o">.</span><span class="n">vmap</span><span class="p">:</span>
+        <span class="n">array</span> <span class="o">=</span> <span class="n">num</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ordering</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">list_ind</span><span class="p">,</span> <span class="n">slc</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ordering</span><span class="o">.</span><span class="n">vmap</span><span class="p">:</span>
             <span class="n">array</span><span class="p">[</span><span class="n">slc</span><span class="p">]</span> <span class="o">=</span> <span class="n">list_arrays</span><span class="p">[</span><span class="n">list_ind</span><span class="p">]</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">array</span></div>
 
@@ -292,8 +334,8 @@
 <span class="sd">            single array comprising all the input arrays</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="n">array</span> <span class="o">=</span> <span class="n">num</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">ordering</span><span class="o">.</span><span class="n">dimensions</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
-        <span class="k">for</span> <span class="n">list_ind</span><span class="p">,</span> <span class="n">slc</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ordering</span><span class="o">.</span><span class="n">vmap</span><span class="p">:</span>
+        <span class="n">array</span> <span class="o">=</span> <span class="n">num</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">ordering</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">list_ind</span><span class="p">,</span> <span class="n">slc</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ordering</span><span class="o">.</span><span class="n">vmap</span><span class="p">:</span>
             <span class="n">array</span><span class="p">[</span><span class="n">slc</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">list_arrays</span><span class="p">[</span><span class="n">list_ind</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">array</span></div>
 
@@ -314,7 +356,7 @@
 
         <span class="n">a_list</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">list_arrays</span><span class="p">)</span>
 
-        <span class="k">for</span> <span class="n">list_ind</span><span class="p">,</span> <span class="n">slc</span><span class="p">,</span> <span class="n">shp</span><span class="p">,</span> <span class="n">dtype</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ordering</span><span class="o">.</span><span class="n">vmap</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">list_ind</span><span class="p">,</span> <span class="n">slc</span><span class="p">,</span> <span class="n">shp</span><span class="p">,</span> <span class="n">dtype</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ordering</span><span class="o">.</span><span class="n">vmap</span><span class="p">:</span>
             <span class="n">a_list</span><span class="p">[</span><span class="n">list_ind</span><span class="p">]</span> <span class="o">=</span> <span class="n">num</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span>
                                         <span class="n">array</span><span class="p">)[</span><span class="n">slc</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">shp</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span>
 
@@ -336,7 +378,7 @@
 
         <span class="n">a_list</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">list_arrays</span><span class="p">)</span>
 
-        <span class="k">for</span> <span class="n">list_ind</span><span class="p">,</span> <span class="n">slc</span><span class="p">,</span> <span class="n">shp</span><span class="p">,</span> <span class="n">dtype</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ordering</span><span class="o">.</span><span class="n">vmap</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">list_ind</span><span class="p">,</span> <span class="n">slc</span><span class="p">,</span> <span class="n">shp</span><span class="p">,</span> <span class="n">dtype</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ordering</span><span class="o">.</span><span class="n">vmap</span><span class="p">:</span>
             <span class="n">a_list</span><span class="p">[</span><span class="n">list_ind</span><span class="p">]</span> <span class="o">=</span> <span class="n">tarray</span><span class="p">[</span><span class="n">slc</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">shp</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">dtype</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">a_list</span></div></div>
@@ -368,8 +410,9 @@
     <span class="n">weeded_input_rvs</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">input_rvs</span><span class="p">)</span>
 
     <span class="n">burian</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;</span>
-<span class="s1">        lat lon name stf stf1 stf2 stf_mode magnitude anchor nucleation_x sign</span>
+<span class="s1">        lat lon name stf stf1 stf2 stf_mode moment anchor nucleation_x sign</span>
 <span class="s1">        nucleation_y velocity interpolation decimation_factor npointsources</span>
+<span class="s1">        elevation</span>
 <span class="s1">        &#39;&#39;&#39;</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
 
     <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;geometry&#39;</span><span class="p">:</span>
@@ -438,7 +481,7 @@
 <div class="viewcode-block" id="weed_data_traces"><a class="viewcode-back" href="../api.html#utility.weed_data_traces">[docs]</a><span class="k">def</span> <span class="nf">weed_data_traces</span><span class="p">(</span><span class="n">data_traces</span><span class="p">,</span> <span class="n">stations</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Throw out data traces belonging to stations that are not in the</span>
-<span class="sd">    stations list.</span>
+<span class="sd">    stations list. Keeps list orders!</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -459,9 +502,36 @@
 
     <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">data_traces</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">tr</span><span class="o">.</span><span class="n">station</span> <span class="ow">in</span> <span class="n">station_names</span><span class="p">:</span>
-            <span class="n">weeded_data_traces</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+            <span class="n">weeded_data_traces</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tr</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">weeded_data_traces</span></div>
+
+
+<div class="viewcode-block" id="weed_targets"><a class="viewcode-back" href="../api.html#utility.weed_targets">[docs]</a><span class="k">def</span> <span class="nf">weed_targets</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span> <span class="n">stations</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Throw out targets belonging to stations that are not in the</span>
+<span class="sd">    stations list. Keeps list orders!</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    targets : list</span>
+<span class="sd">        of :class:`pyrocko.gf.targets.Target`</span>
+<span class="sd">    stations : list</span>
+<span class="sd">        of :class:`pyrocko.model.Station`</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    weeded_targets : list</span>
+<span class="sd">        of :class:`pyrocko.gf.targets.Target`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">station_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">station</span><span class="o">.</span><span class="n">station</span> <span class="k">for</span> <span class="n">station</span> <span class="ow">in</span> <span class="n">stations</span><span class="p">]</span>
+
+    <span class="n">weeded_targets</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">target</span> <span class="ow">in</span> <span class="n">targets</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">target</span><span class="o">.</span><span class="n">codes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="n">station_names</span><span class="p">:</span>
+            <span class="n">weeded_targets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">weeded_targets</span></div>
 
 
 <div class="viewcode-block" id="downsample_traces"><a class="viewcode-back" href="../api.html#utility.downsample_traces">[docs]</a><span class="k">def</span> <span class="nf">downsample_traces</span><span class="p">(</span><span class="n">data_traces</span><span class="p">,</span> <span class="n">deltat</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -480,8 +550,8 @@
         <span class="k">if</span> <span class="n">deltat</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">tr</span><span class="o">.</span><span class="n">downsample_to</span><span class="p">(</span><span class="n">deltat</span><span class="p">,</span> <span class="n">snap</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">allow_upsample_max</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
-            <span class="k">except</span> <span class="n">util</span><span class="o">.</span><span class="n">UnavailableDecimation</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Cannot downsample </span><span class="si">%s</span><span class="s1">.</span><span class="si">%s</span><span class="s1">.</span><span class="si">%s</span><span class="s1">.</span><span class="si">%s</span><span class="s1">: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span>
+            <span class="k">except</span> <span class="n">util</span><span class="o">.</span><span class="n">UnavailableDecimation</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;Cannot downsample </span><span class="si">%s</span><span class="s1">.</span><span class="si">%s</span><span class="s1">.</span><span class="si">%s</span><span class="s1">.</span><span class="si">%s</span><span class="s1">: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span>
                                                             <span class="n">tr</span><span class="o">.</span><span class="n">nslc_id</span> <span class="o">+</span> <span class="p">(</span><span class="n">e</span><span class="p">,)))</span>
                 <span class="k">continue</span></div>
 
@@ -616,7 +686,28 @@
     <span class="k">return</span> <span class="n">source_points</span></div>
 
 
-<div class="viewcode-block" id="update_source"><a class="viewcode-back" href="../api.html#utility.update_source">[docs]</a><span class="k">def</span> <span class="nf">update_source</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="join_points"><a class="viewcode-back" href="../api.html#utility.join_points">[docs]</a><span class="k">def</span> <span class="nf">join_points</span><span class="p">(</span><span class="n">ldicts</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Join list of dicts into one dict with concatenating </span>
+<span class="sd">    values of keys that are present in multiple dicts.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">npoints</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ldicts</span><span class="p">)</span>
+    <span class="n">keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">k</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">ldicts</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">iterkeys</span><span class="p">()])</span>
+
+    <span class="n">jpoint</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+        <span class="n">jvar</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">ldicts</span><span class="p">:</span>
+            <span class="n">jvar</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+
+
+        <span class="n">jpoint</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">num</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">jvar</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">jpoint</span></div>
+
+
+<div class="viewcode-block" id="update_source"><a class="viewcode-back" href="../api.html#utility.update_source">[docs]</a><span class="k">def</span> <span class="nf">update_source</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="o">**</span><span class="n">point</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Update source keeping stf and source params seperate.</span>
 <span class="sd">    Modifies input source Object!</span>
@@ -628,7 +719,7 @@
 <span class="sd">        :func:`pymc3.model.Point`</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">for</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="ow">in</span> <span class="n">point</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
         <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">source</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">source</span><span class="o">.</span><span class="n">stf</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">source</span><span class="o">.</span><span class="n">stf</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
@@ -723,7 +814,7 @@
     <span class="k">return</span> <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span></div>
 
 
-<div class="viewcode-block" id="setup_logging"><a class="viewcode-back" href="../api.html#utility.setup_logging">[docs]</a><span class="k">def</span> <span class="nf">setup_logging</span><span class="p">(</span><span class="n">project_dir</span><span class="p">,</span> <span class="n">levelname</span><span class="p">):</span>
+<div class="viewcode-block" id="setup_logging"><a class="viewcode-back" href="../api.html#utility.setup_logging">[docs]</a><span class="k">def</span> <span class="nf">setup_logging</span><span class="p">(</span><span class="n">project_dir</span><span class="p">,</span> <span class="n">levelname</span><span class="p">,</span> <span class="n">logfilename</span><span class="o">=</span><span class="s1">&#39;BEAT_log.txt&#39;</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Setup function for handling BEAT logging. The logfile &#39;BEAT_log.txt&#39; is</span>
 <span class="sd">    saved in the &#39;project_dir&#39;.</span>
@@ -742,20 +833,28 @@
               <span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="n">logging</span><span class="o">.</span><span class="n">ERROR</span><span class="p">,</span>
               <span class="s1">&#39;critical&#39;</span><span class="p">:</span> <span class="n">logging</span><span class="o">.</span><span class="n">CRITICAL</span><span class="p">}</span>
 
-    <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span>
-        <span class="n">level</span><span class="o">=</span><span class="n">levels</span><span class="p">[</span><span class="n">levelname</span><span class="p">],</span>
-        <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%(asctime)s</span><span class="s1"> - </span><span class="si">%(name)s</span><span class="s1"> - </span><span class="si">%(levelname)s</span><span class="s1"> </span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">,</span>
-        <span class="n">filename</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">project_dir</span><span class="p">,</span> <span class="s1">&#39;BEAT_log.txt&#39;</span><span class="p">),</span>
-        <span class="n">filemode</span><span class="o">=</span><span class="s1">&#39;a&#39;</span><span class="p">)</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">project_dir</span><span class="p">,</span> <span class="n">logfilename</span><span class="p">)</span>
 
+    <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span>
+    <span class="c1"># remove existing handlers</span>
+    <span class="k">for</span> <span class="n">handler</span> <span class="ow">in</span> <span class="n">logger</span><span class="o">.</span><span class="n">handlers</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">removeHandler</span><span class="p">(</span><span class="n">handler</span><span class="p">)</span>
+
+    <span class="c1"># setup file handler</span>
+    <span class="n">fhandler</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">FileHandler</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;a&#39;</span><span class="p">)</span>
+    <span class="n">fformatter</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">Formatter</span><span class="p">(</span>
+        <span class="s1">&#39;</span><span class="si">%(asctime)s</span><span class="s1"> - </span><span class="si">%(name)s</span><span class="s1"> - </span><span class="si">%(levelname)s</span><span class="s1"> - </span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">fhandler</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">fformatter</span><span class="p">)</span>
+    <span class="n">fhandler</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">levels</span><span class="p">[</span><span class="n">levelname</span><span class="p">])</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">fhandler</span><span class="p">)</span>
+
+    <span class="c1"># setup screen handler</span>
     <span class="n">console</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">StreamHandler</span><span class="p">()</span>
     <span class="n">console</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">levels</span><span class="p">[</span><span class="n">levelname</span><span class="p">])</span>
-
-    <span class="n">formatter</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">Formatter</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%(name)-12s</span><span class="s1"> - </span><span class="si">%(levelname)-8s</span><span class="s1"> </span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">)</span>
-
-    <span class="n">console</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">formatter</span><span class="p">)</span>
-
-    <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">console</span><span class="p">)</span></div>
+    <span class="n">cformatter</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">Formatter</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%(name)-12s</span><span class="s1"> - </span><span class="si">%(levelname)-8s</span><span class="s1"> </span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">console</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">cformatter</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">console</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">levels</span><span class="p">[</span><span class="n">levelname</span><span class="p">])</span></div>
 
 
 <div class="viewcode-block" id="search_catalog"><a class="viewcode-back" href="../api.html#utility.search_catalog">[docs]</a><span class="k">def</span> <span class="nf">search_catalog</span><span class="p">(</span><span class="n">date</span><span class="p">,</span> <span class="n">min_magnitude</span><span class="p">,</span> <span class="n">dayrange</span><span class="o">=</span><span class="mf">1.</span><span class="p">):</span>
@@ -794,9 +893,9 @@
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">events</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-            <span class="s1">&#39;More than one event from that date with specified magnitude&#39;</span>
-            <span class="s1">&#39;found! Please copy the relevant event information to the&#39;</span>
-            <span class="s1">&#39;configuration file file!&#39;</span><span class="p">)</span>
+            <span class="s1">&#39;More than one event from that date with specified magnitude &#39;</span>
+            <span class="s1">&#39;found! Please copy the relevant event information to the &#39;</span>
+            <span class="s1">&#39;configuration file!&#39;</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">events</span><span class="p">:</span>
             <span class="nb">print</span> <span class="n">event</span>
 
@@ -919,8 +1018,8 @@
 <span class="sd">        of objects to save pickle</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">outpath</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-        <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">outlist</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span></div>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">outpath</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">outlist</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">protocol</span><span class="o">=</span><span class="n">pickle</span><span class="o">.</span><span class="n">HIGHEST_PROTOCOL</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="load_objects"><a class="viewcode-back" href="../api.html#utility.load_objects">[docs]</a><span class="k">def</span> <span class="nf">load_objects</span><span class="p">(</span><span class="n">loadpath</span><span class="p">):</span>
@@ -1176,7 +1275,7 @@
         <span class="n">d</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">sort</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">tervalues</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">itervalues</span><span class="p">():</span>
             <span class="n">v</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">sort</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">d</span></div>
@@ -1194,7 +1293,6 @@
 <span class="sd">    -------</span>
 <span class="sd">    dict with array indexes</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
     <span class="n">mean_idx</span> <span class="o">=</span> <span class="p">(</span><span class="n">num</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">llk</span> <span class="o">-</span> <span class="n">llk</span><span class="o">.</span><span class="n">mean</span><span class="p">()))</span><span class="o">.</span><span class="n">argmin</span><span class="p">()</span>
     <span class="n">min_idx</span> <span class="o">=</span> <span class="p">(</span><span class="n">num</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">llk</span> <span class="o">-</span> <span class="n">llk</span><span class="o">.</span><span class="n">min</span><span class="p">()))</span><span class="o">.</span><span class="n">argmin</span><span class="p">()</span>
     <span class="n">max_idx</span> <span class="o">=</span> <span class="p">(</span><span class="n">num</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">llk</span> <span class="o">-</span> <span class="n">llk</span><span class="o">.</span><span class="n">max</span><span class="p">()))</span><span class="o">.</span><span class="n">argmin</span><span class="p">()</span>
