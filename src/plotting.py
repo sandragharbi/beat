@@ -1,5 +1,6 @@
 from pyrocko import cake_plot as cp
 from pyrocko import gf
+from pyrocko.cake import d2m
 from pymc3 import plots as pmp
 
 import math
@@ -1843,27 +1844,30 @@ def draw_static_dist(problem, po):
 
 
 def station_plot(
-    stations, event, station_color='red', station_size='6', filename='station_plot', format='pdf'):
+    stations, event, station_color='red', station_size='6', filename='station_plot',
+    projection='E', radius=2500. * km, format='pdf'):
     """
     Station plot in global equidistant azimuthal projection.
     """
-
+    print event
     m = Map(
         lat=event.lat,
         lon=event.lon,
-        radius=10000 * km,
+        radius=radius,
         width=17.,
         height=17.,
-        projection='E',
+    #    projection=projection,
         show_grid=True,
-        show_topo=True,
-        illuminate=True,
+        show_topo=False,
+        illuminate=False,
         illuminate_factor_ocean=0.15,
         show_rivers=False,
-        show_plates=False)
+        show_plates=False,
+        show_center_mark=True)
 
     lats = [s.lat for s in stations]
     lons = [s.lon for s in stations]
+    print 'lalo', lats, lons
  
     m.gmt.psxy(
         in_columns=(lons, lats),
@@ -1871,6 +1875,7 @@ def station_plot(
         G=station_color,
         *m.jxyr)
 
+    print m.jxyr
 
     for s in stations:
         m.add_label(s.lat, s.lon, '%s.%s' % (s.network, s.station))
@@ -1882,6 +1887,8 @@ def station_plot(
 
 def draw_stations(problem, po):
 
+    mode = problem.config.problem_config.mode
+
     datatype = 'seismic'
 
     if datatype not in problem.composites.keys():
@@ -1889,10 +1896,30 @@ def draw_stations(problem, po):
 
     sc = problem.composites[datatype]
 
-    station_plot(sc.get_unique_stations(), sc.event,
-        station_color='red', station_size='6',
-        filename='station_plot',
-        format=po.outformat) 
+    for wmap in sc.wavemaps:
+        maxdist = num.maximum(*wmap.config.distances)
+        if maxdist < 30.:
+            projection = 'A'
+            radius = maxdist * d2m
+        else: 
+            projection = 'E'
+            radius = 10000. * km
+
+        print 'radius', radius
+        
+        outpath = os.path.join(
+            problem.config.project_dir,
+            mode, po.figure_dir, 'station_plot_%s' % wmap.name)
+
+        station_plot(
+            stations=wmap.stations,
+            event=sc.event,
+            projection=projection,
+            radius=radius,
+            station_color='red',
+            station_size='6',
+            filename=outpath,
+            format=po.outformat) 
 
 
 plots_catalog = {
