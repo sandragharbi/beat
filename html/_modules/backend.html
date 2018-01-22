@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>backend &#8212; beat 1.0beta documentation</title>
+    <link rel="stylesheet" href="../_static/pydoctheme.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0beta',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/sidebar.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <link rel="shortcut icon" type="image/png" href="../_static/favicon.png" />
+    <meta name="viewport" content="width=device-width,initial-scale=0.8">
+    
+    
+      <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto+Slab">
+    
+    
+    <script type="text/javascript" src="../_static/jquery.gifplayer.js"></script>
+    <link rel="stylesheet" type="text/css" href="../_static/gifplayer.css">
+    <!-- Piwik -->
+    <script type="text/javascript">
+      var _paq = _paq || [];
+      /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
+      _paq.push(['trackPageView']);
+      _paq.push(['enableLinkTracking']);
+      (function() {
+        var u="//pyrocko.org/pwk/";
+        _paq.push(['setTrackerUrl', u+'piwik.php']);
+        _paq.push(['setSiteId', '1']);
+        var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+        g.type='text/javascript'; g.async=true; g.defer=true; g.src=u+'piwik.js'; s.parentNode.insertBefore(g,s);
+      })();
+    </script>
+    <noscript>
+    <img src="https://pyrocko.org/pwk/piwik.php?idsite=1&rec=1" style="border:0" alt="" />
+    </noscript>
+
+  </head>
+  <body>
+
+    <div class="related">
+      <h3>Navigation</h3>
+        <ul>
+          <li class="responsive-menu"><a href="#sidebar-anchor" title="Navigation">&#9776;</a></li>
+          <li>
+            <img src='https://pyrocko.org/_static/pyrocko.svg' class='pyrocko-button' onclick="window.location = 'https://pyrocko.org';">
+          </li>
+           &#187;
+          <li>
+              <a href="../index.html">beat 1.0beta documentation</a> &#187;
+          </li>
+            <li><a href="index.html" accesskey="U">Module code</a> &#187;</li> 
+        </ul>
+    </div>
+    
+
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for backend</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Text file trace backend modified from pymc3 to work efficiently with</span>
+<span class="sd">SMC</span>
+
+<span class="sd">Store sampling values as CSV files.</span>
+
+<span class="sd">File format</span>
+<span class="sd">-----------</span>
+
+<span class="sd">Sampling values for each chain are saved in a separate file (under a</span>
+<span class="sd">directory specified by the `name` argument).  The rows correspond to</span>
+<span class="sd">sampling iterations.  The column names consist of variable names and</span>
+<span class="sd">index labels.  For example, the heading</span>
+
+<span class="sd">  x,y__0_0,y__0_1,y__1_0,y__1_1,y__2_0,y__2_1</span>
+
+<span class="sd">represents two variables, x and y, where x is a scalar and y has a</span>
+<span class="sd">shape of (3, 2).</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">glob</span> <span class="k">import</span> <span class="n">glob</span>
+
+<span class="kn">import</span> <span class="nn">itertools</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+
+<span class="kn">import</span> <span class="nn">pymc3</span>
+<span class="kn">from</span> <span class="nn">pymc3.model</span> <span class="k">import</span> <span class="n">modelcontext</span>
+<span class="kn">from</span> <span class="nn">pymc3.backends</span> <span class="k">import</span> <span class="n">base</span><span class="p">,</span> <span class="n">ndarray</span>
+<span class="kn">from</span> <span class="nn">pymc3.backends</span> <span class="k">import</span> <span class="n">tracetab</span> <span class="k">as</span> <span class="n">ttab</span>
+<span class="kn">from</span> <span class="nn">pymc3.blocking</span> <span class="k">import</span> <span class="n">DictToArrayBijection</span><span class="p">,</span> <span class="n">ArrayOrdering</span>
+
+<span class="kn">from</span> <span class="nn">beat</span> <span class="k">import</span> <span class="n">utility</span><span class="p">,</span> <span class="n">config</span>
+<span class="kn">from</span> <span class="nn">pyrocko</span> <span class="k">import</span> <span class="n">util</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;backend&#39;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="ArrayStepSharedLLK"><a class="viewcode-back" href="../api.html#backend.ArrayStepSharedLLK">[docs]</a><span class="k">class</span> <span class="nc">ArrayStepSharedLLK</span><span class="p">(</span><span class="n">pymc3</span><span class="o">.</span><span class="n">arraystep</span><span class="o">.</span><span class="n">BlockedStep</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Modified ArrayStepShared To handle returned larger point including the</span>
+<span class="sd">    likelihood values.</span>
+<span class="sd">    Takes additionally a list of output vars including the likelihoods.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    vars : list</span>
+<span class="sd">        variables to be sampled</span>
+<span class="sd">    out_vars : list</span>
+<span class="sd">        variables to be stored in the traces</span>
+<span class="sd">    shared : dict</span>
+<span class="sd">        theano variable -&gt; shared variables</span>
+<span class="sd">    blocked : boolen</span>
+<span class="sd">        (default True)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">vars</span><span class="p">,</span> <span class="n">out_vars</span><span class="p">,</span> <span class="n">shared</span><span class="p">,</span> <span class="n">blocked</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vars</span> <span class="o">=</span> <span class="nb">vars</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ordering</span> <span class="o">=</span> <span class="n">ArrayOrdering</span><span class="p">(</span><span class="nb">vars</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lordering</span> <span class="o">=</span> <span class="n">utility</span><span class="o">.</span><span class="n">ListArrayOrdering</span><span class="p">(</span><span class="n">out_vars</span><span class="p">,</span> <span class="n">intype</span><span class="o">=</span><span class="s1">&#39;tensor&#39;</span><span class="p">)</span>
+        <span class="n">lpoint</span> <span class="o">=</span> <span class="p">[</span><span class="n">var</span><span class="o">.</span><span class="n">tag</span><span class="o">.</span><span class="n">test_value</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">out_vars</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shared</span> <span class="o">=</span> <span class="p">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="n">shared</span> <span class="k">for</span> <span class="n">var</span><span class="p">,</span> <span class="n">shared</span> <span class="ow">in</span> <span class="n">shared</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">blocked</span> <span class="o">=</span> <span class="n">blocked</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bij</span> <span class="o">=</span> <span class="n">DictToArrayBijection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ordering</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">population</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lij</span> <span class="o">=</span> <span class="n">utility</span><span class="o">.</span><span class="n">ListToArrayBijection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lordering</span><span class="p">,</span> <span class="n">lpoint</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__getstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span>
+
+    <span class="k">def</span> <span class="nf">__setstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">point</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">var</span><span class="p">,</span> <span class="n">share</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">shared</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">share</span><span class="o">.</span><span class="n">container</span><span class="o">.</span><span class="n">storage</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">point</span><span class="p">[</span><span class="n">var</span><span class="p">]</span>
+
+        <span class="n">apoint</span><span class="p">,</span> <span class="n">alist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">astep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bij</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">point</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">bij</span><span class="o">.</span><span class="n">rmap</span><span class="p">(</span><span class="n">apoint</span><span class="p">),</span> <span class="n">alist</span></div>
+
+
+<div class="viewcode-block" id="BaseSMCTrace"><a class="viewcode-back" href="../api.html#backend.BaseSMCTrace">[docs]</a><span class="k">class</span> <span class="nc">BaseSMCTrace</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Base SMC trace object</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    name : str</span>
+<span class="sd">        Name of backend</span>
+<span class="sd">    model : Model</span>
+<span class="sd">        If None, the model is taken from the `with` context.</span>
+<span class="sd">    vars : list of variables</span>
+<span class="sd">        Sampling values will be stored for these variables. If None,</span>
+<span class="sd">        `model.unobserved_RVs` is used.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="nb">vars</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">modelcontext</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
+
+        <span class="k">if</span> <span class="nb">vars</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="nb">vars</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">unobserved_RVs</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">vars</span> <span class="o">=</span> <span class="nb">vars</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">varnames</span> <span class="o">=</span> <span class="p">[</span><span class="n">var</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="nb">vars</span><span class="p">]</span>
+
+        <span class="c1">## Get variable shapes. Most backends will need this</span>
+        <span class="c1">## information.</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">var_shapes_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">var</span><span class="o">.</span><span class="n">tag</span><span class="o">.</span><span class="n">test_value</span><span class="o">.</span><span class="n">shape</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="nb">vars</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">var_dtypes_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">var</span><span class="o">.</span><span class="n">tag</span><span class="o">.</span><span class="n">test_value</span><span class="o">.</span><span class="n">dtype</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="nb">vars</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">var_shapes</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">varnames</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_shapes_list</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">var_dtypes</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">varnames</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_dtypes_list</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">chain</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="nb">slice</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_slice</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">point</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">idx</span><span class="p">))</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">):</span>  <span class="c1"># Passed variable or variable name.</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Can only index with slice or integer&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__getstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span>
+
+    <span class="k">def</span> <span class="nf">__setstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">state</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TextChain"><a class="viewcode-back" href="../api.html#backend.TextChain">[docs]</a><span class="k">class</span> <span class="nc">TextChain</span><span class="p">(</span><span class="n">BaseSMCTrace</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Text trace object</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    name : str</span>
+<span class="sd">        Name of directory to store text files</span>
+<span class="sd">    model : Model</span>
+<span class="sd">        If None, the model is taken from the `with` context.</span>
+<span class="sd">    vars : list of variables</span>
+<span class="sd">        Sampling values will be stored for these variables. If None,</span>
+<span class="sd">        `model.unobserved_RVs` is used.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="nb">vars</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">TextChain</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="nb">vars</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">flat_names</span> <span class="o">=</span> <span class="p">{</span><span class="n">v</span><span class="p">:</span> <span class="n">ttab</span><span class="o">.</span><span class="n">create_flat_names</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">shape</span><span class="p">)</span>
+                           <span class="k">for</span> <span class="n">v</span><span class="p">,</span> <span class="n">shape</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_shapes</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">corrupted_flag</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="c1">## Sampling methods</span>
+
+<div class="viewcode-block" id="TextChain.setup"><a class="viewcode-back" href="../api.html#backend.TextChain.setup">[docs]</a>    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">draws</span><span class="p">,</span> <span class="n">chain</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Perform chain-specific setup.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        draws : int</span>
+<span class="sd">            Expected number of draws</span>
+<span class="sd">        chain : int</span>
+<span class="sd">            Chain number</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;SetupTrace: Chain_</span><span class="si">%i</span><span class="s1"> step_</span><span class="si">%i</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">chain</span><span class="p">,</span> <span class="n">draws</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">chain</span> <span class="o">=</span> <span class="n">chain</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;chain-</span><span class="si">{}</span><span class="s1">.csv&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">chain</span><span class="p">))</span>
+
+        <span class="n">cnames</span> <span class="o">=</span> <span class="p">[</span><span class="n">fv</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">varnames</span> <span class="k">for</span> <span class="n">fv</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">flat_names</span><span class="p">[</span><span class="n">v</span><span class="p">]]</span>
+
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
+            <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cnames</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TextChain.record"><a class="viewcode-back" href="../api.html#backend.TextChain.record">[docs]</a>    <span class="k">def</span> <span class="nf">record</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lpoint</span><span class="p">,</span> <span class="n">draw</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Record results of a sampling iteration.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        lpoint : List of variable values</span>
+<span class="sd">            Values mapped to variable names</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">columns</span> <span class="o">=</span> <span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="o">.</span><span class="n">from_iterable</span><span class="p">(</span>
+            <span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="o">.</span><span class="n">ravel</span><span class="p">())</span> <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">lpoint</span><span class="p">)</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Writing...: Chain_</span><span class="si">%i</span><span class="s1"> step_</span><span class="si">%i</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">chain</span><span class="p">,</span> <span class="n">draw</span><span class="p">))</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
+            <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">columns</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_load_df</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">pd</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">EmptyDataError</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Trace </span><span class="si">%s</span><span class="s1"> is empty and needs to be resampled!&#39;</span> <span class="o">%</span> \
+                    <span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">corrupted_flag</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">except</span> <span class="n">pd</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">common</span><span class="o">.</span><span class="n">CParserError</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Trace </span><span class="si">%s</span><span class="s1"> has wrong size!&#39;</span> <span class="o">%</span> \
+                    <span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">corrupted_flag</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">0</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_load_df</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+<div class="viewcode-block" id="TextChain.get_values"><a class="viewcode-back" href="../api.html#backend.TextChain.get_values">[docs]</a>    <span class="k">def</span> <span class="nf">get_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">varname</span><span class="p">,</span> <span class="n">burn</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">thin</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get values from trace.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        varname : str</span>
+<span class="sd">            Variable name for which values are to be retrieved.</span>
+<span class="sd">        burn : int</span>
+<span class="sd">            Burn-in samples from trace. This is the number of samples to be</span>
+<span class="sd">            thrown out from the start of the trace</span>
+<span class="sd">        thin : int</span>
+<span class="sd">            Nuber of thinning samples. Throw out every &#39;thin&#39; sample of the</span>
+<span class="sd">            trace.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        :class:`numpy.array`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_load_df</span><span class="p">()</span>
+        <span class="n">var_df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">flat_names</span><span class="p">[</span><span class="n">varname</span><span class="p">]]</span>
+        <span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_shapes</span><span class="p">[</span><span class="n">varname</span><span class="p">]</span>
+        <span class="n">vals</span> <span class="o">=</span> <span class="n">var_df</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">vals</span><span class="p">[</span><span class="n">burn</span><span class="p">::</span><span class="n">thin</span><span class="p">]</span></div>
+
+    <span class="k">def</span> <span class="nf">_slice</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">idx</span><span class="o">.</span><span class="n">stop</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Stop value in slice not supported.&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ndarray</span><span class="o">.</span><span class="n">_slice_as_ndarray</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span>
+
+<div class="viewcode-block" id="TextChain.point"><a class="viewcode-back" href="../api.html#backend.TextChain.point">[docs]</a>    <span class="k">def</span> <span class="nf">point</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get point of current chain with variables names as keys.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        idx : int</span>
+<span class="sd">            Index of the nth step of the chain</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dictionary of point values</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_load_df</span><span class="p">()</span>
+        <span class="n">pt</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">varname</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">varnames</span><span class="p">:</span>
+            <span class="n">vals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">flat_names</span><span class="p">[</span><span class="n">varname</span><span class="p">]]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+            <span class="n">pt</span><span class="p">[</span><span class="n">varname</span><span class="p">]</span> <span class="o">=</span> <span class="n">vals</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_shapes</span><span class="p">[</span><span class="n">varname</span><span class="p">])</span><span class="o">.</span><span class="n">as_matrix</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">pt</span></div></div>
+
+
+<span class="k">class</span> <span class="nc">TextStage</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_dir</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">base_dir</span> <span class="o">=</span> <span class="n">base_dir</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">project_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">base_dir</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">base_dir</span><span class="p">)</span>
+        <span class="n">util</span><span class="o">.</span><span class="n">ensuredir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_dir</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">stage_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stage</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_dir</span><span class="p">,</span> <span class="s1">&#39;stage_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">stage</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">stage_number</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stage_path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Inverse function of TextStage.path</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">stage_path</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">highest_sampled_stage</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return stage number of stage that has been sampled before the final</span>
+<span class="sd">        stage.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        stage number : int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stage_number</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">glob</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stage_path</span><span class="p">(</span><span class="s1">&#39;*&#39;</span><span class="p">)))</span>
+
+    <span class="k">def</span> <span class="nf">atmip_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stage_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Consistent naming for atmip params.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stage_path</span><span class="p">(</span><span class="n">stage_number</span><span class="p">),</span> <span class="n">config</span><span class="o">.</span><span class="n">sample_p_outname</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">load_sampler_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stage_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Load saved parameters from last sampled stage.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        stage number : int</span>
+<span class="sd">            of stage number or -1 for last stage</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">stage_number</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atmip_path</span><span class="p">(</span><span class="n">stage_number</span><span class="p">)):</span>
+                <span class="n">prev</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">highest_sampled_stage</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">prev</span> <span class="o">=</span> <span class="n">stage_number</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">prev</span> <span class="o">=</span> <span class="n">stage_number</span> <span class="o">-</span> <span class="mi">1</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Loading parameters from completed stage </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prev</span><span class="p">))</span>
+        <span class="n">step</span><span class="p">,</span> <span class="n">updates</span> <span class="o">=</span> <span class="n">utility</span><span class="o">.</span><span class="n">load_objects</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atmip_path</span><span class="p">(</span><span class="n">prev</span><span class="p">))</span>
+        <span class="n">step</span><span class="o">.</span><span class="n">stage</span> <span class="o">=</span> <span class="n">stage_number</span>
+        <span class="k">return</span> <span class="n">step</span><span class="p">,</span> <span class="n">updates</span>
+
+    <span class="k">def</span> <span class="nf">dump_atmip_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stage_number</span><span class="p">,</span> <span class="n">outlist</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Save atmip params to file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">utility</span><span class="o">.</span><span class="n">dump_objects</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atmip_path</span><span class="p">(</span><span class="n">stage_number</span><span class="p">),</span> <span class="n">outlist</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">clean_directory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stage</span><span class="p">,</span> <span class="n">chains</span><span class="p">,</span> <span class="n">rm_flag</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Optionally remove directory for the stage.</span>
+<span class="sd">        Does nothing if rm_flag is False.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">stage_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stage_path</span><span class="p">(</span><span class="n">stage</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">rm_flag</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">stage_path</span><span class="p">):</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                    <span class="s1">&#39;Removing previous sampling results ... </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">stage_path</span><span class="p">)</span>
+                <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">stage_path</span><span class="p">)</span>
+            <span class="n">chains</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">stage_path</span><span class="p">):</span>
+            <span class="n">chains</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">chains</span>
+
+    <span class="k">def</span> <span class="nf">load_multitrace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stage</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Load TextChain database.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        name : str</span>
+<span class="sd">            Name of directory with files (one per chain)</span>
+<span class="sd">        model : Model</span>
+<span class="sd">            If None, the model is taken from the `with` context.</span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        A :class:`pymc3.backend.base.MultiTrace` instance</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">dirname</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stage_path</span><span class="p">(</span><span class="n">stage</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">load_multitrace</span><span class="p">(</span><span class="n">dirname</span><span class="o">=</span><span class="n">dirname</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">recover_existing_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stage</span><span class="p">,</span> <span class="n">draws</span><span class="p">,</span> <span class="n">step</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">stage_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stage_path</span><span class="p">(</span><span class="n">stage</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">stage_path</span><span class="p">):</span>
+            <span class="c1"># load incomplete stage results</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Reloading existing results ...&#39;</span><span class="p">)</span>
+            <span class="n">mtrace</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_multitrace</span><span class="p">(</span><span class="n">stage</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">mtrace</span><span class="o">.</span><span class="n">chains</span><span class="p">):</span>
+                <span class="c1"># continue sampling if traces exist</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Checking for corrupted files ...&#39;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">check_multitrace</span><span class="p">(</span>
+                    <span class="n">mtrace</span><span class="p">,</span> <span class="n">draws</span><span class="o">=</span><span class="n">draws</span><span class="p">,</span> <span class="n">n_chains</span><span class="o">=</span><span class="n">step</span><span class="o">.</span><span class="n">n_chains</span><span class="p">)</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Init new trace!&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+
+<div class="viewcode-block" id="load_multitrace"><a class="viewcode-back" href="../api.html#backend.load_multitrace">[docs]</a><span class="k">def</span> <span class="nf">load_multitrace</span><span class="p">(</span><span class="n">dirname</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Load TextChain database.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dirname : str</span>
+<span class="sd">        Name of directory with files (one per chain)</span>
+<span class="sd">    model : Model</span>
+<span class="sd">        If None, the model is taken from the `with` context.</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    A :class:`pymc3.backend.base.MultiTrace` instance</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Loading multitrace from </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">dirname</span><span class="p">)</span>
+    <span class="n">files</span> <span class="o">=</span> <span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dirname</span><span class="p">,</span> <span class="s1">&#39;chain-*.csv&#39;</span><span class="p">))</span>
+    <span class="n">straces</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+        <span class="n">chain</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">f</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">strace</span> <span class="o">=</span> <span class="n">TextChain</span><span class="p">(</span><span class="n">dirname</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">)</span>
+        <span class="n">strace</span><span class="o">.</span><span class="n">chain</span> <span class="o">=</span> <span class="n">chain</span>
+        <span class="n">strace</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="n">f</span>
+        <span class="n">straces</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">strace</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">base</span><span class="o">.</span><span class="n">MultiTrace</span><span class="p">(</span><span class="n">straces</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="check_multitrace"><a class="viewcode-back" href="../api.html#backend.check_multitrace">[docs]</a><span class="k">def</span> <span class="nf">check_multitrace</span><span class="p">(</span><span class="n">mtrace</span><span class="p">,</span> <span class="n">draws</span><span class="p">,</span> <span class="n">n_chains</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check multitrace for incomplete sampling and return indexes from chains</span>
+<span class="sd">    that need to be resampled.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    mtrace : :class:`pymc3.backend.base.MultiTrace`</span>
+<span class="sd">        Multitrace object containing the sampling traces</span>
+<span class="sd">    draws : int</span>
+<span class="sd">        Number of steps (i.e. chain length for each Markov Chain)</span>
+<span class="sd">    n_chains : int</span>
+<span class="sd">        Number of Markov Chains</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list of indexes for chains that need to be resampled</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">not_sampled_idx</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">chain</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_chains</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">chain</span> <span class="ow">in</span> <span class="n">mtrace</span><span class="o">.</span><span class="n">chains</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">mtrace</span><span class="o">.</span><span class="n">_straces</span><span class="p">[</span><span class="n">chain</span><span class="p">])</span> <span class="o">!=</span> <span class="n">draws</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Trace number </span><span class="si">%i</span><span class="s1"> incomplete&#39;</span> <span class="o">%</span> <span class="n">chain</span><span class="p">)</span>
+                <span class="n">mtrace</span><span class="o">.</span><span class="n">_straces</span><span class="p">[</span><span class="n">chain</span><span class="p">]</span><span class="o">.</span><span class="n">corrupted_flag</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">not_sampled_idx</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">chain</span><span class="p">)</span>
+
+    <span class="n">flag_bool</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">mtrace</span><span class="o">.</span><span class="n">_straces</span><span class="p">[</span><span class="n">chain</span><span class="p">]</span><span class="o">.</span><span class="n">corrupted_flag</span> <span class="k">for</span> <span class="n">chain</span> <span class="ow">in</span> <span class="n">mtrace</span><span class="o">.</span><span class="n">chains</span><span class="p">]</span>
+    <span class="n">corrupted_idx</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">flag_bool</span><span class="p">)</span> <span class="k">if</span> <span class="n">x</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">corrupted_idx</span> <span class="o">+</span> <span class="n">not_sampled_idx</span></div>
+
+
+<div class="viewcode-block" id="get_highest_sampled_stage"><a class="viewcode-back" href="../api.html#backend.get_highest_sampled_stage">[docs]</a><span class="k">def</span> <span class="nf">get_highest_sampled_stage</span><span class="p">(</span><span class="n">homedir</span><span class="p">,</span> <span class="n">return_final</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return stage number of stage that has been sampled before the final stage.</span>
+
+<span class="sd">    Paramaeters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    homedir : str</span>
+<span class="sd">        Directory to the sampled stage results</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    stage number : int</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">stages</span> <span class="o">=</span> <span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">homedir</span><span class="p">,</span> <span class="s1">&#39;stage_*&#39;</span><span class="p">))</span>
+
+    <span class="n">stagenumbers</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">stages</span><span class="p">:</span>
+        <span class="n">stage_ending</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">s</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">stagenumbers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">stage_ending</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;string - Thats the final stage!&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">return_final</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">stage_ending</span>
+
+    <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="n">stagenumbers</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="load_sampler_params"><a class="viewcode-back" href="../api.html#backend.load_sampler_params">[docs]</a><span class="k">def</span> <span class="nf">load_sampler_params</span><span class="p">(</span><span class="n">project_dir</span><span class="p">,</span> <span class="n">stage_number</span><span class="p">,</span> <span class="n">mode</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Load saved parameters from given ATMIP stage.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    project_dir : str</span>
+<span class="sd">        absolute path to directory of BEAT project</span>
+<span class="sd">    stage number : string</span>
+<span class="sd">        of stage number or &#39;final&#39; for last stage</span>
+<span class="sd">    mode : str</span>
+<span class="sd">        problem mode that has been solved (&#39;geometry&#39;, &#39;static&#39;, &#39;kinematic&#39;)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">stage_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">project_dir</span><span class="p">,</span> <span class="n">mode</span><span class="p">,</span> <span class="s1">&#39;stage_</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">stage_number</span><span class="p">,</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">sample_p_outname</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">utility</span><span class="o">.</span><span class="n">load_objects</span><span class="p">(</span><span class="n">stage_path</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="concatenate_traces"><a class="viewcode-back" href="../api.html#backend.concatenate_traces">[docs]</a><span class="k">def</span> <span class="nf">concatenate_traces</span><span class="p">(</span><span class="n">mtraces</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Concatenate a List of MultiTraces with same chain indexes.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">base_traces</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">mtraces</span><span class="p">)</span>
+    <span class="n">cat_trace</span> <span class="o">=</span> <span class="n">base_traces</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="n">cat_dfs</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">chain</span> <span class="ow">in</span> <span class="n">cat_trace</span><span class="o">.</span><span class="n">chains</span><span class="p">:</span>
+        <span class="n">cat_trace</span><span class="o">.</span><span class="n">_straces</span><span class="p">[</span><span class="n">chain</span><span class="p">]</span><span class="o">.</span><span class="n">_load_df</span><span class="p">()</span>
+        <span class="n">cat_dfs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cat_trace</span><span class="o">.</span><span class="n">_straces</span><span class="p">[</span><span class="n">chain</span><span class="p">]</span><span class="o">.</span><span class="n">df</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">mtrace</span> <span class="ow">in</span> <span class="n">base_traces</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">chain</span> <span class="ow">in</span> <span class="n">cat_trace</span><span class="o">.</span><span class="n">chains</span><span class="p">:</span>
+            <span class="n">mtrace</span><span class="o">.</span><span class="n">_straces</span><span class="p">[</span><span class="n">chain</span><span class="p">]</span><span class="o">.</span><span class="n">_load_df</span><span class="p">()</span>
+            <span class="n">cat_dfs</span><span class="p">[</span><span class="n">chain</span><span class="p">]</span> <span class="o">=</span> <span class="n">cat_dfs</span><span class="p">[</span><span class="n">chain</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mtrace</span><span class="o">.</span><span class="n">_straces</span><span class="p">[</span><span class="n">chain</span><span class="p">]</span><span class="o">.</span><span class="n">df</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">chain</span> <span class="ow">in</span> <span class="n">cat_trace</span><span class="o">.</span><span class="n">chains</span><span class="p">:</span>
+        <span class="n">cat_trace</span><span class="o">.</span><span class="n">_straces</span><span class="p">[</span><span class="n">chain</span><span class="p">]</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="n">cat_dfs</span><span class="p">[</span><span class="n">chain</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">cat_trace</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+    <a id="sidebar-anchor"></a>
+    
+<h3><a href="../index.html">Table Of Contents</a></h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../short_installation.html">Short Installation instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Detailed Installation instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../updating.html">Updating beat</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Getting started with BEAT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Scenarios</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+    &nbsp;
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+      </ul>
+    </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Hannes Vasyura-Bathke.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
+    </div>
+  </body>
+</html>
