@@ -543,14 +543,41 @@
         <span class="n">outlist</span> <span class="o">=</span> <span class="p">[</span><span class="n">outv</span><span class="o">.</span><span class="n">type</span><span class="p">()]</span>
         <span class="k">return</span> <span class="n">theano</span><span class="o">.</span><span class="n">Apply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inlist</span><span class="p">,</span> <span class="n">outlist</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">perform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">output</span><span class="p">):</span>
+<div class="viewcode-block" id="Sweeper.perform"><a class="viewcode-back" href="../api.html#theanof.Sweeper.perform">[docs]</a>    <span class="k">def</span> <span class="nf">perform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">output</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return start-times of rupturing patches with respect to</span>
+<span class="sd">        given hypocenter.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        slownesses : float, vector</span>
+<span class="sd">            inverse of the rupture velocity across each patch</span>
+<span class="sd">        nuc_dip : int, scalar</span>
+<span class="sd">            rupture nucleation point on the fault in dip-direction,</span>
+<span class="sd">            index to patch</span>
+<span class="sd">        nuc_strike : int, scalar</span>
+<span class="sd">            rupture nucleation point on the fault in strike-direction,</span>
+<span class="sd">            index to patch</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        starttimes : float, vector</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        Here we call the C-implementation on purpose with swapped</span>
+<span class="sd">        strike and dip directions, because we need the</span>
+<span class="sd">        fault dipping in row directions of the array.</span>
+<span class="sd">        The C-implementation has it along columns!!!</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">slownesses</span><span class="p">,</span> <span class="n">nuc_dip</span><span class="p">,</span> <span class="n">nuc_strike</span> <span class="o">=</span> <span class="n">inputs</span>
         <span class="n">z</span> <span class="o">=</span> <span class="n">output</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Fast sweeping ..</span><span class="si">%s</span><span class="s1">.&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">implementation</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">implementation</span> <span class="o">==</span> <span class="s1">&#39;c&#39;</span><span class="p">:</span>
+            <span class="c1">#</span>
             <span class="n">z</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">fast_sweep</span><span class="o">.</span><span class="n">fast_sweep_ext</span><span class="o">.</span><span class="n">fast_sweep</span><span class="p">(</span>
-                <span class="n">slownesses</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">patch_size</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">nuc_strike</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">nuc_dip</span><span class="p">),</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">n_patch_strike</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_patch_dip</span><span class="p">)</span>
+                <span class="n">slownesses</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">patch_size</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">nuc_dip</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">nuc_strike</span><span class="p">),</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">n_patch_dip</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_patch_strike</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">implementation</span> <span class="o">==</span> <span class="s1">&#39;numpy&#39;</span><span class="p">:</span>
             <span class="n">z</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">fast_sweep</span><span class="o">.</span><span class="n">get_rupture_times_numpy</span><span class="p">(</span>
@@ -563,7 +590,7 @@
                 <span class="s1">&#39;Fast sweeping for implementation </span><span class="si">%s</span><span class="s1"> not&#39;</span>
                 <span class="s1">&#39; implemented!&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">implementation</span><span class="p">)</span>
 
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Done sweeping!&#39;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Done sweeping!&#39;</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">infer_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">input_shapes</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">[(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_patch_dip</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_patch_strike</span><span class="p">,</span> <span class="p">)]</span></div>

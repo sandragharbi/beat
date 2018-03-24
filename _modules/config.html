@@ -601,6 +601,21 @@
                         <span class="n">dtype</span><span class="o">=</span><span class="n">tconfig</span><span class="o">.</span><span class="n">floatX</span><span class="p">)</span> <span class="o">*</span> <span class="n">num</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span>
                         <span class="n">default_bounds</span><span class="p">[</span><span class="n">variable</span><span class="p">]))</span></div>
 
+<div class="viewcode-block" id="ProblemConfig.set_vars"><a class="viewcode-back" href="../api.html#config.ProblemConfig.set_vars">[docs]</a>    <span class="k">def</span> <span class="nf">set_vars</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bounds_dict</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set variable bounds to given bounds.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">variable</span><span class="p">,</span> <span class="n">bounds</span> <span class="ow">in</span> <span class="n">bounds_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">variable</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">priors</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">param</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">priors</span><span class="p">[</span><span class="n">variable</span><span class="p">]</span>
+                <span class="n">param</span><span class="o">.</span><span class="n">lower</span> <span class="o">=</span> <span class="n">num</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">bounds</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="n">param</span><span class="o">.</span><span class="n">upper</span> <span class="o">=</span> <span class="n">num</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">bounds</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                <span class="n">param</span><span class="o">.</span><span class="n">testvalue</span> <span class="o">=</span> <span class="n">num</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">num</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">bounds</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                    <span class="s1">&#39;Prior for variable </span><span class="si">%s</span><span class="s1"> does not exist!&#39;</span>
+                    <span class="s1">&#39; Setting bounds faiaed!&#39;</span> <span class="o">%</span> <span class="n">variable</span><span class="p">)</span></div>
+
 <div class="viewcode-block" id="ProblemConfig.select_variables"><a class="viewcode-back" href="../api.html#config.ProblemConfig.select_variables">[docs]</a>    <span class="k">def</span> <span class="nf">select_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return model variables depending on problem config.</span>
