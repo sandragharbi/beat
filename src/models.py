@@ -1076,7 +1076,7 @@ class GeodeticDistributerComposite(GeodeticComposite):
     def get_gflibrary_key(self, crust_ind, wavename, component):
         return '%i_%s_%s' % (crust_ind, wavename, component)
 
-    def load_gfs(self, crust_inds=None, make_shared=True):
+    def load_gfs(self, crust_inds=None, make_shared=True, nworkers=1):
         """
         Load Greens Function matrixes for each variable to be inverted for.
         Updates gfs and gf_names attributes.
@@ -1107,7 +1107,7 @@ class GeodeticDistributerComposite(GeodeticComposite):
                     directory=self.gfpath, filename=gflib_name)
 
                 if make_shared:
-                    gfs.init_optimization()
+                    gfs.init_optimization(nworkers)
 
                 key = self.get_gflibrary_key(
                     crust_ind=crust_ind,
@@ -1281,7 +1281,7 @@ class SeismicDistributerComposite(SeismicComposite):
     def get_gflibrary_key(self, crust_ind, wavename, component):
         return '%i_%s_%s' % (crust_ind, wavename, component)
 
-    def load_gfs(self, crust_inds=None, make_shared=True):
+    def load_gfs(self, crust_inds=None, make_shared=True, nworkers=1):
         """
         Load Greens Function matrixes for each variable to be inverted for.
         Updates gfs and gf_names attributes.
@@ -1313,7 +1313,7 @@ class SeismicDistributerComposite(SeismicComposite):
                         directory=self.gfpath, filename=gflib_name)
 
                     if make_shared:
-                        gfs.init_optimization()
+                        gfs.init_optimization(nworkers)
 
                     key = self.get_gflibrary_key(
                         crust_ind=crust_ind,
@@ -1622,7 +1622,8 @@ class Problem(object):
                     data_config = self.config[datatype + '_config']
                     composite.load_gfs(
                         crust_inds=[data_config.gf_config.reference_model_idx],
-                        make_shared=True)
+                        make_shared=True,
+                        nworkers=self.config.sampler_config.parameters.n_jobs)
                     self.composites[datatype] = composite
 
                 total_llk += composite.get_formula(

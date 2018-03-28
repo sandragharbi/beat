@@ -8,6 +8,9 @@ from itertools import count
 
 logger = getLogger('paripool')
 
+# placeholder for globally shared parameters across processes
+pshared = {}
+
 
 def exception_tracer(func):
     """

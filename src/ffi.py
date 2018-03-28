@@ -233,10 +233,6 @@ filename: %s''' % (
 
         self.spatchidxs = shared(self.patchidxs, borrow=True)
 
-        self._stack_switch = {
-            'numpy': self._gfmatrix,
-            'theano': self._sgfmatrix}
-
         self.set_stack_mode(mode='theano')
 
     def put(
@@ -404,8 +400,10 @@ filename: %s''' % (
            #         (self.ntargets, self.npatches)), borrow=True)
 
             paripool.pshared[self.filename] = (sgfs, None)
+            del self._gfmatrix
+            print 'paripool keys', paripool.pshared.keys()
         else:
-            logger.info('... standard memory')
+            logger.info('... into standard memory')
             self._sgfmatrix = shared(
                 self._gfmatrix.astype(tconfig.floatX), borrow=True)
     
@@ -413,10 +411,6 @@ filename: %s''' % (
             self._tmins.astype(tconfig.floatX), borrow=True)
 
         self.spatchidxs = shared(self.patchidxs, borrow=True)
-
-        self._stack_switch = {
-            'numpy': self._gfmatrix,
-            'theano': self._sgfmatrix}
 
         self.set_stack_mode(mode='theano')
 
@@ -556,24 +550,6 @@ filename: %s''' % (
             (durations - self.duration_min) /
             self.duration_sampling).astype('int16')
 
-    def stack(self, targetidx, patchidxs, durationidxs, starttimeidxs, slips):
-        """
-        Stack selected traces from the GF Library of specified
-        target, patch, durations and starttimes. Numpy or theano dependend
-        on the stack_mode
-
-        Parameters
-        ----------
-
-        Returns
-        -------
-        :class:`numpy.ndarray` or of :class:`theano.tensor.Tensor` dependend
-        on stack mode
-        """
-        return self._stack_switch[self._mode][
-            targetidx, patchidxs, durationidxs, starttimeidxs, :].reshape(
-                (slips.shape[0], self.nsamples)).T.dot(slips)
-
     def stack_all(self, durations, starttimes, slips):
         """
         Stack all patches for all targets at once.
@@ -591,6 +567,7 @@ filename: %s''' % (
         starttimeidxs = self.starttimes2idxs(starttimes)
 
         if self._mode == 'theano':
+            print 'model building', paripool.pshared.keys()
             if hasattr(paripool, 'pshared'):
                 try:
                     smatrix = paripool.pshared[self.filename][0]
@@ -599,7 +576,7 @@ filename: %s''' % (
                         'Greens Function matrix "%s" '
                         'not initialized!' % self.filename)
 
-            if self._sgfmatrix is None:
+            elif self._sgfmatrix is None:
                 raise GFLibraryError(
                     'GF matrix is neither in shared memory nor in '
                     'standard memory! To use "stack_all" theano'
