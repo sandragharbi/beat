@@ -1429,7 +1429,7 @@ class SeismicDistributerComposite(SeismicComposite):
             index=0,
             rupture_velocities=tpoint['velocities'],
             nuc_dip_idx=nuc_dip_idx,
-            nuc_strike_idx=nuc_strike_idx).flatten()
+            nuc_strike_idx=nuc_strike_idx).ravel()
 
         patchidx = self.fault.patchmap(
             index=0, dipidx=nuc_dip_idx, strikeidx=nuc_strike_idx)
@@ -1712,7 +1712,7 @@ class Problem(object):
                 logger.info(
                     'not solving for %s, got fixed at %s' % (
                         param.name,
-                        utility.list_to_str(param.lower.flatten())))
+                        utility.list_to_str(param.lower.ravel())))
                 fixed_params[param.name] = param.lower
 
         return rvs, fixed_params
@@ -1743,7 +1743,7 @@ class Problem(object):
                 logger.info(
                     'not solving for %s, got fixed at %s' % (
                         hyperpar.name,
-                        utility.list_to_str(hyperpar.lower.flatten())))
+                        utility.list_to_str(hyperpar.lower.ravel())))
                 hyperparams[hyperpar.name] = hyperpar.lower
 
         return hyperparams

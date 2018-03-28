@@ -45,10 +45,17 @@ slip_directions = {
     'utensile': {'slip': 0., 'rake': 0., 'opening': 1.}}
 
 
-def _init_shared(gfstofill, tminstofill):
+def _init_shared(pshared):
+    """
+    Initialiser for paripool function for shared memory operations.
+
+    Parameters
+    ----------
+    pshared : dict
+        of :class:`multiprocessing.RawArray` to share between processes
+    """
     logger.debug('Accessing shared arrays!')
-    paripool.gfmatrix = gfstofill
-    paripool.tmins = tminstofill
+    paripool.pshared = pshared
 
 
 class GFLibraryError(Exception):
@@ -256,8 +263,9 @@ filename: %s''' % (
 
         self._check_setup()
 
-        if hasattr(paripool, 'gfmatrix'):
-            matrix = num.frombuffer(paripool.gfmatrix).reshape(self.dimensions)
+        if hasattr(paripool, 'pshared'):
+            matrix = num.frombuffer(
+                paripool.pshared[self.filename][0]).reshape(self.dimensions)
 
         elif self._gfmatrix is None:
             raise GFLibraryError(
@@ -368,12 +376,39 @@ filename: %s''' % (
 
         self.set_stack_mode(mode='numpy')
 
-    def init_optimization(self):
+    def init_optimization(self, nworkers=1):
 
         logger.info(
-            'Setting %s GF Library to optimization mode.' % self.filename)
-        self._sgfmatrix = shared(
-            self._gfmatrix.astype(tconfig.floatX), borrow=True)
+            'Setting %s GF Library to optimization mode,' % self.filename)
+
+        if nworkers > 1:
+            if tconfig.floatX == 'float32':
+                dtype = 'f'
+            elif tconfig.floatX == 'float64':
+                dtype = 'd'
+            else:
+                raise ValueError(
+                    'Float type "%s" not supported' % tconfig.floatX)
+
+            logger.info('... into shared memory')
+            memshared_gfs = RawArray(
+                dtype, self._gfmatrix.ravel().astype(tconfig.floatX))
+          #  memshared_tmins = RawArray(dtype,
+          #      self._tmins.ravel().astype(tconfig.floatX))
+
+            sgfs = shared(
+                num.frombuffer(memshared_gfs).reshape(
+                    self.config.dimensions), borrow=True)
+           # stmins = shared(
+           #     num.frombuffer(memshared_tmins).reshape(
+           #         (self.ntargets, self.npatches)), borrow=True)
+
+            paripool.pshared[self.filename] = (sgfs, None)
+        else:
+            logger.info('... standard memory')
+            self._sgfmatrix = shared(
+                self._gfmatrix.astype(tconfig.floatX), borrow=True)
+    
         self._stmins = shared(
             self._tmins.astype(tconfig.floatX), borrow=True)
 
@@ -424,10 +459,17 @@ filename: %s''' % (
         durationidxs = self.durations2idxs(durations)
         starttimeidxs = self.starttimes2idxs(starttimes)
 
-        if hasattr(paripool, 'gfmatrix'):
-            matrix = num.frombuffer(paripool.gfmatrix).reshape(self.dimensions)
-            times = num.frombuffer(paripool.tmins).reshape(
-                (self.ntargets, self.npatches))
+        if hasattr(paripool, 'pshared'):
+            try:
+                matrix = num.frombuffer(
+                    paripool.pshared[self.filename][0]).reshape(self.dimensions)
+                times = num.frombuffer(
+                    paripool.pshared[self.filename][1]).reshape(
+                    (self.ntargets, self.npatches))
+            except KeyError:
+                raise KeyError(
+                    'Greens Function Library "%s"'
+                    ' not initialized!' % self.filename)
 
         elif self._gfmatrix is None:
             raise GFLibraryError(
@@ -549,12 +591,24 @@ filename: %s''' % (
         starttimeidxs = self.starttimes2idxs(starttimes)
 
         if self._mode == 'theano':
+            if hasattr(paripool, 'pshared'):
+                try:
+                    smatrix = paripool.pshared[self.filename][0]
+                except KeyError:
+                    raise KeyError(
+                        'Greens Function matrix "%s" '
+                        'not initialized!' % self.filename)
+
             if self._sgfmatrix is None:
                 raise GFLibraryError(
-                    'To use "stack_all" theano stacking optimization mode'
-                    ' has to be initialised!')
+                    'GF matrix is neither in shared memory nor in '
+                    'standard memory! To use "stack_all" theano'
+                    ' stacking optimization mode has to be initialised!')
 
-            d = self._sgfmatrix[
+            else:
+                smatrix = self._sgfmatrix
+
+            d = smatrix[
                 :, self.spatchidxs, durationidxs, starttimeidxs, :].reshape(
                 (self.ntargets, self.npatches, self.nsamples))
             return tt.batched_dot(
@@ -1107,6 +1161,8 @@ def geo_construct_gf_linear(
 
             shared_gflibrary = RawArray('d', gfs.size)
 
+            pshared = {gfs.filename: (shared_gflibrary, None)}
+
             work = [
                 (engine, gfs, targets, patch, patchidx, los_vectors, odws)
                 for patchidx, patch in enumerate(
@@ -1115,7 +1171,7 @@ def geo_construct_gf_linear(
             p = paripool.paripool(
                 _process_patch_geodetic, work,
                 initializer=_init_shared,
-                initargs=(shared_gflibrary, None), nprocs=nworkers)
+                initargs=pshared, nprocs=nworkers)
 
             for res in p:
                 pass
@@ -1296,6 +1352,8 @@ def seis_construct_gf_linear(
             shared_gflibrary = RawArray('d', gfs.size)
             shared_times = RawArray('d', gfs.ntargets * gfs.npatches)
 
+            pshared = {gfs.filename: (shared_gflibrary, shared_times)}
+
             work = [
                 (engine, gfs, wavemap.targets,
                     patch, patchidx, durations, starttimes)
@@ -1305,7 +1363,7 @@ def seis_construct_gf_linear(
             p = paripool.paripool(
                 _process_patch_seismic, work,
                 initializer=_init_shared,
-                initargs=(shared_gflibrary, shared_times), nprocs=nworkers)
+                initargs=pshared, nprocs=nworkers)
 
             for res in p:
                 pass
