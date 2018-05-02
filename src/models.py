@@ -200,12 +200,18 @@ class Composite(Object):
         self._like_name = None
         self.config = None
 
-    def get_hyper_formula(self, hyperparams):
+    def get_hyper_formula(self, hyperparams, problem_config):
         """
         Get likelihood formula for the hyper model built. Has to be called
         within a with model context.
+
+        problem_config : :class:`config.ProblemConfig`
         """
-        logpts = hyper_normal(self.datasets, hyperparams, self._llks)
+
+        hp_specific = problem_config.dataset_specific_residual_noise_estimation
+        logpts = hyper_normal(
+            self.datasets, hyperparams, self._llks,
+            hp_specific=hp_specific)
         llk = pm.Deterministic(self._like_name, logpts)
         return llk.sum()
 
@@ -452,7 +458,8 @@ class GeodeticSourceComposite(GeodeticComposite):
             # reset source time may result in store error otherwise
             source.time = 0.
 
-    def get_formula(self, input_rvs, fixed_rvs, hyperparams):
+    def get_formula(
+            self, input_rvs, fixed_rvs, hyperparams, problem_config):
         """
         Get geodetic likelihood formula for the model built. Has to be called
         within a with model context.
@@ -466,11 +473,14 @@ class GeodeticSourceComposite(GeodeticComposite):
             of :class:`numpy.array`
         hyperparams : dict
             of :class:`pymc3.distribution.Distribution`
+        problem_config : :class:`config.ProblemConfig`
 
         Returns
         -------
         posterior_llk : :class:`theano.tensor.Tensor`
         """
+        hp_specific = problem_config.dataset_specific_residual_noise_estimation
+
         self.input_rvs = input_rvs
         self.fixed_rvs = fixed_rvs
 
@@ -499,7 +509,8 @@ class GeodeticSourceComposite(GeodeticComposite):
             residuals = self.remove_ramps(residuals)
 
         logpts = multivariate_normal_chol(
-            self.datasets, self.weights, hyperparams, residuals)
+            self.datasets, self.weights, hyperparams, residuals,
+            hp_specific=hp_specific)
 
         llk = pm.Deterministic(self._like_name, logpts)
         return llk.sum()
@@ -983,7 +994,8 @@ class SeismicGeometryComposite(SeismicComposite):
             transform=None,
             dtype=tconfig.floatX)
 
-    def get_formula(self, input_rvs, fixed_rvs, hyperparams):
+    def get_formula(
+            self, input_rvs, fixed_rvs, hyperparams, problem_config):
         """
         Get seismic likelihood formula for the model built. Has to be called
         within a with model context.
@@ -996,11 +1008,14 @@ class SeismicGeometryComposite(SeismicComposite):
             of :class:`numpy.array`
         hyperparams : dict
             of :class:`pymc3.distribution.Distribution`
+        problem_config : :class:`config.ProblemConfig`
 
         Returns
         -------
         posterior_llk : :class:`theano.tensor.Tensor`
         """
+        hp_specific = problem_config.dataset_specific_residual_noise_estimation
+
         self.input_rvs = input_rvs
         self.fixed_rvs = fixed_rvs
 
@@ -1025,7 +1040,8 @@ class SeismicGeometryComposite(SeismicComposite):
             residuals = data_trcs - synths
 
             logpts = multivariate_normal_chol(
-                wmap.datasets, wmap.weights, hyperparams, residuals)
+                wmap.datasets, wmap.weights, hyperparams, residuals,
+                hp_specific=hp_specific)
 
             wlogpts.append(logpts)
 
@@ -1420,7 +1436,7 @@ class Problem(object):
 
         logger.info('... Building model ...\n')
 
-        mode = self.config.problem_config.mode
+        pc = self.config.problem_config
 
         with pm.Model() as self.model:
 
@@ -1432,12 +1448,12 @@ class Problem(object):
 
             for datatype, composite in self.composites.iteritems():
                 input_rvs = utility.weed_input_rvs(
-                    self.rvs, mode, datatype=datatype)
+                    self.rvs, pc.mode, datatype=datatype)
                 fixed_rvs = utility.weed_input_rvs(
-                    self.fixed_params, mode, datatype=datatype)
+                    self.fixed_params, pc.mode, datatype=datatype)
 
                 total_llk += composite.get_formula(
-                    input_rvs, fixed_rvs, self.hyperparams)
+                    input_rvs, fixed_rvs, self.hyperparams, pc)
 
             # deterministic RV to write out llks to file
             like = pm.Deterministic('tmp', total_llk)
@@ -1470,7 +1486,7 @@ class Problem(object):
             total_llk = tt.zeros((1), tconfig.floatX)
 
             for composite in self.composites.itervalues():
-                total_llk += composite.get_hyper_formula(self.hyperparams)
+                total_llk += composite.get_hyper_formula(self.hyperparams, pc)
 
             like = pm.Deterministic('tmp', total_llk)
             llk = pm.Potential(self._like_name, like)
