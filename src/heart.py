@@ -268,7 +268,7 @@ class SeismicResult(Object):
     llk = Float.T(default=0., optional=True)
     taper = trace.Taper.T(optional=True)
 
-sqrt2 = num.sqrt(2)
+sqrt2 = num.sqrt(2.)
 
 physical_bounds = dict(
     east_shift=(-500., 500.),
@@ -300,6 +300,7 @@ physical_bounds = dict(
     slip=(0., 150.),
     magnitude=(-5., 10.),
     time=(-300., 300.),
+    time_shift=(-40., 40.),
     delta_time=(0., 100.),
     delta_depth=(0., 300.),
     distance=(0., 300.),
@@ -2145,7 +2146,7 @@ class WaveformMapping(object):
     _target2index = None
 
     def __init__(self, name, stations, weights=None, channels=['Z'],
-                 datasets=None, targets=None):
+                 datasets=None, targets=None, station_correction_idxs=None):
 
         self.name = name
         self.stations = stations
@@ -2153,6 +2154,9 @@ class WaveformMapping(object):
         self.datasets = datasets
         self.targets = targets
         self.channels = channels
+        self._station_corrections_reference = copy.deepcopy(
+            station_correction_idxs)
+        self.station_correction_idxs = station_correction_idxs
 
         self._update_trace_wavenames()
 
@@ -2173,6 +2177,10 @@ class WaveformMapping(object):
         self.weights = weights
 
     def station_distance_weeding(self, event, distances):
+        """
+        Weed stations and related objects based on distances.
+        Works only a single time after init!
+        """
         self.stations = utility.weed_stations(
             self.stations, event, distances=distances)
 
@@ -2182,6 +2190,14 @@ class WaveformMapping(object):
 
         if self.n_t > 0:
             self.targets = utility.weed_targets(self.targets, self.stations)
+
+            # update station_correction_idx
+            target_idxs = num.array(
+                [self.target_index_mapping()[target]
+                 for target in self.targets])
+            self.station_correction_idxs = \
+                self._station_correction_reference[target_idxs]
+
             self._target2index = None   # reset mapping
 
         self.check_consistency()
@@ -2325,6 +2341,26 @@ class DataWaveformCollection(object):
                     self._targets.values()))
         return self._target2index
 
+    def get_station_correction_idxs(self, targets):
+        """
+        Returns array of indexes to problem stations,
+
+        Paremeters
+        ----------
+        targets : list
+            containing :class:`DynamicTarget` Objects
+
+        Notes
+        -----
+        Not to mix up with the wavemap specific stations!
+        """
+        if self._station_correction_indexes is None:
+            t2i = self.target_index_mapping()
+            self._station_correction_indexes = num.array(
+                [t2i(target) for target in targets], dtype='int16')
+
+        return self._station_correction_indexes
+
     def get_waveform_names(self):
         return self.waveforms
 
@@ -2403,7 +2439,8 @@ class DataWaveformCollection(object):
             stations=copy.deepcopy(self.stations),
             datasets=copy.deepcopy(datasets),
             targets=copy.deepcopy(targets),
-            channels=channels)
+            channels=channels,
+            station_correction_idxs=self.get_station_correction_idxs(targets))
 
 
 def post_process_trace(trace, taper, filterer, taper_tolerance_factor=0.,

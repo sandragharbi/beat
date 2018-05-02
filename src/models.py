@@ -477,6 +477,7 @@ class GeodeticSourceComposite(GeodeticComposite):
             tt.cast((self.wdata - los), tconfig.floatX))
 
         if self.config.fit_plane:
+            logger.info('Estimating ramp for each dataset...')
             residuals = self.remove_ramps(residuals)
 
         logpts = multivariate_normal_chol(
@@ -896,6 +897,9 @@ class SeismicGeometryComposite(SeismicComposite):
 
         self.sources = sources
 
+        if self.config.station_corrections:
+            self.correction_name = 'time_shift'
+
         # syntetics generation
         logger.debug('Initialising synthetics functions ... \n')
         for wmap in self.wavemaps:
@@ -912,10 +916,10 @@ class SeismicGeometryComposite(SeismicComposite):
                 pre_stack_cut=sc.pre_stack_cut)
 
             self.choppers[wc.name] = theanof.SeisDataChopper(
-               sample_rate=sc.gf_config.sample_rate,
-               traces=wmap.datasets,
-               arrival_taper=wc.arrival_taper,
-               filterer=wc.filterer)
+                sample_rate=sc.gf_config.sample_rate,
+                traces=wmap.datasets,
+                arrival_taper=wc.arrival_taper,
+                filterer=wc.filterer)
 
         self.config = sc
 
@@ -947,6 +951,20 @@ class SeismicGeometryComposite(SeismicComposite):
         for i, source in enumerate(self.sources):
             utility.update_source(source, **source_points[i])
 
+    def init_station_corrections(self):
+        """
+        Initialise random variables for temporal station corrections.
+        """
+
+        self.station_corrections = pm.Uniform(
+            self.correction_name,
+            shape=(2,),
+            lower=bconfig.default_bounds[self.correction_name][0],
+            upper=bconfig.default_bounds[self.correction_name][1],
+            testval=0.,
+            transform=None,
+            dtype=tconfig.floatX)
+
     def get_formula(self, input_rvs, fixed_rvs, hyperparams):
         """
         Get seismic likelihood formula for the model built. Has to be called
@@ -974,8 +992,17 @@ class SeismicGeometryComposite(SeismicComposite):
 
         t2 = time.time()
         wlogpts = []
+
+        if self.config.station_corrections:
+            logger.info('Estimating time shift for each station...')
+            self.station_corrections()
+
         for wmap in self.wavemaps:
             synths, tmins = self.synthesizers[wmap.name](self.input_rvs)
+
+            if hasattr(self, 'station_corrections'):
+                tmins += self.station_corrections[wmap.station_correction_idxs]
+
             data_trcs = self.choppers[wmap.name](tmins)
             residuals = data_trcs - synths
 
@@ -986,8 +1013,8 @@ class SeismicGeometryComposite(SeismicComposite):
 
         t3 = time.time()
         logger.debug(
-            'Teleseismic forward model on test model takes: %f' % \
-                (t3 - t2))
+            'Teleseismic forward model on test model takes: %f' %
+            (t3 - t2))
 
         llk = pm.Deterministic(self._like_name, tt.concatenate((wlogpts)))
         return llk.sum()
@@ -1025,6 +1052,10 @@ class SeismicGeometryComposite(SeismicComposite):
                 pre_stack_cut=sc.pre_stack_cut,
                 **kwargs)
             synths.extend(synthetics)
+
+            if self.config.station_corrections:
+                tmins += point[
+                    self.correction_name][wmap.station_correction_idxs]
 
             obs.extend(heart.taper_filter_traces(
                 wmap.datasets,

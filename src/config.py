@@ -133,6 +133,7 @@ default_bounds = dict(
     diameter=(5., 10.),
     mix=(0, 1),
     time=(-3., 3.),
+    time_shift=(-5., 5.),
     delta_time=(0., 10.),
     delta_depth=(0., 10.),
     distance=(0., 10.),
@@ -459,11 +460,13 @@ class ProblemConfig(Object):
         help='Number of Sub-sources to solve for')
     datatypes = List.T(default=['geodetic'])
     hyperparameters = Dict.T(
+        default=OrderedDict(),
         help='Hyperparameters to weight different types of datatypes.')
     priors = Dict.T(
+        default=OrderedDict(),
         help='Priors of the variables in question.')
 
-    def init_vars(self, variables=None):
+    def init_vars(self, variables=None, nvars=None):
         """
         Initiate priors based on the problem mode and datatypes.
 
@@ -475,12 +478,16 @@ class ProblemConfig(Object):
         if variables is None:
             variables = self.select_variables()
 
-        self.priors = OrderedDict()
+        if self.priors is None:
+            self.priors = OrderedDict()
+
         for variable in variables:
-            if variable in block_vars:
-                nvars = 1
-            else:
-                nvars = self.n_sources
+
+            if nvars is None:
+                if variable in block_vars:
+                    nvars = 1
+                else:
+                    nvars = self.n_sources
 
             lower = default_bounds[variable][0]
             upper = default_bounds[variable][1]

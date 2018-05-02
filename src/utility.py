@@ -374,7 +374,7 @@ def weed_data_traces(data_traces, stations):
 def weed_targets(targets, stations):
     """
     Throw out targets belonging to stations that are not in the
-    stations list. Keeps list orders!
+    stations list. Keeps list orders and returns new list!
 
     Parameters
     ----------
