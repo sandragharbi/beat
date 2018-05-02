@@ -367,6 +367,9 @@ class SeismicConfig(Object):
         default=True,
         help='Cut the GF traces before stacking around the specified arrival'
              ' taper')
+    station_corrections = Bool.T(
+        default=False,
+        help='If set, optimize for time shift for each station.')
     waveforms = List.T(WaveformFitConfig.T(default=WaveformFitConfig.D()))
     gf_config = GFConfig.T(default=SeismicGFConfig.D())
 
