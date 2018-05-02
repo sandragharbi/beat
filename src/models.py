@@ -74,7 +74,8 @@ def multivariate_normal(datasets, weights, hyperparams, residuals):
     return logpts
 
 
-def multivariate_normal_chol(datasets, weights, hyperparams, residuals):
+def multivariate_normal_chol(
+        datasets, weights, hyperparams, residuals, hp_specific=False):
     """
     Calculate posterior Likelihood of a Multivariate Normal distribution.
     Assumes weights to be the inverse cholesky decomposed lower triangle
@@ -92,6 +93,9 @@ def multivariate_normal_chol(datasets, weights, hyperparams, residuals):
     hyperparams : dict
         of :class:`theano.`
     residual : list or array of model residuals
+    hp_specific : boolean
+        if true, the hyperparameters have to be arrays size equal to
+        the number of datasets, if false size: 1.
 
     Returns
     -------
@@ -103,12 +107,18 @@ def multivariate_normal_chol(datasets, weights, hyperparams, residuals):
     for l, data in enumerate(datasets):
         M = tt.cast(shared(data.samples, borrow=True), 'int16')
         hp_name = '_'.join(('h', data.typ))
+
+        if hp_specific:
+            hp = hyperparams[hp_name][l]
+        else:
+            hp = hyperparams[hp_name]
+
         tmp = weights[l].dot(residuals[l])
 
         logpts = tt.set_subtensor(logpts[l:l + 1],
             (-0.5) * (data.covariance.slnf + \
-            (M * 2 * hyperparams[hp_name]) + \
-            (1 / tt.exp(hyperparams[hp_name] * 2)) * \
+            (M * 2 * hp) + \
+            (1 / tt.exp(hp * 2)) * \
             (tt.dot(tmp, tmp))
                      )
                                  )
@@ -116,7 +126,7 @@ def multivariate_normal_chol(datasets, weights, hyperparams, residuals):
     return logpts
 
 
-def hyper_normal(datasets, hyperparams, llks):
+def hyper_normal(datasets, hyperparams, llks, hp_specific=False):
     """
     Calculate posterior Likelihood only dependent on hyperparameters.
 
@@ -127,6 +137,9 @@ def hyper_normal(datasets, hyperparams, llks):
     hyperparams : dict
         of :class:`theano.`
     llks : posterior likelihoods
+    hp_specific : boolean
+        if true, the hyperparameters have to be arrays size equal to
+        the number of datasets, if false size: 1.
 
     Returns
     -------
@@ -140,10 +153,15 @@ def hyper_normal(datasets, hyperparams, llks):
         M = data.samples
         hp_name = '_'.join(('h', data.typ))
 
+        if hp_specific:
+            hp = hyperparams[hp_name][k]
+        else:
+            hp = hyperparams[hp_name]
+
         logpts = tt.set_subtensor(logpts[k:k + 1],
             (-0.5) * (data.covariance.slnf + \
-            (M * 2 * hyperparams[hp_name]) + \
-            (1 / tt.exp(hyperparams[hp_name] * 2)) * \
+            (M * 2 * hp) + \
+            (1 / tt.exp(hp * 2)) * \
                 llks[k]
                      )
                                  )
@@ -1288,6 +1306,19 @@ interseismic_composite_catalog = {
     }
 
 
+class InconsistentNumberHyperparametersError(Exception):
+
+    context = 'Configuration file has to be updated!' + \
+              ' Hyperparameters have to be re-estimated. \n' + \
+              ' Please run "beat sample <project_dir> --hypers"'
+
+    def __init__(self, errmess=''):
+        self.errmess = errmess
+
+    def __str__(self):
+        return '\n%s\n%s' % (self.errmess, self.context)
+
+
 class Problem(object):
     """
     Overarching class for the optimization problems to be solved.
@@ -1484,7 +1515,8 @@ class Problem(object):
             else:
                 logger.info(
                     'not solving for %s, got fixed at %s' % (
-                    param.name, utility.list_to_str(param.lower.flatten())))
+                        param.name,
+                        utility.list_to_str(param.lower.flatten())))
                 fixed_params[param.name] = param.lower
 
         return rvs, fixed_params
@@ -1497,27 +1529,51 @@ class Problem(object):
         pc = self.config.problem_config
 
         hyperparams = {}
-        n_hyp = len(pc.hyperparameters.keys())
+        n_hyp = 0
+        for datatype, composite in self.composites.items():
+            hypernames = composite.config.get_hypernames()
 
-        logger.debug('Optimization for %i hyperparemeters', n_hyp)
+            for hp_name in hypernames:
+                if hp_name in pc.hyperparameters.keys():
+                    hyperpar = pc.hyperparameters.pop(hp_name)
 
-        for hp_name, hyperpar in pc.hyperparameters.iteritems():
-            if not num.array_equal(hyperpar.lower, hyperpar.upper):
-                hyperparams[hp_name] = pm.Uniform(
-                    hyperpar.name,
-                    shape=hyperpar.dimension,
-                    lower=hyperpar.lower,
-                    upper=hyperpar.upper,
-                    testval=hyperpar.testvalue,
-                    dtype=tconfig.floatX,
-                    transform=None)
-            else:
-                logger.info(
-                    'not solving for %s, got fixed at %s' % (
-                    hyperpar.name,
-                    utility.list_to_str(hyperpar.lower.flatten())))
-                hyperparams[hyperpar.name] = hyperpar.lower
+                    if pc.dataset_specific_residual_noise_estimation:
+                        ndata = composite.n_t
+                    else:
+                        ndata = 1
 
+                else:
+                    raise InconsistentNumberHyperparametersError(
+                        'Datasets and -types require additional '
+                        ' hyperparameter(s)!')
+
+                if not num.array_equal(hyperpar.lower, hyperpar.upper):
+                    dimension = hyperpar.dimension * ndata
+
+                    hyperparams[hp_name] = pm.Uniform(
+                        hyperpar.name,
+                        shape=dimension,
+                        lower=num.repeat(hyperpar.lower, ndata),
+                        upper=num.repeat(hyperpar.upper, ndata),
+                        testval=num.repeat(hyperpar.testvalue, ndata),
+                        dtype=tconfig.floatX,
+                        transform=None)
+
+                    n_hyp += dimension
+
+                else:
+                    logger.info(
+                        'not solving for %s, got fixed at %s' % (
+                            hyperpar.name,
+                            utility.list_to_str(hyperpar.lower.flatten())))
+                    hyperparams[hyperpar.name] = hyperpar.lower
+
+        if len(pc.hyperparameters) > 0:
+            raise InconsistentNumberHyperparametersError(
+                'There are hyperparameters in config file, which are not'
+                ' covered by datasets/datatypes.')
+
+        logger.info('Optimization for %i hyperparemeters in total!', n_hyp)
         return hyperparams
 
     def update_llks(self, point):

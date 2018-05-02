@@ -459,6 +459,14 @@ class ProblemConfig(Object):
         default=1,
         help='Number of Sub-sources to solve for')
     datatypes = List.T(default=['geodetic'])
+    dataset_specific_residual_noise_estimation = Bool.T(
+        default=False,
+        help='If set, for EACH DATASET specific hyperparameter estimation.'
+             'For seismic data: n_hypers = nstations * nchannels.'
+             'For geodetic data: n_hypers = nimages (SAR) or '
+             'nstations * ncomponents (GPS).'
+             'If false one hyperparameter for each DATATYPE and '
+             'displacement COMPONENT.')
     hyperparameters = Dict.T(
         default=OrderedDict(),
         help='Hyperparameters to weight different types of datatypes.')
