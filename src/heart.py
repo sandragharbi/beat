@@ -386,16 +386,24 @@ class Parameter(Object):
             raise ValueError(
                 'Parameter bounds for "%s" have to be defined!' % self.name)
 
-    def random(self):
+    def random(self, dimension=None):
         """
         Create random samples within the parameter bounds.
+
+        Parameters
+        ----------
+        dimensions : int
+            number of draws from distribution
 
         Returns
         -------
         :class:`numpy.ndarray` of size (n, m)
         """
+        if dimension is None:
+            dimension = self.dimension
+
         return (self.upper - self.lower) * num.random.rand(
-            self.dimension) + self.lower
+            dimension) + self.lower
 
     @property
     def dimension(self):
@@ -2154,7 +2162,7 @@ class WaveformMapping(object):
         self.datasets = datasets
         self.targets = targets
         self.channels = channels
-        self._station_corrections_reference = copy.deepcopy(
+        self._station_correction_reference = copy.deepcopy(
             station_correction_idxs)
         self.station_correction_idxs = station_correction_idxs
 
@@ -2281,6 +2289,7 @@ class DataWaveformCollection(object):
     _targets = OrderedDict()
     _datasets = OrderedDict()
     _target2index = None
+    _station_correction_indexes = None
 
     def __init__(self, stations, waveforms=None):
         self.stations = stations
@@ -2357,7 +2366,7 @@ class DataWaveformCollection(object):
         if self._station_correction_indexes is None:
             t2i = self.target_index_mapping()
             self._station_correction_indexes = num.array(
-                [t2i(target) for target in targets], dtype='int16')
+                [t2i[target] for target in targets], dtype='int16')
 
         return self._station_correction_indexes
 

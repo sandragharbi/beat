@@ -45,6 +45,27 @@ d2r = num.pi / 180.
 km = 1000.
 
 
+class Counter(object):
+    """
+    Counts calls of types with string_ids. Repeated calls with the same
+    string id increase the count.
+    """
+
+    def __init__(self):
+        self.d = dict()
+
+    def __call__(self, string):
+
+        if string not in self.d:
+            self.d[string] = 0
+        else:
+            self.d[string] += 1
+        return self.d[string]
+
+    def reset(self):
+        self.d = dict()
+
+
 class FaultOrdering(object):
     """
     A mapping of source patches to the arrays of optimization results.

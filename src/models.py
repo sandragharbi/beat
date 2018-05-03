@@ -103,13 +103,14 @@ def multivariate_normal_chol(
     """
     n_t = len(datasets)
     logpts = tt.zeros((n_t), tconfig.floatX)
+    count = utility.Counter()
 
     for l, data in enumerate(datasets):
         M = tt.cast(shared(data.samples, borrow=True), 'int16')
         hp_name = '_'.join(('h', data.typ))
 
         if hp_specific:
-            hp = hyperparams[hp_name][l]
+            hp = hyperparams[hp_name][count(hp_name)]
         else:
             hp = hyperparams[hp_name]
 
@@ -146,15 +147,15 @@ def hyper_normal(datasets, hyperparams, llks, hp_specific=False):
     array_like
     """
     n_t = len(datasets)
-
     logpts = tt.zeros((n_t), tconfig.floatX)
+    count = utility.Counter()
 
     for k, data in enumerate(datasets):
         M = data.samples
         hp_name = '_'.join(('h', data.typ))
 
         if hp_specific:
-            hp = hyperparams[hp_name][k]
+            hp = hyperparams[hp_name][count(hp_name)]
         else:
             hp = hyperparams[hp_name]
 
@@ -196,6 +197,7 @@ class Composite(Object):
 
         self.input_rvs = {}
         self.fixed_rvs = {}
+        self.hierarchicals = None
         self.name = None
         self._like_name = None
         self.config = None
@@ -337,26 +339,44 @@ class GeodeticComposite(Composite):
 
         return results
 
+    def init_hierarchicals(self):
+
+        self.hierarchicals = {}
+        if self.config.fit_plane:
+            logger.info('Estimating ramp for each dataset...')
+            for i, data in enumerate(self.datasets):
+                if isinstance(data, heart.DiffIFG):
+
+                    kwargs = dict(
+                        name=data.name + '_ramp',
+                        shape=(2,),
+                        lower=bconfig.default_bounds['ramp'][0],
+                        upper=bconfig.default_bounds['ramp'][1],
+                        testval=0.,
+                        transform=None,
+                        dtype=tconfig.floatX)
+                    try:
+                        self.hierarchicals[data.name] = pm.Uniform(**kwargs)
+
+                    except TypeError:
+                        kwargs.pop('name')
+                        self.hierarchicals[data.name] = \
+                            pm.Uniform.dist(**kwargs)
+
+        logger.info(
+            'Initialized %i hierarchical parameters '
+            '(ramps).' % len(self.hierarchicals.keys()))
+
     def remove_ramps(self, residuals):
         """
         Remove an orbital ramp from the residual displacements
         """
-        self.ramp_params = {}
 
         for i, data in enumerate(self.datasets):
             if isinstance(data, heart.DiffIFG):
-                self.ramp_params[data.name] = pm.Uniform(
-                    data.name + '_ramp',
-                    shape=(2,),
-                    lower=bconfig.default_bounds['ramp'][0],
-                    upper=bconfig.default_bounds['ramp'][1],
-                    testval=0.,
-                    transform=None,
-                    dtype=tconfig.floatX)
-
                 residuals[i] -= get_ramp_displacement(
                     self._slocx[i], self._slocy[i],
-                    self.ramp_params[data.name])
+                    self.hierarchicals[data.name])
 
         return residuals
 
@@ -504,8 +524,8 @@ class GeodeticSourceComposite(GeodeticComposite):
         residuals = self.Bij.srmap(
             tt.cast((self.wdata - los), tconfig.floatX))
 
+        self.init_hierarchicals()
         if self.config.fit_plane:
-            logger.info('Estimating ramp for each dataset...')
             residuals = self.remove_ramps(residuals)
 
         logpts = multivariate_normal_chol(
@@ -686,10 +706,13 @@ class SeismicComposite(Composite):
     def __init__(self, sc, event, project_dir, hypers=False):
 
         super(SeismicComposite, self).__init__()
-        
+
         logger.debug('Setting up seismic structure ...\n')
         self.name = 'seismic'
         self._like_name = 'seis_like'
+
+        if sc.station_corrections:
+            self.correction_name = 'time_shift'
 
         self.event = event
         self.engine = gf.LocalEngine(
@@ -791,6 +814,40 @@ class SeismicComposite(Composite):
             self._llks = []
             for t in range(self.n_t):
                 self._llks.append(shared(num.array([1.]), borrow=True))
+
+    def init_hierarchicals(self):
+        """
+        Initialise random variables for temporal station corrections.
+        """
+        self.hierarchicals = {}
+        if self.config.station_corrections:
+            logger.info(
+                'Estimating time shift for each station,'
+                ' channel and phase ...')
+            kwargs = dict(
+                name=self.correction_name,
+                shape=self.n_t,
+                lower=bconfig.default_bounds[self.correction_name][0],
+                upper=bconfig.default_bounds[self.correction_name][1],
+                testval=0.,
+                transform=None,
+                dtype=tconfig.floatX)
+
+            try:
+                station_corrs_rv = pm.Uniform(**kwargs)
+
+            except TypeError:
+                kwargs.pop('name')
+                station_corrs_rv = pm.Uniform.dist(**kwargs)
+
+            nhierarchs = station_corrs_rv.shape.prod()
+            self.hierarchicals[self.correction_name] = station_corrs_rv
+        else:
+            nhierarchs = 0
+
+        logger.info(
+            'Initialized %i hierarchical parameters for '
+            'station corrections.' % nhierarchs)
 
     def get_unique_stations(self):
         sl = [wmap.stations for wmap in self.wavemaps]
@@ -926,9 +983,6 @@ class SeismicGeometryComposite(SeismicComposite):
 
         self.sources = sources
 
-        if self.config.station_corrections:
-            self.correction_name = 'time_shift'
-
         # syntetics generation
         logger.debug('Initialising synthetics functions ... \n')
         for wmap in self.wavemaps:
@@ -980,20 +1034,6 @@ class SeismicGeometryComposite(SeismicComposite):
         for i, source in enumerate(self.sources):
             utility.update_source(source, **source_points[i])
 
-    def init_station_corrections(self):
-        """
-        Initialise random variables for temporal station corrections.
-        """
-
-        self.station_corrections = pm.Uniform(
-            self.correction_name,
-            shape=(2,),
-            lower=bconfig.default_bounds[self.correction_name][0],
-            upper=bconfig.default_bounds[self.correction_name][1],
-            testval=0.,
-            transform=None,
-            dtype=tconfig.floatX)
-
     def get_formula(
             self, input_rvs, fixed_rvs, hyperparams, problem_config):
         """
@@ -1026,15 +1066,14 @@ class SeismicGeometryComposite(SeismicComposite):
         t2 = time.time()
         wlogpts = []
 
-        if self.config.station_corrections:
-            logger.info('Estimating time shift for each station...')
-            self.station_corrections()
+        self.init_hierarchicals()
 
         for wmap in self.wavemaps:
             synths, tmins = self.synthesizers[wmap.name](self.input_rvs)
 
-            if hasattr(self, 'station_corrections'):
-                tmins += self.station_corrections[wmap.station_correction_idxs]
+            if self.correction_name in self.hierarchicals.keys():
+                tmins += self.hierarchicals[
+                    self.correction_name][wmap.station_correction_idxs]
 
             data_trcs = self.choppers[wmap.name](tmins)
             residuals = data_trcs - synths
@@ -1068,6 +1107,7 @@ class SeismicGeometryComposite(SeismicComposite):
         -------
         default: array of synthetics for all targets
         """
+        print point
         self.point2sources(point)
 
         sc = self.config
@@ -1473,7 +1513,7 @@ class Problem(object):
 
         pc = self.config.problem_config
 
-        point = {}
+        point = self.get_random_point(include=['hierarchicals', 'prioŕs'])
         for param in pc.priors.values():
             point[param.name] = param.testvalue
 
@@ -1492,18 +1532,34 @@ class Problem(object):
             llk = pm.Potential(self._like_name, like)
             logger.info('Hyper model building was successful!')
 
-    def get_random_point(self):
+    def get_random_point(self, include=['priors', 'hierarchicals', 'hypers']):
         """
         Get random point in solution space.
         """
         pc = self.config.problem_config
 
-        point = {param.name: param.random() for param in pc.priors.values()}
-        hps = {param.name: param.random() \
-            for param in pc.hyperparameters.values()}
+        point = {}
 
-        for k, v in hps.iteritems():
-            point[k] = v
+        if 'hierarchicals' in include:
+            if self.hierarchicals is None:
+                self.init_hierarchicals()
+
+            for name, param in self.hierarchicals.items():
+                point[name] = param.random()
+
+        if 'priors' in include:
+            dummy = {
+                param.name: param.random() for param in pc.priors.values()}
+            point.update(dummy)
+
+        if 'hypers' in include:
+            if len(self.hyperparams) == 0:
+                self.hyperparams = self.get_hyperparams()
+
+            hps = {hp_name: param.random()
+                   for hp_name, param in self.hyperparams.iteritems()}
+
+            point.update(hps)
 
         return point
 
@@ -1543,6 +1599,7 @@ class Problem(object):
         Has to be executed in a "with model context"!
         """
         pc = self.config.problem_config
+        hyperparameters = copy.deepcopy(pc.hyperparameters)
 
         hyperparams = {}
         n_hyp = 0
@@ -1550,30 +1607,37 @@ class Problem(object):
             hypernames = composite.config.get_hypernames()
 
             for hp_name in hypernames:
-                if hp_name in pc.hyperparameters.keys():
-                    hyperpar = pc.hyperparameters.pop(hp_name)
+                if hp_name in hyperparameters.keys():
+                    hyperpar = hyperparameters.pop(hp_name)
 
                     if pc.dataset_specific_residual_noise_estimation:
-                        ndata = composite.n_t
+                        ndata = len(composite.get_unique_stations())
                     else:
                         ndata = 1
 
                 else:
                     raise InconsistentNumberHyperparametersError(
                         'Datasets and -types require additional '
-                        ' hyperparameter(s)!')
+                        ' hyperparameter(s): %s!' % hp_name)
 
                 if not num.array_equal(hyperpar.lower, hyperpar.upper):
                     dimension = hyperpar.dimension * ndata
 
-                    hyperparams[hp_name] = pm.Uniform(
-                        hyperpar.name,
+                    kwargs = dict(
+                        name=hyperpar.name,
                         shape=dimension,
                         lower=num.repeat(hyperpar.lower, ndata),
                         upper=num.repeat(hyperpar.upper, ndata),
                         testval=num.repeat(hyperpar.testvalue, ndata),
                         dtype=tconfig.floatX,
                         transform=None)
+
+                    try:
+                        hyperparams[hp_name] = pm.Uniform(**kwargs)
+
+                    except TypeError:
+                        kwargs.pop('name')
+                        hyperparams[hp_name] = pm.Uniform.dist(**kwargs)
 
                     n_hyp += dimension
 
@@ -1584,7 +1648,7 @@ class Problem(object):
                             utility.list_to_str(hyperpar.lower.flatten())))
                     hyperparams[hyperpar.name] = hyperpar.lower
 
-        if len(pc.hyperparameters) > 0:
+        if len(hyperparameters) > 0:
             raise InconsistentNumberHyperparametersError(
                 'There are hyperparameters in config file, which are not'
                 ' covered by datasets/datatypes.')
@@ -1665,6 +1729,28 @@ class Problem(object):
 
         for composite in self.composites.itervalues():
             d[composite.name] = composite.get_synthetics(point, outmode='data')
+
+        return d
+
+    def init_hierarchicals(self):
+        """
+        Initialise hierarchical random variables of all composites.
+        """
+        for composite in self.composites.values():
+            composite.init_hierarchicals()
+            print 'ch', composite.hierarchicals
+
+    @property
+    def hierarchicals(self):
+        """
+        Return dictionary of all hierarchical variables of the problem.
+        """
+        d = {}
+        for composite in self.composites.values():
+            if composite.hierarchicals is not None:
+                d.update(composite.hierarchicals)
+            else:
+                d = None
 
         return d
 
@@ -1905,16 +1991,16 @@ def estimate_hypers(step, problem):
     for stage in range(pa.n_stages):
         logger.info('Metropolis stage %i' % stage)
 
+        point = problem.get_random_point(
+            include=['priors', 'hierarchicals'])
+
         if stage == 0:
-            point = {param.name: param.testvalue \
-                for param in pc.priors.values()}
-        else:
-            point = {param.name: param.random() \
-                for param in pc.priors.values()}
+            # put testpoint in there
+            for param in pc.priors.values():
+                point[param.name] = param.testvalue
 
         problem.outfolder = os.path.join(name, 'stage_%i' % stage)
-        start = {param.name: param.random() for param in \
-            pc.hyperparameters.itervalues()}
+        start = problem.get_random_point(include=['hypers'])
 
         if pa.rm_flag:
             shutil.rmtree(problem.outfolder, ignore_errors=True)
@@ -1957,8 +2043,9 @@ def estimate_hypers(step, problem):
         d = mtrace.get_values(
             v, combine=True, burn=int(n_steps * pa.burn),
             thin=pa.thin, squeeze=True)
-        lower = num.floor(d.min(axis=0)) - 2.
-        upper = num.ceil(d.max(axis=0)) + 2.
+        print d
+!        lower = float(num.floor(d.min(axis=0)) - 2.)
+!        upper = float(num.ceil(d.max(axis=0)) + 2.)
         logger.info('Updating hyperparameter %s from %f, %f to %f, %f' % (
             v, i.lower, i.upper, lower, upper))
         pc.hyperparameters[v].lower = lower
