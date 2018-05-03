@@ -821,12 +821,12 @@ class SeismicComposite(Composite):
         """
         self.hierarchicals = {}
         if self.config.station_corrections:
+            nhierarchs = len(self.get_unique_stations())
             logger.info(
-                'Estimating time shift for each station,'
-                ' channel and phase ...')
+                'Estimating time shift for each station...')
             kwargs = dict(
                 name=self.correction_name,
-                shape=self.n_t,
+                shape=nhierarchs,
                 lower=bconfig.default_bounds[self.correction_name][0],
                 upper=bconfig.default_bounds[self.correction_name][1],
                 testval=0.,
@@ -840,7 +840,6 @@ class SeismicComposite(Composite):
                 kwargs.pop('name')
                 station_corrs_rv = pm.Uniform.dist(**kwargs)
 
-            nhierarchs = station_corrs_rv.shape.prod()
             self.hierarchicals[self.correction_name] = station_corrs_rv
         else:
             nhierarchs = 0
@@ -987,7 +986,6 @@ class SeismicGeometryComposite(SeismicComposite):
         logger.debug('Initialising synthetics functions ... \n')
         for wmap in self.wavemaps:
             wc = wmap.config
-
             self.synthesizers[wc.name] = theanof.SeisSynthesizer(
                 engine=self.engine,
                 sources=self.sources,
@@ -1072,6 +1070,7 @@ class SeismicGeometryComposite(SeismicComposite):
             synths, tmins = self.synthesizers[wmap.name](self.input_rvs)
 
             if self.correction_name in self.hierarchicals.keys():
+
                 tmins += self.hierarchicals[
                     self.correction_name][wmap.station_correction_idxs]
 
@@ -1107,7 +1106,7 @@ class SeismicGeometryComposite(SeismicComposite):
         -------
         default: array of synthetics for all targets
         """
-        print point
+
         self.point2sources(point)
 
         sc = self.config
@@ -1738,7 +1737,6 @@ class Problem(object):
         """
         for composite in self.composites.values():
             composite.init_hierarchicals()
-            print 'ch', composite.hierarchicals
 
     @property
     def hierarchicals(self):
@@ -2043,14 +2041,14 @@ def estimate_hypers(step, problem):
         d = mtrace.get_values(
             v, combine=True, burn=int(n_steps * pa.burn),
             thin=pa.thin, squeeze=True)
-        print d
-!        lower = float(num.floor(d.min(axis=0)) - 2.)
-!        upper = float(num.ceil(d.max(axis=0)) + 2.)
+
+        lower = num.floor(d.min()) - 2.
+        upper = num.ceil(d.max()) + 2.
         logger.info('Updating hyperparameter %s from %f, %f to %f, %f' % (
             v, i.lower, i.upper, lower, upper))
-        pc.hyperparameters[v].lower = lower
-        pc.hyperparameters[v].upper = upper
-        pc.hyperparameters[v].testvalue = (upper + lower) / 2.
+        pc.hyperparameters[v].lower = num.atleast_1d(lower)
+        pc.hyperparameters[v].upper = num.atleast_1d(upper)
+        pc.hyperparameters[v].testvalue = num.atleast_1d((upper + lower) / 2.)
 
     config_file_name = 'config_' + pc.mode + '.yaml'
     conf_out = os.path.join(problem.config.project_dir, config_file_name)
