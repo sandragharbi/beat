@@ -1069,8 +1069,7 @@ class SeismicGeometryComposite(SeismicComposite):
         for wmap in self.wavemaps:
             synths, tmins = self.synthesizers[wmap.name](self.input_rvs)
 
-            if self.correction_name in self.hierarchicals.keys():
-
+            if hasattr(self, 'correction_name'):
                 tmins += self.hierarchicals[
                     self.correction_name][wmap.station_correction_idxs]
 
@@ -1124,18 +1123,24 @@ class SeismicGeometryComposite(SeismicComposite):
                 filterer=wc.filterer,
                 pre_stack_cut=sc.pre_stack_cut,
                 **kwargs)
-            synths.extend(synthetics)
 
             if self.config.station_corrections:
-                tmins += point[
+                sh = point[
                     self.correction_name][wmap.station_correction_idxs]
+                for i, tr in enumerate(synthetics):
+                    tr.tmin += sh[i]
+                    tr.tmax += sh[i]
 
-            obs.extend(heart.taper_filter_traces(
+            synths.extend(synthetics)
+            
+            obs_tr = heart.taper_filter_traces(
                 wmap.datasets,
                 arrival_taper=wc.arrival_taper,
                 filterer=wc.filterer,
                 tmins=tmins,
-                **kwargs))
+                **kwargs)
+
+            obs.extend(obs_tr)
 
         return synths, obs
 
