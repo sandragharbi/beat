@@ -4,6 +4,8 @@
 Short Installation instructions
 *******************************
 
+Using system packages
+---------------------
 First install pyrocko following this webpage:
 
  - `pyrocko <http://pyrocko.org/>`__
@@ -17,6 +19,9 @@ Then install the following packages, pymc3 version3.2 and pyproj::
     git clone https://github.com/hvasbath/beat
     cd beat
     sudo python setup.py install
+
+Using anaconda2
+---------------
 
 Greens Function calculations
 ----------------------------
